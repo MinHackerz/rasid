@@ -13,7 +13,8 @@ import {
     Users,
     Settings,
     LogOut,
-    X
+    X,
+    HelpCircle
 } from 'lucide-react';
 import { BusinessSwitcher } from './BusinessSwitcher';
 import { useClerk } from "@clerk/nextjs";
@@ -114,6 +115,22 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
                                 </Link>
                             );
                         })}
+                        <Link
+                            href="/help"
+                            className={cn(
+                                'flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl group relative overflow-hidden',
+                                'transition-all duration-200',
+                                pathname === '/help'
+                                    ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
+                                    : 'text-muted-foreground hover:bg-accent/10 hover:text-foreground'
+                            )}
+                        >
+                            <HelpCircle className={cn(
+                                'w-[18px] h-[18px] transition-colors',
+                                pathname === '/help' ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-primary'
+                            )} />
+                            <span className="relative z-10">Help</span>
+                        </Link>
                     </nav>
 
                     <div className="p-4 border-t border-border/50 bg-muted/5 mt-auto">

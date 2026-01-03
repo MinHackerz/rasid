@@ -103,7 +103,6 @@ export class OCRPipeline {
         }
 
         try {
-            console.log(`Attempting OCR with model: ${this.currentModel.name}`);
 
             // Use the image-to-text pipeline
             const result = await this.hf.imageToText({
@@ -122,7 +121,6 @@ export class OCRPipeline {
             const nextModel = MODEL_PRIORITY.find(m => !triedModels.includes(m));
 
             if (nextModel) {
-                console.log(`Switching to fallback model: ${nextModel}`);
                 this.switchModel(nextModel);
                 return this.extractText(imageData, triedModels);
             }
@@ -158,7 +156,6 @@ export class OCRPipeline {
 
             // Priority 2: Fallback to OpenAI if configured
             if (this.openai) {
-                console.log('Falling back to OpenAI for document extraction...');
                 return this.extractWithOpenAI(imageData);
             }
 

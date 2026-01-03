@@ -234,9 +234,31 @@ export interface VerificationResult {
     invoice?: {
         invoiceNumber: string;
         issueDate: Date;
+        dueDate?: Date | null;
+        subtotal: number;
+        taxAmount: number;
+        discountAmount: number;
         totalAmount: number;
         sellerName: string;
         currency: string;
+        notes?: string | null;
+        terms?: string | null;
+        items: Array<{
+            description: string;
+            quantity: number;
+            unit: string;
+            unitPrice: number;
+            taxRate: number;
+            discount: number;
+            amount: number;
+        }>;
+        buyer?: {
+            name: string;
+            email?: string | null;
+            phone?: string | null;
+            address?: string | null;
+            taxId?: string | null;
+        } | null;
     };
 }
 

@@ -6,7 +6,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { generateInvoiceNumber, calculateInvoiceTotal } from '@/lib/utils';
-import { generateVerificationHash, generateInvoiceSignature } from '@/lib/verification';
+import { generateVerificationHash, generateInvoiceSignature, type InvoiceSignatureData } from '@/lib/verification';
 import { generateInvoicePDF } from '@/lib/pdf';
 import { deliverInvoice } from '@/lib/delivery';
 import type { CreateInvoiceInput, InvoiceWithRelations, InvoiceStatus, PaymentStatus, InvoiceDeliveryStatus, DashboardStats, SalesBreakdown } from '@/types';
@@ -129,13 +129,58 @@ export async function createInvoice(
             }),
         });
 
-        // Generate verification hash and signature
+        // Fetch buyer data for signature
+        const buyerData = buyerId ? await tx.buyer.findUnique({
+            where: { id: buyerId },
+        }) : null;
+
+        // Fetch items for signature
+        const invoiceItems = await tx.invoiceItem.findMany({
+            where: { invoiceId: newInvoice.id },
+            orderBy: { sortOrder: 'asc' },
+        });
+
+        // Generate verification hash and signature with ALL invoice data
         const verificationHash = generateVerificationHash(newInvoice.id, sellerId);
         const signature = generateInvoiceSignature({
             invoiceNumber: newInvoice.invoiceNumber,
             sellerId,
-            totalAmount: finalTotal,
+            buyerId: newInvoice.buyerId,
             issueDate: newInvoice.issueDate,
+            dueDate: newInvoice.dueDate,
+            subtotal,
+            taxAmount: finalTaxAmount,
+            discountAmount: finalDiscountAmount,
+            totalAmount: finalTotal,
+            currency: input.currency || 'INR',
+            notes: input.notes,
+            terms: input.terms,
+            items: invoiceItems.map((item: {
+                description: string;
+                quantity: unknown;
+                unit: string;
+                unitPrice: unknown;
+                taxRate: unknown;
+                discount: unknown;
+                amount: unknown;
+                sortOrder: number;
+            }) => ({
+                description: item.description,
+                quantity: Number(item.quantity),
+                unit: item.unit,
+                unitPrice: Number(item.unitPrice),
+                taxRate: Number(item.taxRate),
+                discount: Number(item.discount),
+                amount: Number(item.amount),
+                sortOrder: item.sortOrder,
+            })),
+            buyer: buyerData ? {
+                name: buyerData.name,
+                email: buyerData.email,
+                phone: buyerData.phone,
+                address: buyerData.address,
+                taxId: buyerData.taxId,
+            } : null,
         });
 
         // Update invoice with hash and signature
@@ -189,7 +234,12 @@ export async function createInvoice(
     // Generate PDF asynchronously
     // Generate PDF asynchronously
     setImmediate(() => {
-        generateInvoicePDF(invoice.id).catch(console.error);
+        generateInvoicePDF(invoice.id).catch((err) => {
+            // Silently handle PDF generation errors in background
+            if (process.env.NODE_ENV === 'development') {
+                console.error('[PDF Generation Error]', err);
+            }
+        });
 
         // Auto-send logic
         (async () => {
@@ -201,7 +251,6 @@ export async function createInvoice(
 
                 const defaults = seller?.invoiceDefaults as any;
                 if (defaults?.autoSend) {
-                    console.log(`[Auto-Send] Triggering auto-send for invoice ${invoice.id}`);
                     // We don't specify preference, deliverInvoice determines best method (Email > WhatsApp)
                     // Or ideally we check what details exist.
                     // deliverInvoice handles this logic.
@@ -230,7 +279,10 @@ export async function createInvoice(
                     // The user will see status update on refresh or polling.
                 }
             } catch (err) {
-                console.error('[Auto-Send] Failed:', err);
+                // Log auto-send errors in development only
+                if (process.env.NODE_ENV === 'development') {
+                    console.error('[Auto-Send] Failed:', err);
+                }
             }
         })();
     });
@@ -422,7 +474,12 @@ export async function updateInvoice(
     // Regenerate PDF if content changed
     if (updates.items || updates.status) {
         setImmediate(() => {
-            generateInvoicePDF(invoiceId).catch(console.error);
+            generateInvoicePDF(invoiceId).catch((err) => {
+                // Silently handle PDF generation errors in background
+                if (process.env.NODE_ENV === 'development') {
+                    console.error('[PDF Generation Error]', err);
+                }
+            });
         });
     }
 

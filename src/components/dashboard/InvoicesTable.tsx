@@ -66,125 +66,172 @@ export async function InvoicesTable({ searchParams }: InvoicesTableProps) {
                         }
                     />
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead className="bg-neutral-50 border-b border-neutral-100">
-                                <tr>
-                                    <th className="px-6 py-4 text-left font-medium text-neutral-500 text-xs uppercase tracking-wider">
-                                        Invoice
-                                    </th>
-                                    <th className="px-6 py-4 text-left font-medium text-neutral-500 text-xs uppercase tracking-wider">
-                                        Buyer
-                                    </th>
-                                    <th className="px-6 py-4 text-left font-medium text-neutral-500 text-xs uppercase tracking-wider">
-                                        Issued
-                                    </th>
-                                    <th className="px-6 py-4 text-right font-medium text-neutral-500 text-xs uppercase tracking-wider">
-                                        Amount
-                                    </th>
-                                    <th className="px-6 py-4 text-left font-medium text-neutral-500 text-xs uppercase tracking-wider">
-                                        Payment
-                                    </th>
-                                    <th className="px-6 py-4 text-left font-medium text-neutral-500 text-xs uppercase tracking-wider">
-                                        Delivery
-                                    </th>
-                                    <th className="px-6 py-4 w-20"></th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-neutral-100">
-                                {invoices.map((invoice: any) => (
-                                    <tr key={invoice.id} className="hover:bg-neutral-50/50 transition-colors group">
-                                        <td className="px-6 py-4">
-                                            <Link
-                                                href={`/dashboard/invoices/${invoice.id}`}
-                                                className="font-semibold text-neutral-900 hover:text-neutral-600 transition-colors"
-                                            >
+                    <>
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead className="bg-neutral-50/80 border-b border-neutral-200">
+                                    <tr>
+                                        <th className="px-6 py-4 text-left font-semibold text-neutral-700 text-xs uppercase tracking-wider">
+                                            Invoice
+                                        </th>
+                                        <th className="px-6 py-4 text-left font-semibold text-neutral-700 text-xs uppercase tracking-wider">
+                                            Buyer
+                                        </th>
+                                        <th className="px-6 py-4 text-left font-semibold text-neutral-700 text-xs uppercase tracking-wider">
+                                            Issued
+                                        </th>
+                                        <th className="px-6 py-4 text-right font-semibold text-neutral-700 text-xs uppercase tracking-wider">
+                                            Amount
+                                        </th>
+                                        <th className="px-6 py-4 text-left font-semibold text-neutral-700 text-xs uppercase tracking-wider">
+                                            Payment
+                                        </th>
+                                        <th className="px-6 py-4 text-left font-semibold text-neutral-700 text-xs uppercase tracking-wider">
+                                            Delivery
+                                        </th>
+                                        <th className="px-6 py-4 w-20"></th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-neutral-100">
+                                    {invoices.map((invoice: any) => (
+                                        <tr key={invoice.id} className="hover:bg-neutral-50/50 transition-colors group">
+                                            <td className="px-6 py-4">
+                                                <Link
+                                                    href={`/dashboard/invoices/${invoice.id}`}
+                                                    className="font-semibold text-neutral-900 hover:text-primary transition-colors"
+                                                >
+                                                    {invoice.invoiceNumber}
+                                                </Link>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="text-neutral-900">
+                                                    {invoice.buyer?.name || (
+                                                        <span className="text-neutral-400 italic">Walk-in</span>
+                                                    )}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-neutral-600 text-sm">
+                                                {formatDate(invoice.issueDate)}
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <span className="font-semibold text-neutral-900 tabular-nums">
+                                                    {formatCurrency(invoice.totalAmount, invoice.currency)}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <Badge variant={invoice.paymentStatus.toLowerCase()} dot>
+                                                    {invoice.paymentStatus.charAt(0) + invoice.paymentStatus.slice(1).toLowerCase()}
+                                                </Badge>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <Badge variant={invoice.deliveryStatus === 'SENT' ? 'sent' : invoice.deliveryStatus === 'VIEWED' ? 'sent' : invoice.deliveryStatus === 'DOWNLOADED' ? 'sent' : 'draft'} dot className={invoice.deliveryStatus === 'SENT' ? 'bg-blue-50 text-blue-700 border-blue-200' : invoice.deliveryStatus === 'VIEWED' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : invoice.deliveryStatus === 'DOWNLOADED' ? 'bg-violet-50 text-violet-700 border-violet-200' : ''}>
+                                                    {invoice.deliveryStatus.charAt(0) + invoice.deliveryStatus.slice(1).toLowerCase()}
+                                                </Badge>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <InvoiceActions
+                                                    invoiceId={invoice.id}
+                                                    hasEmail={!!invoice.buyer?.email}
+                                                    hasPhone={!!invoice.buyer?.phone}
+                                                />
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Mobile Card View */}
+                        <div className="md:hidden space-y-3 p-4">
+                            {invoices.map((invoice: any) => (
+                                <Link
+                                    key={invoice.id}
+                                    href={`/dashboard/invoices/${invoice.id}`}
+                                    className="block bg-white border border-neutral-200 rounded-xl p-4 hover:border-neutral-300 hover:shadow-sm transition-all"
+                                >
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="flex-1">
+                                            <h3 className="font-semibold text-neutral-900 mb-1">
                                                 {invoice.invoiceNumber}
-                                            </Link>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-neutral-900">
-                                                {invoice.buyer?.name || (
-                                                    <span className="text-neutral-400 italic">Walk-in</span>
-                                                )}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-neutral-600">
-                                            {formatDate(invoice.issueDate)}
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <span className="font-semibold text-neutral-900 tabular-nums">
+                                            </h3>
+                                            <p className="text-sm text-neutral-600">
+                                                {invoice.buyer?.name || <span className="italic text-neutral-400">Walk-in</span>}
+                                            </p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="font-semibold text-neutral-900 tabular-nums mb-2">
                                                 {formatCurrency(invoice.totalAmount, invoice.currency)}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <Badge variant={invoice.paymentStatus.toLowerCase()} dot>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant={invoice.paymentStatus.toLowerCase()} dot className="text-xs">
                                                 {invoice.paymentStatus.charAt(0) + invoice.paymentStatus.slice(1).toLowerCase()}
                                             </Badge>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <Badge variant={invoice.deliveryStatus === 'SENT' ? 'sent' : invoice.deliveryStatus === 'VIEWED' ? 'sent' : invoice.deliveryStatus === 'DOWNLOADED' ? 'sent' : 'draft'} dot className={invoice.deliveryStatus === 'SENT' ? 'bg-blue-50 text-blue-700 border-blue-200' : invoice.deliveryStatus === 'VIEWED' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : invoice.deliveryStatus === 'DOWNLOADED' ? 'bg-violet-50 text-violet-700 border-violet-200' : ''}>
+                                            <Badge variant={invoice.deliveryStatus === 'SENT' ? 'sent' : invoice.deliveryStatus === 'VIEWED' ? 'sent' : invoice.deliveryStatus === 'DOWNLOADED' ? 'sent' : 'draft'} dot className={`text-xs ${invoice.deliveryStatus === 'SENT' ? 'bg-blue-50 text-blue-700 border-blue-200' : invoice.deliveryStatus === 'VIEWED' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : invoice.deliveryStatus === 'DOWNLOADED' ? 'bg-violet-50 text-violet-700 border-violet-200' : ''}`}>
                                                 {invoice.deliveryStatus.charAt(0) + invoice.deliveryStatus.slice(1).toLowerCase()}
                                             </Badge>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <InvoiceActions
-                                                invoiceId={invoice.id}
-                                                hasEmail={!!invoice.buyer?.email}
-                                                hasPhone={!!invoice.buyer?.phone}
-                                            />
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                        </div>
+                                        <p className="text-xs text-neutral-500">
+                                            {formatDate(invoice.issueDate)}
+                                        </p>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </>
                 )}
             </CardBody>
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (
-                <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 rounded-b-xl flex items-center justify-between">
-                    <p className="text-sm text-neutral-600">
+                <div className="px-4 md:px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 rounded-b-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p className="text-sm text-neutral-600 text-center sm:text-left">
                         Showing{' '}
-                        <span className="font-medium text-neutral-900">
+                        <span className="font-semibold text-neutral-900">
                             {(pagination.page - 1) * pagination.pageSize + 1}
                         </span>
                         {' '}to{' '}
-                        <span className="font-medium text-neutral-900">
+                        <span className="font-semibold text-neutral-900">
                             {Math.min(pagination.page * pagination.pageSize, pagination.total)}
                         </span>
                         {' '}of{' '}
-                        <span className="font-medium text-neutral-900">{pagination.total}</span>
+                        <span className="font-semibold text-neutral-900">{pagination.total}</span>
                         {' '}invoices
                     </p>
                     <div className="flex items-center gap-2">
                         {pagination.page > 1 ? (
                             <Link
-                                href={`/dashboard/invoices?page=${pagination.page - 1}${status ? `&status=${status}` : ''}`}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-neutral-200 rounded-lg bg-white hover:bg-neutral-50 transition-colors"
+                                href={`/dashboard/invoices?page=${pagination.page - 1}${status ? `&status=${status}` : ''}${sourceType ? `&source=${sourceType}` : ''}${search ? `&search=${encodeURIComponent(search)}` : ''}`}
+                                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-neutral-200 rounded-lg bg-white hover:bg-neutral-50 hover:border-neutral-300 transition-all"
                             >
                                 <ChevronLeft className="w-4 h-4" />
-                                Previous
+                                <span className="hidden sm:inline">Previous</span>
                             </Link>
                         ) : (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-neutral-200 rounded-lg bg-neutral-50 text-neutral-400 cursor-not-allowed">
+                            <span className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-neutral-200 rounded-lg bg-neutral-50 text-neutral-400 cursor-not-allowed">
                                 <ChevronLeft className="w-4 h-4" />
-                                Previous
+                                <span className="hidden sm:inline">Previous</span>
                             </span>
                         )}
 
+                        <span className="text-sm text-neutral-500 px-2">
+                            Page {pagination.page} of {pagination.totalPages}
+                        </span>
+
                         {pagination.page < pagination.totalPages ? (
                             <Link
-                                href={`/dashboard/invoices?page=${pagination.page + 1}${status ? `&status=${status}` : ''}`}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-neutral-200 rounded-lg bg-white hover:bg-neutral-50 transition-colors"
+                                href={`/dashboard/invoices?page=${pagination.page + 1}${status ? `&status=${status}` : ''}${sourceType ? `&source=${sourceType}` : ''}${search ? `&search=${encodeURIComponent(search)}` : ''}`}
+                                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-neutral-200 rounded-lg bg-white hover:bg-neutral-50 hover:border-neutral-300 transition-all"
                             >
-                                Next
+                                <span className="hidden sm:inline">Next</span>
                                 <ChevronRight className="w-4 h-4" />
                             </Link>
                         ) : (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-neutral-200 rounded-lg bg-neutral-50 text-neutral-400 cursor-not-allowed">
-                                Next
+                            <span className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-neutral-200 rounded-lg bg-neutral-50 text-neutral-400 cursor-not-allowed">
+                                <span className="hidden sm:inline">Next</span>
                                 <ChevronRight className="w-4 h-4" />
                             </span>
                         )}

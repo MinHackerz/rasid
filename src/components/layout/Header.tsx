@@ -21,7 +21,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, busi
     return (
         <>
             <header
-                className="sticky top-0 z-30 h-16 bg-white border-b border-border transition-all duration-300"
+                className="sticky top-0 z-30 h-16 bg-white/80 backdrop-blur-md border-b border-border/50 transition-all duration-300"
             >
                 <div className="h-full px-6 lg:px-10 flex items-center justify-between">
                     {/* Left */}
@@ -58,6 +58,12 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, busi
 
                     {/* Right */}
                     <div className="flex items-center gap-3">
+                        <Link
+                            href="/help"
+                            className="hidden md:flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
+                        >
+                            <span>Help</span>
+                        </Link>
                         {action || (
                             <Link href="/dashboard/invoices/new">
                                 <Button size="sm" className="gap-2 shadow-sm font-semibold rounded-lg">

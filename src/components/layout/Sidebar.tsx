@@ -40,7 +40,7 @@ const Sidebar: React.FC<SidebarProps> = ({ businessName = 'My Business', busines
         >
             {/* Logo */}
             <div className="h-16 px-6 flex items-center border-b border-border/50">
-                <Link href="/dashboard" className="flex items-center gap-3 group">
+                <Link href="/" className="flex items-center gap-3 group">
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg shadow-primary/25 group-hover:scale-105 transition-transform overflow-hidden">
                         <Image
                             src="/logos/Rasid_Logo.png"

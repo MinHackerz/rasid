@@ -8,6 +8,7 @@ import React from 'react';
 import { Button } from '@/components/ui';
 import { useUser, UserButton } from '@clerk/nextjs';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
+import { PricingSection } from '@/components/landing/PricingSection';
 import { Footer } from '@/components/layout/Footer';
 
 export default function LandingPage() {
@@ -18,7 +19,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Navigation */}
       {/* Navigation */}
-      <nav className="fixed top-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-auto md:min-w-[700px] z-50 bg-white/90 backdrop-blur-md rounded-full border border-white/20 shadow-lg shadow-black/5 px-4">
+      <nav className="fixed top-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-auto md:min-w-[700px] z-50 bg-white/90 backdrop-blur-md rounded-full border border-white/20 px-4">
         <div className="h-14 flex items-center justify-between gap-8">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
@@ -36,6 +37,7 @@ export default function LandingPage() {
             <Link href="#features" className="hover:text-primary transition-colors">Features</Link>
             <Link href="#pricing" className="hover:text-primary transition-colors">Pricing</Link>
             <Link href="#about" className="hover:text-primary transition-colors">About</Link>
+            <Link href="/help" className="hover:text-primary transition-colors">Help</Link>
           </div>
           <div className="hidden md:flex items-center gap-4">
             {!isLoaded ? (
@@ -104,6 +106,10 @@ export default function LandingPage() {
                   </Link>
                   <Link href="#about" className="flex items-center justify-between p-4 rounded-2xl hover:bg-neutral-50 text-sm font-semibold text-neutral-600 hover:text-neutral-900 transition-colors" onClick={() => setMobileMenuOpen(false)}>
                     About
+                    <ArrowRight className="w-4 h-4 text-neutral-300" />
+                  </Link>
+                  <Link href="/help" className="flex items-center justify-between p-4 rounded-2xl hover:bg-neutral-50 text-sm font-semibold text-neutral-600 hover:text-neutral-900 transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                    Help
                     <ArrowRight className="w-4 h-4 text-neutral-300" />
                   </Link>
                 </div>
@@ -228,6 +234,9 @@ export default function LandingPage() {
 
       {/* Features Section */}
       <FeaturesSection />
+
+      {/* Pricing Section */}
+      <PricingSection />
 
       {/* About Section */}
       <section id="about" className="py-24 bg-white">

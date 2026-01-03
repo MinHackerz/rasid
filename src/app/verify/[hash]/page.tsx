@@ -20,7 +20,7 @@ export default async function VerifyPage({ params }: PageProps) {
 
     return (
         <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">
-            <div className="w-full max-w-sm">
+            <div className="w-full max-w-lg">
                 {/* Logo */}
                 <div className="text-center mb-6">
                     <Link href="/" className="inline-flex items-center gap-2">
@@ -78,30 +78,139 @@ export default async function VerifyPage({ params }: PageProps) {
                     </div>
 
                     {/* Invoice Details */}
-                    {result.invoice && (
-                        <div className="p-4 border-t border-neutral-100">
-                            <div className="space-y-2 text-sm">
-                                <div className="flex justify-between py-2 border-b border-neutral-100">
-                                    <span className="text-neutral-500">Invoice #</span>
-                                    <span className="font-semibold text-neutral-900">{result.invoice.invoiceNumber}</span>
+                    {result.invoice && (() => {
+                        const invoice = result.invoice;
+                        return (
+                            <div className="p-4 border-t border-neutral-100 space-y-4">
+                                {/* Basic Info */}
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between py-2 border-b border-neutral-100">
+                                        <span className="text-neutral-500">Invoice #</span>
+                                        <span className="font-semibold text-neutral-900">{invoice.invoiceNumber}</span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b border-neutral-100">
+                                        <span className="text-neutral-500">Issued By</span>
+                                        <span className="font-semibold text-neutral-900">{invoice.sellerName}</span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b border-neutral-100">
+                                        <span className="text-neutral-500">Issue Date</span>
+                                        <span className="font-semibold text-neutral-900">{formatDate(invoice.issueDate)}</span>
+                                    </div>
+                                    {invoice.dueDate && (
+                                        <div className="flex justify-between py-2 border-b border-neutral-100">
+                                            <span className="text-neutral-500">Due Date</span>
+                                            <span className="font-semibold text-neutral-900">{formatDate(invoice.dueDate)}</span>
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="flex justify-between py-2 border-b border-neutral-100">
-                                    <span className="text-neutral-500">Issued By</span>
-                                    <span className="font-semibold text-neutral-900">{result.invoice.sellerName}</span>
+
+                                {/* Buyer Info */}
+                                {invoice.buyer && (
+                                    <div className="pt-2 border-t border-neutral-100">
+                                        <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">Bill To</p>
+                                        <div className="space-y-1 text-sm">
+                                            <p className="font-semibold text-neutral-900">{invoice.buyer.name}</p>
+                                            {invoice.buyer.email && (
+                                                <p className="text-neutral-600">{invoice.buyer.email}</p>
+                                            )}
+                                            {invoice.buyer.phone && (
+                                                <p className="text-neutral-600">{invoice.buyer.phone}</p>
+                                            )}
+                                            {invoice.buyer.address && (
+                                                <p className="text-neutral-600">{invoice.buyer.address}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Line Items */}
+                                {invoice.items && invoice.items.length > 0 && (
+                                    <div className="pt-2 border-t border-neutral-100">
+                                        <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">Items</p>
+                                        <div className="space-y-2">
+                                            {invoice.items.map((item, idx) => (
+                                                <div key={idx} className="flex justify-between text-sm py-1.5 border-b border-neutral-50 last:border-0">
+                                                    <div className="flex-1">
+                                                        <p className="font-medium text-neutral-900">{item.description}</p>
+                                                        <p className="text-xs text-neutral-500">
+                                                            {item.quantity} {item.unit} × {formatCurrency(item.unitPrice, invoice.currency)}
+                                                            {item.taxRate > 0 && ` + ${item.taxRate}% tax`}
+                                                            {item.discount > 0 && ` - ${formatCurrency(item.discount, invoice.currency)}`}
+                                                        </p>
+                                                    </div>
+                                                    <span className="font-semibold text-neutral-900 ml-4">
+                                                        {formatCurrency(item.amount, invoice.currency)}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Financial Summary */}
+                                <div className="pt-2 border-t border-neutral-100">
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between py-1">
+                                            <span className="text-neutral-500">Subtotal</span>
+                                            <span className="font-medium text-neutral-900">
+                                                {formatCurrency(invoice.subtotal, invoice.currency)}
+                                            </span>
+                                        </div>
+                                        {invoice.taxAmount > 0 && (
+                                            <div className="flex justify-between py-1">
+                                                <span className="text-neutral-500">Tax</span>
+                                                <span className="font-medium text-neutral-900">
+                                                    {formatCurrency(invoice.taxAmount, invoice.currency)}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {invoice.discountAmount > 0 && (
+                                            <div className="flex justify-between py-1">
+                                                <span className="text-neutral-500">Discount</span>
+                                                <span className="font-medium text-neutral-900">
+                                                    -{formatCurrency(invoice.discountAmount, invoice.currency)}
+                                                </span>
+                                            </div>
+                                        )}
+                                        <div className="flex justify-between py-2 border-t border-neutral-200 mt-2 pt-2">
+                                            <span className="font-semibold text-neutral-900">Total</span>
+                                            <span className="font-bold text-lg text-neutral-900">
+                                                {formatCurrency(invoice.totalAmount, invoice.currency)}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex justify-between py-2 border-b border-neutral-100">
-                                    <span className="text-neutral-500">Date</span>
-                                    <span className="font-semibold text-neutral-900">{formatDate(result.invoice.issueDate)}</span>
-                                </div>
-                                <div className="flex justify-between py-2">
-                                    <span className="text-neutral-500">Amount</span>
-                                    <span className="font-bold text-neutral-900">
-                                        {formatCurrency(result.invoice.totalAmount, result.invoice.currency)}
-                                    </span>
-                                </div>
+
+                                {/* Notes & Terms */}
+                                {(invoice.notes || invoice.terms) && (
+                                    <div className="pt-2 border-t border-neutral-100 space-y-3">
+                                        {invoice.notes && (
+                                            <div>
+                                                <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1">Notes</p>
+                                                <p className="text-sm text-neutral-700">{invoice.notes}</p>
+                                            </div>
+                                        )}
+                                        {invoice.terms && (
+                                            <div>
+                                                <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1">Terms</p>
+                                                <p className="text-sm text-neutral-700">{invoice.terms}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Verification Badge */}
+                                {result.status === 'VALID' && (
+                                    <div className="pt-3 border-t border-neutral-100">
+                                        <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 px-3 py-2 rounded-lg">
+                                            <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                                            <span className="font-medium">All invoice data cryptographically verified</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        </div>
-                    )}
+                        );
+                    })()}
 
                     {/* Footer */}
                     <div className="p-4 bg-neutral-50 border-t border-neutral-100">

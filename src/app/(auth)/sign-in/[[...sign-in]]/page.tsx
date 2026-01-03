@@ -34,7 +34,6 @@ export default function SignInPage() {
                 await setActive({ session: result.createdSessionId });
                 router.push('/dashboard');
             } else {
-                console.log(result);
                 setError('Authentication failed. Please check your credentials.');
             }
         } catch (err: any) {

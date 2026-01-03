@@ -71,7 +71,6 @@ export default function SignUpPage() {
                 await setActive({ session: completeSignUp.createdSessionId });
                 router.push('/onboarding');
             } else {
-                console.log(JSON.stringify(completeSignUp, null, 2));
                 setError('Verification failed. Use a new code?');
             }
         } catch (err: any) {

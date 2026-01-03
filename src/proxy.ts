@@ -6,10 +6,12 @@ const isPublicRoute = createRouteMatcher([
     '/sign-in(.*)',
     '/sign-up(.*)',
     '/api/upload(.*)', // Allow upload API for now, consider securing
+    '/api/verify(.*)', // Public verification API
     '/verify(.*)',     // Public verification page
     '/sso-callback',    // SSO callback for OAuth (Google Sign-in)
     '/privacy',         // Public privacy policy
-    '/terms'            // Public terms of service
+    '/terms',           // Public terms of service
+    '/help'            // Public help center
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
