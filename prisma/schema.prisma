@@ -1,0 +1,293 @@
+// Rashid - Invoice Generation Platform
+// Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// SELLER - The business owner using the platform
+// ============================================
+model Seller {
+  id                String    @id @default(cuid())
+  clerkUserId       String?
+  
+  // Relations
+  @@index([clerkUserId])
+  email             String
+  passwordHash      String?
+  businessName      String
+  businessAddress   String?
+  phone             String?
+  logo              String?   // URL to logo image
+  taxId             String?   // GST/VAT number
+  bankDetails       Json?     // Bank account details for invoices
+  invoiceDefaults   Json?     // Default invoice settings (currency, notes, etc.)
+  integrations      Json?     // Third-party integrations (WhatsApp, Email)
+  
+  // Magic link auth
+  magicLinkToken    String?   @unique
+  magicLinkExpiry   DateTime?
+  
+  // Verification
+  emailVerified     Boolean   @default(false)
+  isActive          Boolean   @default(true)
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relations
+  invoices          Invoice[]
+  buyers            Buyer[]
+  uploadedDocuments UploadedDocument[]
+  
+  @@index([email])
+}
+
+// ============================================
+// BUYER - Customer of the seller
+// ============================================
+model Buyer {
+  id              String    @id @default(cuid())
+  sellerId        String
+  name            String
+  email           String?
+  phone           String?
+  address         String?
+  taxId           String?   // Buyer's GST/VAT if applicable
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  seller          Seller    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  invoices        Invoice[]
+  
+  @@unique([sellerId, email])
+  @@index([sellerId])
+  @@index([name])
+}
+
+// ============================================
+// INVOICE - The core entity
+// ============================================
+model Invoice {
+  id                  String        @id @default(cuid())
+  invoiceNumber       String        // Human-readable invoice number
+  sellerId            String
+  buyerId             String?
+  
+  // Invoice details
+  issueDate           DateTime      @default(now())
+  dueDate             DateTime?
+  status              InvoiceStatus @default(DRAFT) // Deprecated, use paymentStatus and deliveryStatus
+  paymentStatus       PaymentStatus @default(DRAFT)
+  deliveryStatus      InvoiceDeliveryStatus @default(DRAFT)
+  
+  // Financial
+  subtotal            Decimal       @db.Decimal(12, 2)
+  taxAmount           Decimal       @default(0) @db.Decimal(12, 2)
+  discountAmount      Decimal       @default(0) @db.Decimal(12, 2)
+  totalAmount         Decimal       @db.Decimal(12, 2)
+  currency            String        @default("INR")
+  
+  // Notes
+  notes               String?
+  terms               String?
+  
+  // Verification
+  verificationHash    String        @unique // For public verification
+  signature           String        // Cryptographic signature
+  
+  // PDF storage
+  pdfUrl              String?
+  
+  // Source tracking
+  sourceType          SourceType    @default(MANUAL)
+  sourceDocumentId    String?       // Link to uploaded document if OCR
+  
+  // Timestamps
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  
+  // Relations
+  seller              Seller        @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  buyer               Buyer?        @relation(fields: [buyerId], references: [id])
+  items               InvoiceItem[]
+  deliveryLogs        DeliveryLog[]
+  sourceDocument      UploadedDocument? @relation(fields: [sourceDocumentId], references: [id])
+  
+  @@unique([sellerId, invoiceNumber])
+  @@index([sellerId])
+  @@index([buyerId])
+  @@index([verificationHash])
+  @@index([issueDate])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([deliveryStatus])
+}
+
+enum InvoiceStatus {
+  DRAFT
+  PENDING
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum PaymentStatus {
+  DRAFT
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum InvoiceDeliveryStatus {
+  DRAFT
+  SENT
+  VIEWED
+  DOWNLOADED
+}
+
+enum SourceType {
+  MANUAL    // Created from scratch
+  OCR       // Extracted from uploaded image
+  IMPORTED  // Imported from external source
+}
+
+// ============================================
+// INVOICE ITEM - Line items in an invoice
+// ============================================
+model InvoiceItem {
+  id            String    @id @default(cuid())
+  invoiceId     String
+  
+  // Item details
+  description   String
+  quantity      Decimal   @db.Decimal(10, 3)
+  unit          String    @default("pcs") // pieces, kg, hours, etc.
+  unitPrice     Decimal   @db.Decimal(12, 2)
+  taxRate       Decimal   @default(0) @db.Decimal(5, 2) // Percentage
+  discount      Decimal   @default(0) @db.Decimal(12, 2)
+  amount        Decimal   @db.Decimal(12, 2) // Calculated total
+  
+  // Ordering
+  sortOrder     Int       @default(0)
+  
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  invoice       Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  @@index([invoiceId])
+}
+
+// ============================================
+// UPLOADED DOCUMENT - Original files for OCR
+// ============================================
+model UploadedDocument {
+  id              String          @id @default(cuid())
+  sellerId        String
+  
+  // File info
+  originalName    String
+  storagePath     String          // Path in storage
+  mimeType        String
+  fileSize        Int             // Size in bytes
+  pageCount       Int             @default(1)
+  
+  // OCR status
+  processingStatus ProcessingStatus @default(PENDING)
+  ocrResult       Json?           // Raw OCR output
+  extractedData   Json?           // Structured extracted data
+  confidence      Decimal?        @db.Decimal(5, 2) // OCR confidence score
+  errorMessage    String?
+  
+  // Timestamps  
+  createdAt       DateTime        @default(now())
+  processedAt     DateTime?
+  
+  // Relations
+  seller          Seller          @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  invoices        Invoice[]       // Invoices created from this document
+  
+  @@index([sellerId])
+  @@index([processingStatus])
+}
+
+enum ProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REVIEW_NEEDED
+}
+
+// ============================================
+// DELIVERY LOG - Track invoice delivery
+// ============================================
+model DeliveryLog {
+  id            String          @id @default(cuid())
+  invoiceId     String
+  
+  // Delivery details
+  method        DeliveryMethod
+  recipient     String          // Email/phone number
+  status        DeliveryStatus  @default(PENDING)
+  
+  // Response tracking
+  messageId     String?         // External service message ID
+  errorMessage  String?
+  
+  // Timestamps
+  createdAt     DateTime        @default(now())
+  sentAt        DateTime?
+  deliveredAt   DateTime?
+  
+  // Relations
+  invoice       Invoice         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  @@index([invoiceId])
+  @@index([status])
+}
+
+enum DeliveryMethod {
+  EMAIL
+  WHATSAPP
+  SMS
+}
+
+enum DeliveryStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  BOUNCED
+}
+
+// ============================================
+// VERIFICATION HASH - For invoice authenticity
+// ============================================
+model VerificationLog {
+  id            String    @id @default(cuid())
+  hash          String    // The hash that was verified
+  ipAddress     String?
+  userAgent     String?
+  result        Boolean   // Was verification successful
+  
+  createdAt     DateTime  @default(now())
+  
+  @@index([hash])
+  @@index([createdAt])
+}
