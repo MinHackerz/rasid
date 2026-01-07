@@ -178,10 +178,28 @@ export const classicTemplate: InvoiceTemplateConfig = {
           <span class="totals-value">${formatCurrency(Number(invoice.subtotal), invoice.currency)}</span>
         </div>
         ${Number(invoice.taxAmount) > 0 ? `
+          ${(invoice.cgstAmount || 0) > 0 || (invoice.sgstAmount || 0) > 0 || (invoice.igstAmount || 0) > 0 ? `
+              ${(invoice.cgstAmount || 0) > 0 ? `
+              <div class="totals-row">
+                <span class="totals-label">CGST</span>
+                <span class="totals-value">${formatCurrency(Number(invoice.cgstAmount), invoice.currency)}</span>
+              </div>` : ''}
+              ${(invoice.sgstAmount || 0) > 0 ? `
+              <div class="totals-row">
+                <span class="totals-label">SGST</span>
+                <span class="totals-value">${formatCurrency(Number(invoice.sgstAmount), invoice.currency)}</span>
+              </div>` : ''}
+              ${(invoice.igstAmount || 0) > 0 ? `
+              <div class="totals-row">
+                <span class="totals-label">IGST</span>
+                <span class="totals-value">${formatCurrency(Number(invoice.igstAmount), invoice.currency)}</span>
+              </div>` : ''}
+          ` : `
           <div class="totals-row">
             <span class="totals-label">${getCurrencyTaxName(invoice.currency)}</span>
             <span class="totals-value">${formatCurrency(Number(invoice.taxAmount), invoice.currency)}</span>
           </div>
+          `}
         ` : ''}
         ${Number(invoice.discountAmount) > 0 ? `
           <div class="totals-row">

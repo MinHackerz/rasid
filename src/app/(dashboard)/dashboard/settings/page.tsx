@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardHeader, CardBody, Input, Textarea, Button, ImageUpload } from '@/components/ui';
+import { Card, CardHeader, CardBody, Input, Textarea, Button, ImageUpload, Select } from '@/components/ui';
 import { Save, Building2, FileText, CheckCircle2, Globe, Mail, MessageSquare, ExternalLink, Info, Palette } from 'lucide-react';
 import { CURRENCIES } from '@/lib/currencies';
+import { INDIAN_STATES } from '@/lib/constants/indian-states';
 
 import { INVOICE_TEMPLATES } from '@/lib/invoice-templates';
+import { PaymentMethodsSettings } from '@/components/dashboard/PaymentMethodsSettings';
 
 interface SellerProfile {
     businessName: string;
@@ -14,6 +16,7 @@ interface SellerProfile {
     phone: string;
     email: string;
     taxId: string;
+    state?: string;
     integrations: {
         whatsapp?: {
             phoneNumberId: string;
@@ -49,6 +52,7 @@ export default function SettingsPage() {
         phone: '',
         email: '',
         taxId: '',
+        state: '',
         integrations: {
             whatsapp: { phoneNumberId: '', accessToken: '', businessAccountId: '' },
             email: { smtpHost: '', smtpPort: '', smtpUser: '', smtpPass: '', fromEmail: '' }
@@ -133,24 +137,24 @@ export default function SettingsPage() {
                     <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">Settings</h1>
                     <p className="text-neutral-500 mt-1">Manage your business profile and preferences</p>
                 </div>
-                <div className="flex bg-neutral-100 p-1.5 rounded-xl self-start md:self-auto">
+                <div className="flex bg-neutral-100 p-1.5 rounded-xl md:self-auto overflow-x-auto no-scrollbar w-full md:w-auto">
                     <button
                         onClick={() => setActiveTab('general')}
-                        className={`px-6 py-2.5 min-w-[120px] rounded-lg text-sm font-medium transition-all ${activeTab === 'general' ? 'bg-white text-neutral-900 border border-neutral-900 shadow-sm' : 'text-neutral-500 hover:text-neutral-900'
+                        className={`flex-1 md:flex-none px-4 md:px-6 py-2.5 min-w-[100px] md:min-w-[120px] rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'general' ? 'bg-white text-neutral-900 border border-neutral-900 shadow-sm' : 'text-neutral-500 hover:text-neutral-900'
                             }`}
                     >
                         General
                     </button>
                     <button
                         onClick={() => setActiveTab('integrations')}
-                        className={`px-6 py-2.5 min-w-[120px] rounded-lg text-sm font-medium transition-all ${activeTab === 'integrations' ? 'bg-white text-neutral-900 border border-neutral-900 shadow-sm' : 'text-neutral-500 hover:text-neutral-900'
+                        className={`flex-1 md:flex-none px-4 md:px-6 py-2.5 min-w-[100px] md:min-w-[120px] rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'integrations' ? 'bg-white text-neutral-900 border border-neutral-900 shadow-sm' : 'text-neutral-500 hover:text-neutral-900'
                             }`}
                     >
                         Integrations
                     </button>
                     <button
                         onClick={() => setActiveTab('preferences')}
-                        className={`px-6 py-2.5 min-w-[120px] rounded-lg text-sm font-medium transition-all ${activeTab === 'preferences' ? 'bg-white text-neutral-900 border border-neutral-900 shadow-sm' : 'text-neutral-500 hover:text-neutral-900'
+                        className={`flex-1 md:flex-none px-4 md:px-6 py-2.5 min-w-[100px] md:min-w-[120px] rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'preferences' ? 'bg-white text-neutral-900 border border-neutral-900 shadow-sm' : 'text-neutral-500 hover:text-neutral-900'
                             }`}
                     >
                         Preferences
@@ -158,7 +162,7 @@ export default function SettingsPage() {
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-6">
 
                 {/* GENERAL TAB */}
                 {activeTab === 'general' && (
@@ -222,7 +226,8 @@ export default function SettingsPage() {
                                 />
 
                                 {/* Row 4: Phone & Tax ID */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Row 4: Phone, State & Tax ID */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <Input
                                         label="Phone Number"
                                         type="tel"
@@ -230,17 +235,31 @@ export default function SettingsPage() {
                                         onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
                                         placeholder="+91 98765 43210"
                                     />
+                                    {/* State Dropdown */}
+                                    <Select
+                                        label="State / Province"
+                                        value={profile.state || ''}
+                                        onChange={(e) => setProfile({ ...profile, state: e.target.value })}
+                                        className="appearance-none"
+                                    >
+                                        <option value="">Select State</option>
+                                        {INDIAN_STATES.map((state) => (
+                                            <option key={state} value={state}>
+                                                {state}
+                                            </option>
+                                        ))}
+                                    </Select>
                                     <Input
                                         label="GSTIN / Tax ID"
                                         value={profile.taxId}
                                         onChange={(e) => setProfile({ ...profile, taxId: e.target.value })}
-                                        placeholder="22AAAAA0000A1Z5"
+                                        placeholder="29AAAAA0000A1Z5"
                                     />
                                 </div>
                             </CardBody>
                         </Card>
 
-
+                        <PaymentMethodsSettings />
                     </div>
                 )
                 }
@@ -787,12 +806,12 @@ export default function SettingsPage() {
                             Changes saved successfully
                         </span>
                     )}
-                    <Button type="submit" loading={loading} className="px-8">
+                    <Button type="button" onClick={handleSubmit} loading={loading} className="px-8">
                         <Save className="w-4 h-4 mr-2" />
                         Save All Changes
                     </Button>
                 </div>
-            </form >
+            </div >
         </div >
     );
 }

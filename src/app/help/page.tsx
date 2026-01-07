@@ -494,6 +494,28 @@ const helpContent: HelpSection[] = [
                 ]
             },
             {
+                id: 'payment-methods',
+                title: 'Payment Methods',
+                content: `Configure how you want to receive payments from your customers.
+                
+**Setting Up Payment Methods:**
+1. Go to Settings > General
+2. Scroll to "Payment Methods"
+3. Click "Add Method" to add Bank Transfer, UPI, QR Code, or PayPal
+4. Toggle the "Active" switch to enable a method
+
+**How it Works:**
+- The active payment method is automatically included in your invoice emails and WhatsApp messages
+- When you mark an invoice as **PENDING** or **SENT**, the system attaches these payment details
+- This makes it easier for customers to pay you immediately
+
+**Note:** Adding a payment method is optional. You can still create and send invoices without one, but adding it helps you get paid faster.`,
+                tips: [
+                    'You can only have one active payment method at a time',
+                    'Payment details are shown on the invoice PDF and in the email/message body'
+                ]
+            },
+            {
                 id: 'integrations',
                 title: 'Integrations',
                 content: `Configure external services to send invoices automatically.
@@ -661,7 +683,7 @@ export default function HelpPage() {
 
     const filteredSections = useMemo(() => {
         if (!searchQuery.trim()) return helpContent;
-        
+
         const query = searchQuery.toLowerCase();
         return helpContent
             .map(section => {
@@ -669,7 +691,7 @@ export default function HelpPage() {
                     sub.title.toLowerCase().includes(query) ||
                     sub.content.toLowerCase().includes(query)
                 );
-                
+
                 if (section.title.toLowerCase().includes(query) || matchingSubsections.length > 0) {
                     return {
                         ...section,
@@ -849,11 +871,10 @@ export default function HelpPage() {
                                         setSelectedSection(section.id);
                                         setSelectedSubsection(section.subsections[0]?.id || null);
                                     }}
-                                    className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-lg text-left transition-all group ${
-                                        selectedSection === section.id
+                                    className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-lg text-left transition-all group ${selectedSection === section.id
                                             ? 'bg-neutral-900 text-white'
                                             : 'text-neutral-700 hover:bg-neutral-50'
-                                    }`}
+                                        }`}
                                 >
                                     <div className={`mt-0.5 flex-shrink-0 ${selectedSection === section.id ? 'text-white' : 'text-neutral-400 group-hover:text-neutral-600'}`}>
                                         {section.icon}
@@ -938,11 +959,10 @@ export default function HelpPage() {
                                                 <button
                                                     key={sub.id}
                                                     onClick={() => setSelectedSubsection(sub.id)}
-                                                    className={`w-full text-left px-4 py-3 rounded-lg transition-all text-sm ${
-                                                        selectedSubsection === sub.id
+                                                    className={`w-full text-left px-4 py-3 rounded-lg transition-all text-sm ${selectedSubsection === sub.id
                                                             ? 'bg-neutral-900 text-white'
                                                             : 'text-neutral-700 hover:bg-neutral-50'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {sub.title}
                                                 </button>

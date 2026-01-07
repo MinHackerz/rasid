@@ -170,10 +170,28 @@ export const modernMinimalTemplate: InvoiceTemplateConfig = {
           <span>${formatCurrency(Number(invoice.subtotal), invoice.currency)}</span>
         </div>
         ${Number(invoice.taxAmount) > 0 ? `
+          ${(invoice.cgstAmount || 0) > 0 || (invoice.sgstAmount || 0) > 0 || (invoice.igstAmount || 0) > 0 ? `
+            ${(invoice.cgstAmount || 0) > 0 ? `
+            <div class="total-row">
+              <span>CGST</span>
+              <span>${formatCurrency(Number(invoice.cgstAmount), invoice.currency)}</span>
+            </div>` : ''}
+            ${(invoice.sgstAmount || 0) > 0 ? `
+            <div class="total-row">
+              <span>SGST</span>
+              <span>${formatCurrency(Number(invoice.sgstAmount), invoice.currency)}</span>
+            </div>` : ''}
+            ${(invoice.igstAmount || 0) > 0 ? `
+            <div class="total-row">
+              <span>IGST</span>
+              <span>${formatCurrency(Number(invoice.igstAmount), invoice.currency)}</span>
+            </div>` : ''}
+          ` : `
           <div class="total-row">
             <span>${getCurrencyTaxName(invoice.currency)}</span>
             <span>${formatCurrency(Number(invoice.taxAmount), invoice.currency)}</span>
           </div>
+          `}
         ` : ''}
         ${Number(invoice.discountAmount) > 0 ? `
           <div class="total-row">

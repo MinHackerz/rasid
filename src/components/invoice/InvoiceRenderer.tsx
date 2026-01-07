@@ -195,12 +195,41 @@ export default function InvoiceRenderer({ invoice, templateId = 'classic', busin
                             </span>
                         </div>
                         {invoice.taxAmount > 0 && (
-                            <div className="flex justify-between text-sm" style={{ color: subTextColor }}>
-                                <span>{getCurrencyTaxName(invoice.currency)}</span>
-                                <span className="font-medium tabular-nums" style={{ color: bodyTextColor }}>
-                                    {formatCurrency(invoice.taxAmount, invoice.currency)}
-                                </span>
-                            </div>
+                            (invoice.cgstAmount > 0 || invoice.sgstAmount > 0 || invoice.igstAmount > 0) ? (
+                                <>
+                                    {invoice.cgstAmount > 0 && (
+                                        <div className="flex justify-between text-sm" style={{ color: subTextColor }}>
+                                            <span>CGST</span>
+                                            <span className="font-medium tabular-nums" style={{ color: bodyTextColor }}>
+                                                {formatCurrency(invoice.cgstAmount, invoice.currency)}
+                                            </span>
+                                        </div>
+                                    )}
+                                    {invoice.sgstAmount > 0 && (
+                                        <div className="flex justify-between text-sm" style={{ color: subTextColor }}>
+                                            <span>SGST</span>
+                                            <span className="font-medium tabular-nums" style={{ color: bodyTextColor }}>
+                                                {formatCurrency(invoice.sgstAmount, invoice.currency)}
+                                            </span>
+                                        </div>
+                                    )}
+                                    {invoice.igstAmount > 0 && (
+                                        <div className="flex justify-between text-sm" style={{ color: subTextColor }}>
+                                            <span>IGST</span>
+                                            <span className="font-medium tabular-nums" style={{ color: bodyTextColor }}>
+                                                {formatCurrency(invoice.igstAmount, invoice.currency)}
+                                            </span>
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="flex justify-between text-sm" style={{ color: subTextColor }}>
+                                    <span>{getCurrencyTaxName(invoice.currency)}</span>
+                                    <span className="font-medium tabular-nums" style={{ color: bodyTextColor }}>
+                                        {formatCurrency(invoice.taxAmount, invoice.currency)}
+                                    </span>
+                                </div>
+                            )
                         )}
                         {invoice.discountAmount > 0 && (
                             <div className="flex justify-between text-sm" style={{ color: subTextColor }}>

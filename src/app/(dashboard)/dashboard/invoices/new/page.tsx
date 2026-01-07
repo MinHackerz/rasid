@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Button, Input, Textarea, Card, CardHeader, CardBody, CardFooter, FormRow } from '@/components/ui';
+import { Button, Input, Textarea, Card, CardHeader, CardBody, CardFooter, FormRow, Select } from '@/components/ui';
 import { Plus, Trash2, ArrowLeft, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 import { CURRENCIES, getCurrencySymbol, getCurrencyTaxName, getCurrencyTaxIdLabel } from '@/lib/currencies';
+import { INDIAN_STATES } from '@/lib/constants/indian-states';
 
 interface LineItem {
     description: string;
@@ -23,6 +24,8 @@ interface InvoiceFormData {
     buyerEmail: string;
     buyerPhone: string;
     buyerAddress: string;
+    buyerState: string;
+    buyerTaxId: string;
     issueDate: string;
     dueDate: string;
     notes: string;
@@ -46,6 +49,8 @@ export default function NewInvoicePage() {
         buyerEmail: '',
         buyerPhone: '',
         buyerAddress: '',
+        buyerState: '',
+        buyerTaxId: '',
         issueDate: (() => {
             const d = new Date();
             const year = d.getFullYear();
@@ -127,6 +132,8 @@ export default function NewInvoicePage() {
                             buyerEmail: buyer.email || '',
                             buyerPhone: buyer.phone || '',
                             buyerAddress: buyer.address || '',
+                            buyerState: buyer.state || '',
+                            buyerTaxId: buyer.taxId || '',
                         }));
                     }
                 } catch (err) {
@@ -244,6 +251,8 @@ export default function NewInvoicePage() {
                     ...formData,
                     buyerId: buyerIdFromQuery || undefined,
                     buyerEmail: formData.buyerEmail || undefined,
+                    buyerState: formData.buyerState || undefined,
+                    buyerTaxId: formData.buyerTaxId || undefined,
                     issueDate: formData.issueDate ? new Date(formData.issueDate) : undefined,
                     dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
                     items: validItems.map(item => {
@@ -477,7 +486,7 @@ export default function NewInvoicePage() {
                                 onChange={(e) => setFormData({ ...formData, buyerEmail: e.target.value })}
                             />
                         </FormRow>
-                        <FormRow>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                             <Input
                                 label="Phone (optional)"
                                 name="buyerPhone"
@@ -485,6 +494,29 @@ export default function NewInvoicePage() {
                                 value={formData.buyerPhone}
                                 onChange={(e) => setFormData({ ...formData, buyerPhone: e.target.value })}
                             />
+                            <Select
+                                label="State"
+                                name="buyerState"
+                                value={formData.buyerState}
+                                onChange={(e) => setFormData({ ...formData, buyerState: e.target.value })}
+                                className="appearance-none"
+                            >
+                                <option value="">Select State</option>
+                                {INDIAN_STATES.map((state) => (
+                                    <option key={state} value={state}>
+                                        {state}
+                                    </option>
+                                ))}
+                            </Select>
+                            <Input
+                                label="GSTIN / Tax ID"
+                                name="buyerTaxId"
+                                placeholder="GSTIN"
+                                value={formData.buyerTaxId}
+                                onChange={(e) => setFormData({ ...formData, buyerTaxId: e.target.value })}
+                            />
+                        </div>
+                        <div className="grid grid-cols-1 gap-5">
                             <Input
                                 label="Address (optional)"
                                 name="buyerAddress"
@@ -492,7 +524,7 @@ export default function NewInvoicePage() {
                                 value={formData.buyerAddress}
                                 onChange={(e) => setFormData({ ...formData, buyerAddress: e.target.value })}
                             />
-                        </FormRow>
+                        </div>
                     </CardBody>
                 </Card>
 
@@ -678,12 +710,48 @@ export default function NewInvoicePage() {
                                         {formatAmount(subtotal)}
                                     </span>
                                 </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-neutral-600">{getCurrencyTaxName(formData.currency)}</span>
-                                    <span className="font-medium text-neutral-900 tabular-nums">
-                                        {formatAmount(taxTotal)}
-                                    </span>
-                                </div>
+                                {formData.currency === 'INR' ? (
+                                    (() => {
+                                        const sellerState = profileDetails?.state;
+                                        const buyerState = formData.buyerState;
+                                        // If either state is missing, default to Intra-state (safe assumption or user preference?)
+                                        // Actually, if missing, usually assume local for simplicity, or maybe we shouldn't show breakdown? 
+                                        // Let's stick to: if matches or missing => Intra (CGST+SGST), else Inter (IGST)
+                                        // Only show split if taxTotal > 0 to avoid clutter
+                                        const isIntraState = !sellerState || !buyerState || (sellerState.toLowerCase() === buyerState.toLowerCase());
+
+                                        return isIntraState ? (
+                                            <>
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="text-neutral-600">CGST</span>
+                                                    <span className="font-medium text-neutral-900 tabular-nums">
+                                                        {formatAmount(taxTotal / 2)}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="text-neutral-600">SGST</span>
+                                                    <span className="font-medium text-neutral-900 tabular-nums">
+                                                        {formatAmount(taxTotal / 2)}
+                                                    </span>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-neutral-600">IGST</span>
+                                                <span className="font-medium text-neutral-900 tabular-nums">
+                                                    {formatAmount(taxTotal)}
+                                                </span>
+                                            </div>
+                                        );
+                                    })()
+                                ) : (
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-neutral-600">{getCurrencyTaxName(formData.currency)}</span>
+                                        <span className="font-medium text-neutral-900 tabular-nums">
+                                            {formatAmount(taxTotal)}
+                                        </span>
+                                    </div>
+                                )}
                                 <div className="h-px bg-neutral-200" />
                                 <div className="flex justify-between">
                                     <span className="text-base font-semibold text-neutral-900">Total</span>

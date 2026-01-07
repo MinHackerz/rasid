@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { useEffect } from 'react';
 import { X, TrendingUp, TrendingDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -105,6 +106,17 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }: ModalProps) =>
         lg: 'max-w-lg',
         xl: 'max-w-xl',
     };
+
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
 
     return (
         <AnimatePresence>

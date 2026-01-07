@@ -75,6 +75,8 @@ export interface CreateInvoiceInput {
     buyerEmail?: string;
     buyerPhone?: string;
     buyerAddress?: string;
+    buyerState?: string;
+    buyerTaxId?: string;
     issueDate?: Date;
     dueDate?: Date;
     items: InvoiceItemInput[];
@@ -108,6 +110,9 @@ export interface InvoiceWithRelations {
     deliveryStatus: InvoiceDeliveryStatus;
     subtotal: number;
     taxAmount: number;
+    cgstAmount?: number;
+    sgstAmount?: number;
+    igstAmount?: number;
     discountAmount: number;
     totalAmount: number;
     currency: string;
@@ -125,6 +130,8 @@ export interface InvoiceWithRelations {
         email: string | null;
         phone: string | null;
         address: string | null;
+        state: string | null;
+        taxId: string | null;
     } | null;
     items: {
         id: string;
@@ -133,6 +140,12 @@ export interface InvoiceWithRelations {
         unit: string;
         unitPrice: number;
         taxRate: number;
+        cgstRate?: number;
+        sgstRate?: number;
+        igstRate?: number;
+        cgstAmount?: number;
+        sgstAmount?: number;
+        igstAmount?: number;
         discount: number;
         amount: number;
         sortOrder: number;

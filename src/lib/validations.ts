@@ -3,6 +3,7 @@
  */
 
 import { z } from 'zod';
+import type { PaymentStatus, InvoiceDeliveryStatus } from '@/types';
 
 // ============================================
 // Auth Schemas
@@ -36,6 +37,7 @@ export const buyerSchema = z.object({
     email: z.string().email().optional().or(z.literal('')),
     phone: z.string().optional(),
     address: z.string().optional(),
+    state: z.string().optional(),
     taxId: z.string().optional(),
 });
 
@@ -61,6 +63,7 @@ export const createInvoiceSchema = z.object({
     buyerEmail: z.string().email().optional().or(z.literal('')),
     buyerPhone: z.string().optional(),
     buyerAddress: z.string().optional(),
+    buyerState: z.string().optional(),
 
     // Invoice details
     issueDate: z.coerce.date().optional(),
@@ -142,6 +145,7 @@ export const updateProfileSchema = z.object({
     businessAddress: z.string().optional(),
     phone: z.string().optional(),
     taxId: z.string().optional(),
+    state: z.string().optional(),
     integrations: z.any().optional(),
     invoiceDefaults: z.any().optional(),
 });
@@ -166,7 +170,12 @@ export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type BuyerInput = z.infer<typeof buyerSchema>;
 export type InvoiceItemInput = z.infer<typeof invoiceItemSchema>;
-export type CreateInvoiceInput = z.infer<typeof createInvoiceSchema>;
+export type CreateInvoiceInput = z.infer<typeof createInvoiceSchema> & {
+    paymentStatus?: PaymentStatus;
+    deliveryStatus?: InvoiceDeliveryStatus;
+    buyerState?: string;
+    buyerTaxId?: string;
+};
 export type UpdateInvoiceInput = z.infer<typeof updateInvoiceSchema>;
 export type OCRReviewInput = z.infer<typeof ocrReviewSchema>;
 export type DeliveryInput = z.infer<typeof deliverySchema>;

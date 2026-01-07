@@ -20,10 +20,16 @@ export async function sendInvoiceEmail(
     recipientEmail: string
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
     try {
-        const invoice = await prisma.invoice.findUnique({
+        const invoice = await (prisma.invoice as any).findUnique({
             where: { id: invoiceId },
             include: {
-                seller: true,
+                seller: {
+                    include: {
+                        paymentMethods: {
+                            where: { isEnabled: true }
+                        }
+                    }
+                },
                 buyer: true,
                 items: true,
             },
@@ -33,11 +39,79 @@ export async function sendInvoiceEmail(
             throw new Error('Invoice not found');
         }
 
+        // Get Payment Method
+        const paymentMethod = (invoice.seller as any).paymentMethods?.[0];
+        let paymentHtml = '';
+
+        // Prepare attachments array
+        const attachments: any[] = [];
+
+        if (paymentMethod) {
+            if (paymentMethod.type === 'BANK_TRANSFER') {
+                const d = paymentMethod.details;
+                paymentHtml = `
+                <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #eee;">
+                    <h3 style="margin: 0 0 16px; font-size: 16px; font-weight: 600; color: #0a0a0a;">Payment Instructions</h3>
+                    <p style="margin: 0 0 8px; color: #666; font-size: 14px;">Please transfer the total amount to the following bank account:</p>
+                    <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; font-size: 14px; color: #333;">
+                        <p style="margin: 4px 0;"><strong>Bank Name:</strong> ${d.bankName || '-'}</p>
+                        <p style="margin: 4px 0;"><strong>Account Name:</strong> ${d.accountName || '-'}</p>
+                        <p style="margin: 4px 0;"><strong>Account Number:</strong> ${d.accountNumber || '-'}</p>
+                        ${d.ifsc ? `<p style="margin: 4px 0;"><strong>IFSC Code:</strong> ${d.ifsc}</p>` : ''}
+                        ${d.swift ? `<p style="margin: 4px 0;"><strong>SWIFT/IBAN:</strong> ${d.swift}</p>` : ''}
+                    </div>
+                </div>`;
+            } else if (paymentMethod.type === 'UPI') {
+                paymentHtml = `
+                <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #eee;">
+                    <h3 style="margin: 0 0 16px; font-size: 16px; font-weight: 600; color: #0a0a0a;">Pay via UPI</h3>
+                    <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; font-size: 14px; color: #333;">
+                        <p style="margin: 4px 0;"><strong>UPI ID:</strong> ${paymentMethod.details.upiId}</p>
+                    </div>
+                </div>`;
+            } else if (paymentMethod.type === 'PAYPAL') {
+                paymentHtml = `
+                <div style="text-align: center; margin-top: 24px;">
+                    <a href="${paymentMethod.details.email.includes('http') ? paymentMethod.details.email : `https://paypal.me/${paymentMethod.details.email}`}" 
+                       style="display: inline-block; background: #0070BA; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+                        Pay via PayPal
+                    </a>
+                </div>`;
+            } else if (paymentMethod.type === 'QR_CODE' && paymentMethod.details.qrCode) {
+                const qrCodeData = paymentMethod.details.qrCode;
+                let imgSrc = qrCodeData;
+
+                // If it's a data URL, we attach it as CID for better email client support
+                if (qrCodeData.startsWith('data:')) {
+                    const cid = 'payment-qr-code';
+                    attachments.push({
+                        filename: 'qrcode.png',
+                        path: qrCodeData,
+                        cid: cid
+                    });
+                    imgSrc = `cid:${cid}`;
+                }
+
+                paymentHtml = `
+                <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #eee; text-align: center;">
+                    <h3 style="margin: 0 0 16px; font-size: 16px; font-weight: 600; color: #0a0a0a;">Scan to Pay</h3>
+                    <img src="${imgSrc}" alt="Payment QR Code" style="max-width: 200px; border-radius: 8px; border: 1px solid #eee;" />
+                </div>`;
+            }
+        }
+
         // Get PDF buffer
         const pdfBuffer = await getInvoicePDFBuffer(invoiceId);
         if (!pdfBuffer) {
             throw new Error('Failed to generate PDF');
         }
+
+        // Add PDF to attachments
+        attachments.push({
+            filename: `Invoice-${invoice.invoiceNumber}.pdf`,
+            content: pdfBuffer,
+            contentType: 'application/pdf',
+        });
 
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
         const verificationUrl = `${appUrl}/verify/${invoice.verificationHash}`;
@@ -104,7 +178,7 @@ export async function sendInvoiceEmail(
                     </tr>
                 </thead>
                 <tbody>
-                    ${invoice.items.map(item => `
+                    ${invoice.items.map((item: any) => `
                     <tr style="border-bottom: 1px solid #eee;">
                         <td style="padding: 12px 0; color: #333; font-size: 14px;">
                             ${item.description}
@@ -126,7 +200,7 @@ export async function sendInvoiceEmail(
                 </tfoot>
               </table>
             </div>
-            
+
             <div style="text-align: center; margin-bottom: 24px;">
               <a href="${verificationUrl}" 
                  style="display: inline-block; background: #0a0a0a; color: #fff; padding: 12px 24px; 
@@ -134,16 +208,13 @@ export async function sendInvoiceEmail(
                 Verify Invoice Authenticity
               </a>
             </div>
+
+            ${paymentHtml}
+
           </div>
         </div>
       `,
-            attachments: [
-                {
-                    filename: `Invoice-${invoice.invoiceNumber}.pdf`,
-                    content: pdfBuffer,
-                    contentType: 'application/pdf',
-                },
-            ],
+            attachments: attachments,
         });
 
         // Log the delivery
@@ -196,13 +267,39 @@ export async function sendInvoiceWhatsApp(
     phoneNumber: string
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
     try {
-        const invoice = await prisma.invoice.findUnique({
+        const invoice = await (prisma.invoice as any).findUnique({
             where: { id: invoiceId },
-            include: { seller: true },
+            include: {
+                seller: {
+                    include: {
+                        paymentMethods: {
+                            where: { isEnabled: true }
+                        }
+                    }
+                }
+            },
         });
 
         if (!invoice) {
             throw new Error('Invoice not found');
+        }
+
+        // Get Payment Method
+        const paymentMethod = (invoice.seller as any).paymentMethods?.[0];
+        let paymentText = '';
+
+        if (paymentMethod) {
+            paymentText = '\n\n*Payment Details:*';
+            const d = paymentMethod.details;
+            if (paymentMethod.type === 'BANK_TRANSFER') {
+                paymentText += `\nBank: ${d.bankName || '-'}\nAcct: ${d.accountNumber || '-'}\nIFSC: ${d.ifsc || '-'}`;
+            } else if (paymentMethod.type === 'UPI') {
+                paymentText += `\nUPI ID: ${d.upiId}`;
+            } else if (paymentMethod.type === 'PAYPAL') {
+                paymentText += `\nPay Link: ${d.email}`;
+            } else if (paymentMethod.type === 'QR_CODE') {
+                paymentText += '\n(Scan QR code on invoice to pay)';
+            }
         }
 
         const integrations = (invoice.seller as any).integrations;
@@ -227,13 +324,6 @@ export async function sendInvoiceWhatsApp(
         const verificationUrl = `${appUrl}/verify/${invoice.verificationHash}`;
 
         // Construct the message payload
-        // Note: For initiating conversations, a Template is usually required.
-        // However, we will try to send a text message with link first as it's the simplest integration.
-        // If the user has not messaged the business in the last 24h, this might fail unless using a Template.
-        // For this generic platform, we assume users might be replying or in a window.
-        // Ideally, we would allow valid templates configuration.
-
-        // Payload for a simple text message with link
         const payload = {
             messaging_product: 'whatsapp',
             recipient_type: 'individual',
@@ -241,7 +331,7 @@ export async function sendInvoiceWhatsApp(
             type: 'text',
             text: {
                 preview_url: true,
-                body: `Hello, here is your invoice *${invoice.invoiceNumber}* from *${invoice.seller.businessName || 'Us'}*.\n\nAmount: ${invoice.currency} ${Number(invoice.totalAmount).toLocaleString('en-IN')}\n\nView & Download: ${verificationUrl}`
+                body: `Hello, here is your invoice *${invoice.invoiceNumber}* from *${invoice.seller.businessName || 'Us'}*.\n\nAmount: ${invoice.currency} ${Number(invoice.totalAmount).toLocaleString('en-IN')}${paymentText}\n\nView & Download: ${verificationUrl}`
             }
         };
 

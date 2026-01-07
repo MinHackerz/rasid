@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
                 businessAddress: true,
                 phone: true,
                 taxId: true,
+                state: true,
                 integrations: true,
                 invoiceDefaults: true,
                 isActive: true,
