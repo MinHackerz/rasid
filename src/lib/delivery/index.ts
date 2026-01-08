@@ -46,7 +46,7 @@ export async function sendInvoiceEmail(
         // Prepare attachments array
         const attachments: any[] = [];
 
-        if (paymentMethod) {
+        if (paymentMethod && invoice.paymentStatus !== 'PAID') {
             if (paymentMethod.type === 'BANK_TRANSFER') {
                 const d = paymentMethod.details;
                 paymentHtml = `
@@ -288,7 +288,7 @@ export async function sendInvoiceWhatsApp(
         const paymentMethod = (invoice.seller as any).paymentMethods?.[0];
         let paymentText = '';
 
-        if (paymentMethod) {
+        if (paymentMethod && invoice.paymentStatus !== 'PAID') {
             paymentText = '\n\n*Payment Details:*';
             const d = paymentMethod.details;
             if (paymentMethod.type === 'BANK_TRANSFER') {

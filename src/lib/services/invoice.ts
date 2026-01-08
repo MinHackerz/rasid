@@ -192,6 +192,25 @@ export async function createInvoice(
             }),
         });
 
+        // Deduct inventory quantities for items that reference inventory
+        const inventoryDeductions = input.items
+            .filter(item => item.inventoryItemId)
+            .map(item => ({
+                id: item.inventoryItemId!,
+                quantity: item.quantity
+            }));
+
+        for (const deduction of inventoryDeductions) {
+            await tx.inventoryItem.update({
+                where: { id: deduction.id },
+                data: {
+                    quantity: {
+                        decrement: Math.floor(deduction.quantity) // Ensure integer deduction
+                    }
+                }
+            });
+        }
+
         // Fetch buyer data for signature
         const buyerData = buyerId ? await tx.buyer.findUnique({
             where: { id: buyerId },
@@ -728,6 +747,7 @@ export async function getDashboardStats(sellerId: string): Promise<DashboardStat
     // Calculate stats in-memory to apply self-healing logic consistent with list views
     let totalRevenue = 0;
     let monthlyRevenue = 0;
+    let pendingAmount = 0; // Sum of pending invoice amounts
     const invoicesByStatus: Record<InvoiceStatus, number> = {
         DRAFT: 0,
         PENDING: 0,
@@ -763,6 +783,11 @@ export async function getDashboardStats(sellerId: string): Promise<DashboardStat
             }
         }
 
+        // Pending Amount Calculation - sum amounts for pending invoices
+        if (pStatus === 'PENDING') {
+            pendingAmount += Number(inv.totalAmount);
+        }
+
         // Status Counting
         if (pStatus === 'PAID') invoicesByStatus.PAID++;
         else if (pStatus === 'OVERDUE') invoicesByStatus.OVERDUE++;
@@ -781,6 +806,7 @@ export async function getDashboardStats(sellerId: string): Promise<DashboardStat
         totalInvoices,
         totalRevenue,
         monthlyRevenue,
+        pendingAmount,
         invoicesByStatus,
         recentInvoices: recentInvoices.map(transformInvoice),
     };

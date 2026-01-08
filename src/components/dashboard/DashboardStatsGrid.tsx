@@ -40,7 +40,7 @@ export async function DashboardStatsGrid() {
             />
             <StatCard
                 label="Pending Amount"
-                value={(stats.invoicesByStatus.PENDING || 0).toString()}
+                value={formatCompactNumber(stats.pendingAmount, currency)}
                 icon={<Clock className="w-5 h-5" />}
                 className="border-orange-200 dark:border-orange-800 bg-orange-50/30 dark:bg-orange-900/10"
             />

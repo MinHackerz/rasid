@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { Search, ChevronRight, BookOpen, HelpCircle, FileText, Settings, Users, Shield, Upload, CheckCircle2, ArrowLeft, Sparkles, Lightbulb, ExternalLink, Hash } from 'lucide-react';
+import { Search, ChevronRight, BookOpen, HelpCircle, FileText, Settings, Users, Shield, Upload, CheckCircle2, ArrowLeft, Sparkles, Lightbulb, ExternalLink, Hash, Package } from 'lucide-react';
 import { Button } from '@/components/ui';
 
 interface HelpSection {
@@ -92,7 +92,7 @@ const helpContent: HelpSection[] = [
    - **Total Invoices**: Count of all invoices created
    - **Total Revenue**: Sum of all invoice amounts
    - **Monthly Revenue**: Revenue generated in the current month
-   - **Pending Amount**: Number of invoices with pending status
+   - **Pending Amount**: Total value of all pending invoices awaiting payment
 
 3. **Recent Invoices List**
    - Shows your most recent invoices
@@ -129,7 +129,7 @@ const helpContent: HelpSection[] = [
 
 **Monthly Revenue**: Shows revenue generated in the current calendar month.
 
-**Pending Amount**: Counts invoices with "PENDING" status, helping you track outstanding payments.`,
+**Pending Amount**: Shows the total sum of all invoice amounts with "PENDING" status, helping you track outstanding payments and expected revenue.`,
                 tips: [
                     'Review statistics regularly to track business growth',
                     'Use pending amount to follow up on unpaid invoices'
@@ -148,35 +148,35 @@ const helpContent: HelpSection[] = [
                 title: 'Creating a New Invoice Manually',
                 content: `To create an invoice from scratch:
 
-1. Click "Create New Invoice" from the dashboard or invoices page
+                    1. Click "Create New Invoice" from the dashboard or invoices page
 2. Fill in buyer details:
-   - **Buyer Name** (required)
-   - **Email** (optional, needed for email delivery)
-   - **Phone** (optional, needed for WhatsApp delivery)
-   - **Address** (optional)
+   - ** Buyer Name** (required)
+            - ** Email ** (optional, needed for email delivery)
+   - ** Phone ** (optional, needed for WhatsApp delivery)
+   - ** Address ** (optional)
 3. Set invoice details:
-   - **Issue Date**: Date the invoice is issued (defaults to today)
-   - **Due Date**: Payment due date (optional)
-   - **Currency**: Select from supported currencies
-   - **Status**: Choose Draft, Pending, or Paid
+   - ** Issue Date **: Date the invoice is issued(defaults to today)
+    - ** Due Date **: Payment due date(optional)
+        - ** Currency **: Select from supported currencies
+            - ** Status **: Choose Draft, Pending, or Paid
 4. Add line items:
-   - Click "Add Item" to add more products/services
-   - For each item, specify:
-     - Description
-     - Quantity
-     - Unit (e.g., pcs, hrs, kg)
-     - Unit Price
-     - Tax Rate (%)
-     - Discount (amount or percentage)
+- Click "Add Item" to add more products / services
+    - For each item, specify:
+- Description
+    - Quantity
+    - Unit(e.g., pcs, hrs, kg)
+    - Unit Price
+        - Tax Rate(%)
+            - Discount(amount or percentage)
 5. Add notes and terms:
-   - **Notes**: Optional message to the buyer
-   - **Terms & Conditions**: Payment terms (defaults to your settings)
+   - ** Notes **: Optional message to the buyer
+    - ** Terms & Conditions **: Payment terms(defaults to your settings)
 6. Click "Create Invoice"
 
-**Tips:**
-- Use your default tax rate from settings to speed up entry
-- You can pre-fill buyer details if selecting from existing buyers
-- Currency defaults to your preference in settings`,
+    ** Tips:**
+        - Use your default tax rate from settings to speed up entry
+            - You can pre - fill buyer details if selecting from existing buyers
+                - Currency defaults to your preference in settings`,
                 tips: [
                     'Save time by selecting existing buyers from the dropdown',
                     'Use keyboard shortcuts: Tab to navigate, Enter to add items'
@@ -188,18 +188,18 @@ const helpContent: HelpSection[] = [
                 content: `When creating an invoice from an uploaded document:
 
 1. After uploading and processing, click "Create Invoice" on a completed scan
-2. The system will pre-fill data extracted by AI:
-   - Buyer information
-   - Invoice date
-   - Line items
-   - Business details (if extracted)
-3. **Business Details Source**: Choose between:
-   - **Use Extracted Details**: Use business info from the document
-   - **Use My Business Profile**: Use your saved business profile
+2. The system will pre - fill data extracted by AI:
+- Buyer information
+    - Invoice date
+        - Line items
+            - Business details(if extracted)
+    3. ** Business Details Source **: Choose between:
+   - ** Use Extracted Details **: Use business info from the document
+    - ** Use My Business Profile **: Use your saved business profile
 4. Review and edit all fields as needed
 5. Click "Create Invoice"
 
-**Note:** Digitized invoices default to "DRAFT" status for review.`,
+    ** Note:** Digitized invoices default to "DRAFT" status for review.`,
                 tips: [
                     'Always review AI-extracted data for accuracy',
                     'Use extracted details for one-time vendors, profile for your business'
@@ -208,26 +208,26 @@ const helpContent: HelpSection[] = [
             {
                 id: 'line-items',
                 title: 'Invoice Details and Line Items',
-                content: `**Line Item Fields:**
+                content: `** Line Item Fields:**
 
-- **Description**: Name or description of the product/service
-- **Quantity**: Number of units
-- **Unit**: Measurement unit (pcs, hrs, kg, etc.)
-- **Unit Price**: Price per unit
-- **Tax Rate**: Percentage tax applied (e.g., 18% for GST)
-- **Discount**: Can be set as:
-  - Fixed amount (e.g., ₹100)
-  - Percentage (e.g., 10%)
+- ** Description **: Name or description of the product / service
+    - ** Quantity **: Number of units
+        - ** Unit **: Measurement unit(pcs, hrs, kg, etc.)
+            - ** Unit Price **: Price per unit
+                - ** Tax Rate **: Percentage tax applied(e.g., 18 % for GST)
+- ** Discount **: Can be set as:
+- Fixed amount(e.g., ₹100)
+    - Percentage(e.g., 10 %)
 
-**Calculations:**
-- Subtotal = (Quantity × Unit Price) - Discount
-- Tax = Subtotal × (Tax Rate / 100)
+    ** Calculations:**
+        - Subtotal = (Quantity × Unit Price) - Discount
+            - Tax = Subtotal × (Tax Rate / 100)
 - Total = Subtotal + Tax
 
-**Adding/Removing Items:**
-- Click "Add Item" to add more line items
-- Hover over an item and click the trash icon to remove it
-- At least one valid item is required`,
+    ** Adding / Removing Items:**
+        - Click "Add Item" to add more line items
+            - Hover over an item and click the trash icon to remove it
+                - At least one valid item is required`,
                 tips: [
                     'Use consistent units (pcs, hrs) for better organization',
                     'Apply discounts at item level for detailed tracking'
@@ -236,17 +236,17 @@ const helpContent: HelpSection[] = [
             {
                 id: 'statuses',
                 title: 'Invoice Statuses',
-                content: `**DRAFT**: Invoice is being prepared and not yet finalized. Can be edited freely.
+                content: `** DRAFT **: Invoice is being prepared and not yet finalized.Can be edited freely.
 
-**PENDING**: Invoice has been sent to the buyer and payment is awaited.
+** PENDING **: Invoice has been sent to the buyer and payment is awaited.
 
-**SENT**: Invoice has been delivered to the buyer (via email/WhatsApp).
+** SENT **: Invoice has been delivered to the buyer(via email / WhatsApp).
 
-**PAID**: Payment has been received for this invoice.
+** PAID **: Payment has been received for this invoice.
 
-**Changing Status:**
-- Use the status dropdown on the invoice detail page
-- Status changes are saved automatically`,
+** Changing Status:**
+        - Use the status dropdown on the invoice detail page
+            - Status changes are saved automatically`,
                 tips: [
                     'Keep invoices in DRAFT until ready to send',
                     'Update status to PAID when payment is received'
@@ -263,43 +263,81 @@ const helpContent: HelpSection[] = [
             {
                 id: 'viewing',
                 title: 'Viewing Invoices',
-                content: `**All Invoices Page:**
-- Access via "Invoices" in the sidebar
-- View all invoices in a table format
-- See invoice number, buyer, amount, status, date, and source
+                content: `** All Invoices Page:**
+    - Access via "Invoices" in the sidebar
+        - View all invoices in a table format
+            - See invoice number, buyer, amount, status, date, and source
 
-**Invoice Detail Page:**
-- Click any invoice to view full details
-- See complete invoice preview
-- Access all actions (send, download, edit status)
+                ** Invoice Detail Page:**
+                    - Click any invoice to view full details
+                        - See complete invoice preview
+                            - Access all actions(send, download, edit status)
 
-**Source Types:**
-- **Digital Invoices**: Created manually in the system
-- **Digitized Invoices**: Created from uploaded documents via OCR`,
+                                ** Source Types:**
+- ** Digital Invoices **: Created manually in the system
+    - ** Digitized Invoices **: Created from uploaded documents via OCR`,
                 tips: [
                     'Use the table view to quickly scan multiple invoices',
                     'Click invoice number to view full details'
                 ]
             },
             {
+                id: 'invoice-tabs',
+                title: 'Invoice Tabs and Navigation',
+                content: `The Invoices page features a powerful tabbed navigation system to help you quickly access and manage your invoices.
+
+** Status Tabs:**
+    Located at the top of the invoices list, these tabs filter invoices by their current status:
+
+- ** All Invoices **: View all invoices regardless of status
+    - ** Draft **: Invoices that are being prepared and not yet finalized
+        - ** Pending **: Invoices sent to buyers awaiting payment
+            - ** Sent **: Invoices that have been successfully delivered
+                - ** Paid **: Invoices for which payment has been received
+
+                    ** How to Use Tabs:**
+                        1. Click on any status tab to filter the invoice list
+2. The active tab is highlighted with a dark background
+3. Invoice counts update based on your filters
+
+    ** Source Dropdown:**
+        Above the status tabs, you'll find a dropdown to switch between:
+            - ** Digital Invoices **: Invoices created manually in the system
+                - ** Digitized Invoices **: Invoices created from scanned documents via OCR
+
+                    ** Combined Filtering:**
+                        - Use status tabs + source dropdown together for precise filtering
+                            - Example: View only "Pending" invoices from "Digitized" sources
+                                - Filters are preserved when switching between tabs
+
+                                    ** Quick Actions:**
+- ** Pending Scans **: Access documents waiting to be converted to invoices
+    - ** New Invoice **: Create a new invoice from scratch`,
+                tips: [
+                    'Use keyboard arrow keys to navigate between tabs',
+                    'Tab filters work with search for powerful invoice discovery',
+                    'The source dropdown helps separate manually created vs OCR invoices'
+                ]
+            },
+            {
                 id: 'filtering',
                 title: 'Filtering and Searching',
-                content: `**Status Filters:**
-- **All Invoices**: Shows all invoices
-- **Draft**: Only draft invoices
-- **Pending**: Only pending invoices
-- **Sent**: Only sent invoices
-- **Paid**: Only paid invoices
+                content: `** Status Filters:**
+- ** All Invoices **: Shows all invoices
+    - ** Draft **: Only draft invoices
+        - ** Pending **: Only pending invoices
+            - ** Sent **: Only sent invoices
+                - ** Paid **: Only paid invoices
 
-**Source Filters:**
-- Toggle between "Digital Invoices" and "Digitized Invoices"
-- Combine with status filters for precise filtering
+                    ** Source Filters:**
+                        - Toggle between "Digital Invoices" and "Digitized Invoices"
+                            - Combine with status filters for precise filtering
 
-**Search:**
-- Use the search bar in the header to find invoices by:
-  - Invoice number
-  - Buyer name
-  - Amount`,
+                                ** Search:**
+                                    - Use the search bar in the header to find invoices by:
+- Invoice number
+    - Buyer name
+        - Amount`,
                 tips: [
                     'Combine filters for precise invoice searches',
                     'Search works across invoice numbers and buyer names'
@@ -308,31 +346,31 @@ const helpContent: HelpSection[] = [
             {
                 id: 'sending',
                 title: 'Sending Invoices',
-                content: `**Prerequisites:**
-- Buyer must have email address for email delivery
-- Buyer must have phone number for WhatsApp delivery
-- Integrations must be configured in Settings
+                content: `** Prerequisites:**
+    - Buyer must have email address for email delivery
+        - Buyer must have phone number for WhatsApp delivery
+            - Integrations must be configured in Settings
 
-**Methods:**
+                ** Methods:**
 
-1. **Email Delivery:**
-   - Requires SMTP configuration in Settings
-   - Click the email icon on invoice detail page
-   - Invoice PDF is attached automatically
+                    1. ** Email Delivery:**
+                        - Requires SMTP configuration in Settings
+                            - Click the email icon on invoice detail page
+                                - Invoice PDF is attached automatically
 
-2. **WhatsApp Delivery:**
-   - Requires WhatsApp Cloud API configuration
-   - Click the WhatsApp icon on invoice detail page
-   - Invoice is sent as a message with PDF link
+2. ** WhatsApp Delivery:**
+    - Requires WhatsApp Cloud API configuration
+        - Click the WhatsApp icon on invoice detail page
+            - Invoice is sent as a message with PDF link
 
-**Auto-Send Feature:**
-- Enable in Settings → Preferences
-- Invoices are automatically sent when created
-- Send buttons are hidden when auto-send is enabled
+                ** Auto - Send Feature:**
+                    - Enable in Settings → Preferences
+                        - Invoices are automatically sent when created
+                            - Send buttons are hidden when auto - send is enabled
 
-**Manual Send:**
-- Use action buttons on invoice detail page
-- Or use quick actions in the invoices table`,
+                                ** Manual Send:**
+                                    - Use action buttons on invoice detail page
+                                        - Or use quick actions in the invoices table`,
                 tips: [
                     'Test email/WhatsApp integration before sending important invoices',
                     'Enable auto-send to streamline your workflow'
@@ -351,21 +389,21 @@ const helpContent: HelpSection[] = [
                 title: 'Uploading Documents',
                 content: `Transform handwritten or printed invoices into digital format using AI-powered OCR.
 
-**Supported Formats:**
-- Images: JPG, PNG, WEBP
-- PDFs: PDF documents
+** Supported Formats:**
+    - Images: JPG, PNG, WEBP
+        - PDFs: PDF documents
 
-**Steps:**
-1. Navigate to "Upload & Convert" from dashboard or sidebar
+            ** Steps:**
+                1. Navigate to "Upload & Convert" from dashboard or sidebar
 2. Drag and drop files or click to browse
 3. You can upload up to 10 files at once
 4. Click "Process with AI" to start digitization
 
-**Best Practices:**
-- Use clear, well-lit images
-- Ensure text is readable
-- Avoid blurry or low-resolution images
-- For handwritten invoices, use clear handwriting`,
+    ** Best Practices:**
+        - Use clear, well - lit images
+            - Ensure text is readable
+                - Avoid blurry or low - resolution images
+                    - For handwritten invoices, use clear handwriting`,
                 tips: [
                     'Take photos in good lighting for better OCR accuracy',
                     'Upload multiple invoices at once for batch processing'
@@ -376,24 +414,24 @@ const helpContent: HelpSection[] = [
                 title: 'AI Processing',
                 content: `After uploading:
 
-1. **Processing Status**: Documents move through stages:
-   - **PENDING**: Waiting to be processed
-   - **PROCESSING**: AI is extracting data
-   - **COMPLETED**: Successfully processed
-   - **REVIEW_NEEDED**: Needs manual review
-   - **FAILED**: Processing unsuccessful
+1. ** Processing Status **: Documents move through stages:
+   - ** PENDING **: Waiting to be processed
+    - ** PROCESSING **: AI is extracting data
+        - ** COMPLETED **: Successfully processed
+            - ** REVIEW_NEEDED **: Needs manual review
+                - ** FAILED **: Processing unsuccessful
 
-2. **Processing Time**: Usually takes a few seconds per document
+2. ** Processing Time **: Usually takes a few seconds per document
 
-3. **What Gets Extracted:**
-   - Invoice number
-   - Invoice date
-   - Buyer name
-   - Line items (description, quantity, price)
-   - Total amount
-   - Business details (if present)
+3. ** What Gets Extracted:**
+    - Invoice number
+        - Invoice date
+            - Buyer name
+                - Line items(description, quantity, price)
+                    - Total amount
+                        - Business details(if present)
 
-4. **Confidence Score**: Each extraction includes a confidence percentage`,
+    4. ** Confidence Score **: Each extraction includes a confidence percentage`,
                 tips: [
                     'Processing typically completes in 5-10 seconds per document',
                     'Higher confidence scores indicate more accurate extraction'
@@ -404,16 +442,16 @@ const helpContent: HelpSection[] = [
                 title: 'Reviewing Extracted Data',
                 content: `Once processing completes:
 
-1. **Review Screen**: Shows extracted data for each document
-2. **Verify Information**:
-   - Check invoice number
-   - Verify dates
-   - Review line items
-   - Confirm amounts
-3. **Create Invoice**: Click "Create Invoice" to proceed
-4. **Edit Data**: Click "Edit Data" to modify before creating
+1. ** Review Screen **: Shows extracted data for each document
+2. ** Verify Information **:
+- Check invoice number
+    - Verify dates
+        - Review line items
+            - Confirm amounts
+3. ** Create Invoice **: Click "Create Invoice" to proceed
+4. ** Edit Data **: Click "Edit Data" to modify before creating
 
-**Important:** Always review extracted data for accuracy before creating invoices.`,
+    ** Important:** Always review extracted data for accuracy before creating invoices.`,
                 tips: [
                     'Review all extracted data, especially amounts and dates',
                     'Edit any incorrect fields before creating the invoice'
@@ -430,14 +468,14 @@ const helpContent: HelpSection[] = [
             {
                 id: 'understanding-buyers',
                 title: 'Understanding Buyers',
-                content: `Buyers are automatically created when you create invoices. Each unique buyer (identified by name, email, or phone) becomes a contact in your system.
+                content: `Buyers are automatically created when you create invoices.Each unique buyer(identified by name, email, or phone) becomes a contact in your system.
 
-**Buyer Information Stored:**
-- Name
-- Email address
-- Phone number
-- Address
-- Invoice count (number of invoices created for them)`,
+** Buyer Information Stored:**
+    - Name
+    - Email address
+        - Phone number
+            - Address
+            - Invoice count(number of invoices created for them)`,
                 tips: [
                     'Buyers are created automatically - no manual setup needed',
                     'Use consistent buyer names for better organization'
@@ -446,21 +484,69 @@ const helpContent: HelpSection[] = [
             {
                 id: 'viewing-buyers',
                 title: 'Viewing Buyer Information',
-                content: `**Buyers Page:**
-- Access via "Buyers" in the sidebar
-- View all buyers in a grid layout
-- See buyer card with:
-  - Initial avatar
-  - Name
-  - Invoice count badge
-  - Contact details (email, phone, address)
+                content: `** Buyers Page:**
+    - Access via "Buyers" in the sidebar
+        - View all buyers in a grid layout
+            - See buyer card with:
+            - Initial avatar
+                - Name
+                - Invoice count badge
+                    - Contact details(email, phone, address)
 
-**Buyer Details:**
-- Click on a buyer card to filter invoices by that buyer
-- See all invoices associated with the buyer`,
+                        ** Buyer Details:**
+                            - Click on a buyer card to filter invoices by that buyer
+                                - See all invoices associated with the buyer`,
                 tips: [
                     'Click buyer cards to quickly view all their invoices',
                     'Use buyer page to find contact information quickly'
+                ]
+            }
+        ]
+    },
+    {
+        id: 'inventory',
+        title: 'Inventory Management',
+        description: 'Manage products and services',
+        icon: <Package className="w-5 h-5" />,
+        subsections: [
+            {
+                id: 'managing-inventory',
+                title: 'Managing Inventory',
+                content: `** Accessing Inventory:**
+    - Click "Inventory" in the sidebar
+        - View all your products and services in one place
+
+            ** Adding Products:**
+                1. Click "Add Product" button
+2. Enter details:
+   - ** Name **: Product name(required)
+    - ** Price **: Unit price(required)
+        - ** Stock **: Current quantity in stock
+            - ** Tax Rate **: Default tax percentage
+3. Click "Add Product" to save
+
+    ** Editing / Deleting:**
+        - Click the pencil icon to edit details
+            - Click the trash icon to remove a product`,
+                tips: [
+                    'Keep stock levels updated for accurate tracking',
+                    'Use detailed descriptions for better searching'
+                ]
+            },
+            {
+                id: 'using-inventory',
+                title: 'Using Inventory in Invoices',
+                content: `** Auto - fill Line Items:**
+    1. Create a new invoice
+2. In the "Item Description" field, click "Select from Inventory"(or use the dropdown)
+3. Select a product from your inventory
+4. Price, tax, and unit are automatically filled
+
+    ** Manual Entry:**
+        - You can still enter items manually by selecting "Other" or just typing if not using inventory mode.`,
+                tips: [
+                    'Inventory items speed up invoice creation significantly',
+                    'You can override auto-filled prices for specific invoices'
                 ]
             }
         ]
@@ -476,18 +562,18 @@ const helpContent: HelpSection[] = [
                 title: 'General Settings',
                 content: `Access Settings from the sidebar to manage your business profile.
 
-**Business Information:**
-- **Logo Upload**: Upload or update your business logo
-- **Business Name**: Your company name
-- **Business Email**: Contact email
-- **Business Address**: Full address
-- **Phone Number**: Contact phone
-- **Tax ID/GST**: Your tax identification number
+** Business Information:**
+- ** Logo Upload **: Upload or update your business logo
+    - ** Business Name **: Your company name
+        - ** Business Email **: Contact email
+            - ** Business Address **: Full address
+                - ** Phone Number **: Contact phone
+                    - ** Tax ID / GST **: Your tax identification number
 
-**Changes:**
-- All changes take effect immediately
-- Logo appears on all new invoices
-- Information is used in invoice generation`,
+                        ** Changes:**
+                            - All changes take effect immediately
+                                - Logo appears on all new invoices
+                                    - Information is used in invoice generation`,
                 tips: [
                     'Keep business information up to date for accurate invoices',
                     'Upload a high-resolution logo for best results'
@@ -498,18 +584,18 @@ const helpContent: HelpSection[] = [
                 title: 'Payment Methods',
                 content: `Configure how you want to receive payments from your customers.
                 
-**Setting Up Payment Methods:**
-1. Go to Settings > General
+** Setting Up Payment Methods:**
+    1. Go to Settings > General
 2. Scroll to "Payment Methods"
 3. Click "Add Method" to add Bank Transfer, UPI, QR Code, or PayPal
 4. Toggle the "Active" switch to enable a method
 
-**How it Works:**
-- The active payment method is automatically included in your invoice emails and WhatsApp messages
-- When you mark an invoice as **PENDING** or **SENT**, the system attaches these payment details
-- This makes it easier for customers to pay you immediately
+    ** How it Works:**
+        - The active payment method is automatically included in your invoice emails and WhatsApp messages
+            - When you mark an invoice as ** PENDING ** or ** SENT **, the system attaches these payment details
+                - This makes it easier for customers to pay you immediately
 
-**Note:** Adding a payment method is optional. You can still create and send invoices without one, but adding it helps you get paid faster.`,
+                    ** Note:** Adding a payment method is optional.You can still create and send invoices without one, but adding it helps you get paid faster.`,
                 tips: [
                     'You can only have one active payment method at a time',
                     'Payment details are shown on the invoice PDF and in the email/message body'
@@ -520,16 +606,16 @@ const helpContent: HelpSection[] = [
                 title: 'Integrations',
                 content: `Configure external services to send invoices automatically.
 
-**WhatsApp Integration:**
+** WhatsApp Integration:**
 
-1. **Requirements:**
-   - Meta Developer account
-   - WhatsApp Cloud API access
-   - System User Access Token
+    1. ** Requirements:**
+        - Meta Developer account
+            - WhatsApp Cloud API access
+                - System User Access Token
 
-2. **Configuration:**
-   - **Phone Number ID**: From Meta Business Manager
-   - **Permanent Access Token**: System User token with \`whatsapp_business_messaging\` permission
+2. ** Configuration:**
+   - ** Phone Number ID **: From Meta Business Manager
+    - ** Permanent Access Token **: System User token with \`whatsapp_business_messaging\` permission
    - **Business Account ID**: Optional, for multi-account setups
 
 **Email Integration (SMTP):**
@@ -872,8 +958,8 @@ export default function HelpPage() {
                                         setSelectedSubsection(section.subsections[0]?.id || null);
                                     }}
                                     className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-lg text-left transition-all group ${selectedSection === section.id
-                                            ? 'bg-neutral-900 text-white'
-                                            : 'text-neutral-700 hover:bg-neutral-50'
+                                        ? 'bg-neutral-900 text-white'
+                                        : 'text-neutral-700 hover:bg-neutral-50'
                                         }`}
                                 >
                                     <div className={`mt-0.5 flex-shrink-0 ${selectedSection === section.id ? 'text-white' : 'text-neutral-400 group-hover:text-neutral-600'}`}>
@@ -960,8 +1046,8 @@ export default function HelpPage() {
                                                     key={sub.id}
                                                     onClick={() => setSelectedSubsection(sub.id)}
                                                     className={`w-full text-left px-4 py-3 rounded-lg transition-all text-sm ${selectedSubsection === sub.id
-                                                            ? 'bg-neutral-900 text-white'
-                                                            : 'text-neutral-700 hover:bg-neutral-50'
+                                                        ? 'bg-neutral-900 text-white'
+                                                        : 'text-neutral-700 hover:bg-neutral-50'
                                                         }`}
                                                 >
                                                     {sub.title}

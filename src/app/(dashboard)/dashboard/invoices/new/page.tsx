@@ -17,6 +17,8 @@ interface LineItem {
     taxRate: number;
     discount: number;
     discountType: 'AMOUNT' | 'PERCENT';
+    isManual: boolean;
+    inventoryItemId?: string; // Track inventory item for stock deduction
 }
 
 interface InvoiceFormData {
@@ -34,6 +36,18 @@ interface InvoiceFormData {
     status: 'DRAFT' | 'PENDING' | 'PAID';
 }
 
+import InventorySelector from './InventorySelector';
+
+interface InventoryItem {
+    id: string;
+    description: string;
+    note?: string;
+    price: string;
+    unit: string;
+    taxRate: string;
+    quantity: number;
+}
+
 export default function NewInvoicePage() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -43,6 +57,7 @@ export default function NewInvoicePage() {
     const [error, setError] = useState('');
 
     const [defaultTaxRate, setDefaultTaxRate] = useState(0);
+    const [inventory, setInventory] = useState<InventoryItem[]>([]);
 
     const [formData, setFormData] = useState<InvoiceFormData>({
         buyerName: '',
@@ -66,7 +81,7 @@ export default function NewInvoicePage() {
     });
 
     const [items, setItems] = useState<LineItem[]>([
-        { description: '', quantity: 1, unit: 'pcs', unitPrice: 0, taxRate: 0, discount: 0, discountType: 'AMOUNT' },
+        { description: '', quantity: 1, unit: 'pcs', unitPrice: 0, taxRate: 0, discount: 0, discountType: 'AMOUNT', isManual: false, inventoryItemId: undefined },
     ]);
 
     const [sellerDetails, setSellerDetails] = useState({
@@ -76,6 +91,18 @@ export default function NewInvoicePage() {
         email: '',
         taxId: ''
     });
+
+    useEffect(() => {
+        // Fetch Inventory
+        fetch('/api/inventory')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    setInventory(data.data);
+                }
+            })
+            .catch(console.error);
+    }, []);
 
     const [profileDetails, setProfileDetails] = useState<any>(null);
 
@@ -181,7 +208,8 @@ export default function NewInvoicePage() {
                                 unitPrice: item.unitPrice || 0,
                                 taxRate: 0, // Fallback, could verify if we want to apply default here too
                                 discount: 0,
-                                discountType: 'AMOUNT'
+                                discountType: 'AMOUNT',
+                                isManual: true // Digitized items are manual by default
                             })));
                         }
                     }
@@ -196,7 +224,7 @@ export default function NewInvoicePage() {
     }, [fromUpload, buyerIdFromQuery]);
 
     const addItem = () => {
-        setItems([...items, { description: '', quantity: 1, unit: 'pcs', unitPrice: 0, taxRate: defaultTaxRate, discount: 0, discountType: 'AMOUNT' }]);
+        setItems([...items, { description: '', quantity: 1, unit: 'pcs', unitPrice: 0, taxRate: defaultTaxRate, discount: 0, discountType: 'AMOUNT', isManual: inventory.length === 0, inventoryItemId: undefined }]);
     };
 
     const removeItem = (index: number) => {
@@ -205,12 +233,17 @@ export default function NewInvoicePage() {
         }
     };
 
-    const updateItem = (index: number, field: keyof LineItem, value: string | number) => {
+    const updateItem = (index: number, field: keyof LineItem | Partial<LineItem>, value?: string | number | boolean) => {
         const updated = [...items];
-        updated[index] = {
-            ...updated[index],
-            [field]: (field === 'description' || field === 'unit' || field === 'discountType') ? value : Number(value),
-        };
+        if (typeof field === 'object') {
+            updated[index] = { ...updated[index], ...field };
+        } else {
+            updated[index] = {
+                ...updated[index],
+                [field]: (field === 'description' || field === 'unit' || field === 'discountType') ? value :
+                    field === 'isManual' ? value : Number(value),
+            };
+        }
         setItems(updated);
     };
 
@@ -494,20 +527,30 @@ export default function NewInvoicePage() {
                                 value={formData.buyerPhone}
                                 onChange={(e) => setFormData({ ...formData, buyerPhone: e.target.value })}
                             />
-                            <Select
-                                label="State"
-                                name="buyerState"
-                                value={formData.buyerState}
-                                onChange={(e) => setFormData({ ...formData, buyerState: e.target.value })}
-                                className="appearance-none"
-                            >
-                                <option value="">Select State</option>
-                                {INDIAN_STATES.map((state) => (
-                                    <option key={state} value={state}>
-                                        {state}
-                                    </option>
-                                ))}
-                            </Select>
+                            {formData.currency === 'INR' ? (
+                                <Select
+                                    label="State"
+                                    name="buyerState"
+                                    value={formData.buyerState}
+                                    onChange={(e) => setFormData({ ...formData, buyerState: e.target.value })}
+                                    className="appearance-none"
+                                >
+                                    <option value="">Select State</option>
+                                    {INDIAN_STATES.map((state) => (
+                                        <option key={state} value={state}>
+                                            {state}
+                                        </option>
+                                    ))}
+                                </Select>
+                            ) : (
+                                <Input
+                                    label="State / Province"
+                                    name="buyerState"
+                                    placeholder="Enter state or province"
+                                    value={formData.buyerState}
+                                    onChange={(e) => setFormData({ ...formData, buyerState: e.target.value })}
+                                />
+                            )}
                             <Input
                                 label="GSTIN / Tax ID"
                                 name="buyerTaxId"
@@ -579,7 +622,7 @@ export default function NewInvoicePage() {
                 </Card>
 
                 {/* Line Items */}
-                <Card className="mb-6 overflow-hidden">
+                <Card className="mb-6 overflow-visible">
                     <CardHeader
                         title="Line Items"
                         description="Add products or services"
@@ -595,19 +638,55 @@ export default function NewInvoicePage() {
                             {items.map((item, index) => (
                                 <div key={index} className="group p-4 md:p-6 hover:bg-neutral-50/50 transition-colors relative">
                                     <div className="space-y-4">
-                                        {/* Row 1: Description, Qty, Unit */}
-                                        <div className="flex flex-col md:flex-row gap-4">
-                                            <div className="flex-1">
-                                                <label className="block text-xs font-medium text-neutral-500 mb-1.5">Item Description</label>
-                                                <Input
-                                                    name={`item-${index}-desc`}
-                                                    placeholder="Item description"
-                                                    value={item.description}
-                                                    onChange={(e) => updateItem(index, 'description', e.target.value)}
-                                                    required
-                                                />
+                                        <div className="grid grid-cols-12 gap-4">
+                                            {/* Description - Full width on mobile, large portion on desktop */}
+                                            <div className="col-span-12 md:col-span-4">
+                                                <label className="block text-xs font-medium text-neutral-500 mb-1.5 flex justify-between">
+                                                    <span>Item Description</span>
+                                                    {inventory.length > 0 && item.isManual && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => updateItem(index, 'isManual', false)}
+                                                            className="text-primary hover:underline text-[10px]"
+                                                        >
+                                                            Select from Inventory
+                                                        </button>
+                                                    )}
+                                                </label>
+
+                                                {!item.isManual && inventory.length > 0 ? (
+                                                    <InventorySelector
+                                                        inventory={inventory}
+                                                        value={inventory.find(inv => inv.description === item.description && Number(inv.price) === item.unitPrice)?.id || ''}
+                                                        currencySymbol={getCurrencySymbol(formData.currency)}
+                                                        onChange={(product) => {
+                                                            // Atomically update all fields to prevent race conditions and ensure UI reflects state immediately
+                                                            updateItem(index, {
+                                                                description: product.description,
+                                                                unitPrice: Number(product.price),
+                                                                unit: product.unit,
+                                                                taxRate: Number(product.taxRate),
+                                                                quantity: 1, // Default to 1 as requested
+                                                                inventoryItemId: product.id // Track for stock deduction
+                                                            });
+                                                        }}
+                                                        onManualSelect={() => {
+                                                            updateItem(index, { isManual: true, description: '', inventoryItemId: undefined });
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <Input
+                                                        name={`item-${index}-desc`}
+                                                        placeholder="Item description"
+                                                        value={item.description}
+                                                        onChange={(e) => updateItem(index, 'description', e.target.value)}
+                                                        required
+                                                    />
+                                                )}
                                             </div>
-                                            <div className="w-full md:w-32">
+
+                                            {/* Quantity - Half on mobile */}
+                                            <div className="col-span-6 md:col-span-2">
                                                 <label className="block text-xs font-medium text-neutral-500 mb-1.5 ">Quantity</label>
                                                 <Input
                                                     type="number"
@@ -619,7 +698,9 @@ export default function NewInvoicePage() {
                                                     className="text-center"
                                                 />
                                             </div>
-                                            <div className="w-full md:w-24">
+
+                                            {/* Unit - Half on mobile */}
+                                            <div className="col-span-6 md:col-span-1">
                                                 <label className="block text-xs font-medium text-neutral-500 mb-1.5 ">Unit</label>
                                                 <Input
                                                     placeholder="pcs"
@@ -628,11 +709,9 @@ export default function NewInvoicePage() {
                                                     className="text-center"
                                                 />
                                             </div>
-                                        </div>
 
-                                        {/* Row 2: Price, Tax, Discount, Amount */}
-                                        <div className="flex flex-col md:flex-row gap-4 items-end">
-                                            <div className="flex-1">
+                                            {/* Price - Half on mobile */}
+                                            <div className="col-span-6 md:col-span-2">
                                                 <label className="block text-xs font-medium text-neutral-500 mb-1.5 ">Unit Price</label>
                                                 <Input
                                                     type="number"
@@ -644,7 +723,9 @@ export default function NewInvoicePage() {
                                                     className="text-right"
                                                 />
                                             </div>
-                                            <div className="w-full md:w-32">
+
+                                            {/* Tax - Half on mobile */}
+                                            <div className="col-span-6 md:col-span-1">
                                                 <label className="block text-xs font-medium text-neutral-500 mb-1.5 ">{getCurrencyTaxName(formData.currency)} (%)</label>
                                                 <Input
                                                     type="number"
@@ -656,7 +737,9 @@ export default function NewInvoicePage() {
                                                     className="text-center"
                                                 />
                                             </div>
-                                            <div className="w-full md:w-48">
+
+                                            {/* Discount - Full on mobile (or half/half with Amount?) Let's do Half */}
+                                            <div className="col-span-6 md:col-span-2">
                                                 <label className="block text-xs font-medium text-neutral-500 mb-1.5 ">Discount</label>
                                                 <div className="flex gap-2">
                                                     <Input
@@ -668,7 +751,7 @@ export default function NewInvoicePage() {
                                                         className="text-right flex-1"
                                                     />
                                                     <select
-                                                        className="h-11 px-2 text-sm bg-neutral-50 border border-neutral-200 rounded-lg focus:outline-none focus:border-neutral-900 transition-all font-medium w-20"
+                                                        className="h-11 px-2 text-sm bg-neutral-50 border border-neutral-200 rounded-lg focus:outline-none focus:border-neutral-900 transition-all font-medium w-12 md:w-20"
                                                         value={item.discountType}
                                                         onChange={(e) => updateItem(index, 'discountType', e.target.value)}
                                                     >
@@ -677,11 +760,15 @@ export default function NewInvoicePage() {
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div className="w-full md:w-40 text-right pb-3">
-                                                <p className="text-xs text-neutral-500 mb-1 uppercase tracking-wide">Amount</p>
-                                                <p className="text-lg font-bold text-neutral-900">
-                                                    {formatAmount(calculateItemTotal(item).total)}
-                                                </p>
+
+                                            {/* Amount - Styled as a prominent display, positioned below Discount on the right */}
+                                            <div className="col-span-6 md:col-span-2 col-start-7 md:col-start-11 flex items-end justify-end">
+                                                <div className="w-full bg-gradient-to-br from-neutral-900 to-neutral-800 rounded-xl px-4 py-3 text-right shadow-sm">
+                                                    <p className="text-[10px] text-neutral-400 uppercase tracking-wider mb-0.5">Line Total</p>
+                                                    <p className="text-lg font-bold text-white tabular-nums">
+                                                        {formatAmount(calculateItemTotal(item).total)}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

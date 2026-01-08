@@ -67,6 +67,7 @@ export interface InvoiceItemInput {
     unitPrice: number;
     taxRate: number;
     discount: number;
+    inventoryItemId?: string; // Link to inventory for stock deduction
 }
 
 export interface CreateInvoiceInput {
@@ -221,6 +222,7 @@ export interface DashboardStats {
     totalInvoices: number;
     totalRevenue: number;
     monthlyRevenue: number;
+    pendingAmount: number; // Sum of total amounts for pending invoices
     invoicesByStatus: Record<InvoiceStatus, number>;
     recentInvoices: InvoiceWithRelations[];
 }

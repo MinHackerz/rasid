@@ -82,6 +82,20 @@ export function FeaturesSection() {
                             </div>
                         </FeatureCard>
                     </div>
+
+                    {/* Feature 5: Inventory (Full Width) */}
+                    <div className="md:col-span-6 min-h-[350px]">
+                        <FeatureCard
+                            title="Smart Inventory Management"
+                            description="Keep track of your products and services. Auto-fill invoices instantly and never lose sight of your stock."
+                            className="h-full bg-neutral-900 text-white flex flex-col md:flex-row overflow-hidden"
+                            descriptionClassName="text-neutral-400"
+                        >
+                            <div className="relative w-full h-full flex items-center justify-center p-8">
+                                <InventoryAnimation />
+                            </div>
+                        </FeatureCard>
+                    </div>
                 </div>
             </div>
         </section>
@@ -494,5 +508,46 @@ function BackgroundDots() {
                 />
             ))}
         </>
+    );
+}
+
+// ============================================
+// 5. Inventory Animation
+// ============================================
+function InventoryAnimation() {
+    return (
+        <div className="relative w-full max-w-2xl h-48 bg-neutral-800/50 rounded-xl border border-white/10 p-6 flex items-center justify-around overflow-hidden">
+            {/* Background Grid */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:24px_24px]" />
+
+            {/* Stock Items */}
+            {[0, 1, 2].map((i) => (
+                <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.2 }}
+                    className="relative w-32 h-32 bg-neutral-800 rounded-lg border border-white/10 flex flex-col items-center justify-center gap-3 shadow-xl z-10"
+                >
+                    <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
+                        <FileText className="w-6 h-6 text-blue-400" />
+                    </div>
+                    <div className="space-y-1 text-center">
+                        <div className="w-16 h-2 bg-white/20 rounded-full mx-auto" />
+                        <div className="w-10 h-1.5 bg-white/10 rounded-full mx-auto" />
+                    </div>
+                    <div className="absolute -top-3 -right-3 px-2 py-0.5 bg-emerald-500 text-white text-[10px] font-bold rounded-full">
+                        IN STOCK
+                    </div>
+                </motion.div>
+            ))}
+
+            {/* Moving Scanner Line */}
+            <motion.div
+                className="absolute inset-y-0 w-16 bg-gradient-to-r from-transparent via-blue-500/20 to-transparent skew-x-12 z-20"
+                animate={{ left: ['-20%', '120%'] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            />
+        </div>
     );
 }

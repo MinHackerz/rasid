@@ -12,6 +12,7 @@ import {
     Users,
     Settings,
     LogOut,
+    Package,
 } from 'lucide-react';
 import { BusinessSwitcher } from './BusinessSwitcher';
 import { useClerk } from "@clerk/nextjs";
@@ -19,6 +20,7 @@ import { useClerk } from "@clerk/nextjs";
 const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Invoices', href: '/dashboard/invoices', icon: FileText },
+    { name: 'Inventory', href: '/dashboard/inventory', icon: Package },
     { name: 'Upload & Convert', href: '/dashboard/upload', icon: Upload },
     { name: 'Buyers', href: '/dashboard/buyers', icon: Users },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
