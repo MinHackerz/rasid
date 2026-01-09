@@ -140,12 +140,13 @@ export const deliverySchema = z.object({
 // Profile Update Schema
 // ============================================
 export const updateProfileSchema = z.object({
-    businessName: z.string().min(2).optional(),
+    businessName: z.string().min(1).optional(),
+    email: z.string().email().optional(),
     logo: z.string().nullable().optional(),
     businessAddress: z.string().optional(),
     phone: z.string().optional(),
     taxId: z.string().optional(),
-    state: z.string().optional(),
+    state: z.string().nullable().optional(),
     integrations: z.any().optional(),
     invoiceDefaults: z.any().optional(),
 });

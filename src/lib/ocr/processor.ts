@@ -4,45 +4,20 @@
  * Handles file storage, PDF page extraction, and batch processing
  */
 
-import { promises as fs } from 'fs';
-import path from 'path';
 import { prisma } from '@/lib/prisma';
 import { getOCRPipeline } from './pipeline';
 import type { ExtractedInvoiceData, ProcessingStatus, UploadedFile } from '@/types';
 
-const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
-
 // ============================================
 // File Storage
 // ============================================
-export async function ensureUploadDir(): Promise<void> {
-    const uploadsPath = path.resolve(UPLOAD_DIR);
-    try {
-        await fs.access(uploadsPath);
-    } catch {
-        await fs.mkdir(uploadsPath, { recursive: true });
-    }
-}
 
 export async function saveUploadedFile(
     sellerId: string,
     file: File
 ): Promise<UploadedFile> {
-    await ensureUploadDir();
-
-    // Create seller-specific directory
-    const sellerDir = path.join(UPLOAD_DIR, sellerId);
-    await fs.mkdir(sellerDir, { recursive: true });
-
-    // Generate unique filename
-    const timestamp = Date.now();
-    const ext = path.extname(file.name);
-    const filename = `${timestamp}-${Math.random().toString(36).substring(7)}${ext}`;
-    const storagePath = path.join(sellerDir, filename);
-
     // Convert File to Buffer and save
     const buffer = Buffer.from(await file.arrayBuffer());
-    await fs.writeFile(storagePath, buffer);
 
     // Determine page count (for PDFs, this would require parsing)
     let pageCount = 1;
@@ -56,18 +31,18 @@ export async function saveUploadedFile(
         data: {
             sellerId,
             originalName: file.name,
-            storagePath,
+            fileData: buffer,
             mimeType: file.type,
             fileSize: file.size,
             pageCount,
             processingStatus: 'PENDING',
-        },
+        } as any,
     });
 
     return {
         id: document.id,
         originalName: document.originalName,
-        storagePath: document.storagePath,
+        storagePath: '', // specific behavior since we don't use FS anymore
         mimeType: document.mimeType,
         fileSize: document.fileSize,
         pageCount: document.pageCount,
@@ -114,8 +89,12 @@ export async function processDocument(documentId: string): Promise<void> {
             throw new Error('Document not found');
         }
 
-        // Read the file
-        const fileBuffer = await fs.readFile(document.storagePath);
+        if (!(document as any).fileData) {
+            throw new Error('Document data not found');
+        }
+
+        // Read the file from DB
+        const fileBuffer = (document as any).fileData;
         const pipeline = getOCRPipeline();
 
         let extractedData: ExtractedInvoiceData;
@@ -254,13 +233,6 @@ export async function deleteDocument(documentId: string): Promise<void> {
     });
 
     if (document) {
-        // Delete file from storage
-        try {
-            await fs.unlink(document.storagePath);
-        } catch {
-            console.warn('Failed to delete file:', document.storagePath);
-        }
-
         // Delete database record
         await prisma.uploadedDocument.delete({
             where: { id: documentId },

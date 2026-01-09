@@ -44,6 +44,7 @@ export default function SettingsPage() {
     const [loading, setLoading] = useState(false);
     const [saved, setSaved] = useState(false);
     const [activeTab, setActiveTab] = useState<'general' | 'integrations' | 'preferences'>('general');
+    const [initialProfile, setInitialProfile] = useState<SellerProfile | null>(null);
 
     const [profile, setProfile] = useState<SellerProfile>({
         businessName: '',
@@ -73,16 +74,16 @@ export default function SettingsPage() {
                 const data = await response.json();
                 if (data.success) {
                     // Merge fetched data with default structure to prevent null errors
-                    setProfile(prev => ({
-                        ...prev,
-                        ...data.data,
+                    const mergedProfile = {
                         ...data.data,
                         integrations: {
-                            whatsapp: { ...prev.integrations.whatsapp, ...data.data.integrations?.whatsapp },
-                            email: { ...prev.integrations.email, ...data.data.integrations?.email }
+                            whatsapp: { ...profile.integrations.whatsapp, ...data.data.integrations?.whatsapp },
+                            email: { ...profile.integrations.email, ...data.data.integrations?.email }
                         },
-                        invoiceDefaults: data.data.invoiceDefaults || prev.invoiceDefaults,
-                    }));
+                        invoiceDefaults: data.data.invoiceDefaults || profile.invoiceDefaults,
+                    };
+                    setProfile(prev => ({ ...prev, ...mergedProfile }));
+                    setInitialProfile(mergedProfile);
                 }
             } catch (error) {
                 console.error('Failed to fetch profile:', error);
@@ -422,18 +423,17 @@ export default function SettingsPage() {
                                                     className: 'hover:border-neutral-300 hover:bg-neutral-50'
                                                 }
                                             ].map((p) => {
-                                                const isSelected = p.id === 'OTHER'
-                                                    ? (!['smtp.gmail.com', 'smtp.office365.com', 'smtp.hostinger.com'].includes(profile.integrations.email?.smtpHost || '') && (profile.integrations.email?.smtpHost || '') !== '') || (profile.integrations.email?.smtpHost === '')
-                                                    // Simplified: OTHER is selected if host is NOT one of the known ones (even if empty initially, treat as OTHER or just check matches)
-                                                    // Actually, if it's empty, and we want "OTHER" to be default if nothing else matches?
-                                                    // Let's rely on string comparison.
-                                                    : profile.integrations.email?.smtpHost === p.host;
+                                                const currentHost = (profile.integrations.email?.smtpHost || '').trim().toLowerCase();
+                                                const pHost = p.host.trim().toLowerCase();
+                                                const knownHosts = ['smtp.gmail.com', 'smtp.office365.com', 'smtp.hostinger.com'];
 
-                                                // FIX: For 'OTHER', we want it selected if the current host is NOT in the presets list.
-                                                // Ideally, if host is empty, it could be "Other" or unselected. Let's make "Other" the catch-all.
-                                                const isOtherSelected = !['smtp.gmail.com', 'smtp.office365.com', 'smtp.hostinger.com'].includes(profile.integrations.email?.smtpHost || '');
+                                                let activeLink = false;
 
-                                                const activeLink = p.id === 'OTHER' ? isOtherSelected : isSelected;
+                                                if (p.id === 'OTHER') {
+                                                    activeLink = !knownHosts.includes(currentHost);
+                                                } else {
+                                                    activeLink = currentHost === pHost;
+                                                }
 
                                                 return (
                                                     <button
@@ -445,30 +445,42 @@ export default function SettingsPage() {
                                                             // Prevent redundant
                                                             if (p.id !== 'OTHER' && currentHost === p.host) return;
 
+                                                            // Check restoration availability
+                                                            // NOTE: `initialProfile` and `setInitialProfile` are not defined in the provided snippet.
+                                                            // This change assumes they are defined elsewhere in the full component.
+                                                            const savedEmail = initialProfile?.integrations?.email;
+                                                            // Determine if we should restore settings from DB
+                                                            // Restore if the target provider matches what is currently saved in the DB
+                                                            let shouldRestore = false;
+                                                            if (p.id !== 'OTHER') {
+                                                                shouldRestore = savedEmail?.smtpHost === p.host;
+                                                            } else {
+                                                                // For OTHER, restore if the saved host is NOT a known one
+                                                                const knownHosts = ['smtp.gmail.com', 'smtp.office365.com', 'smtp.hostinger.com'];
+                                                                shouldRestore = !!savedEmail?.smtpHost && !knownHosts.includes(savedEmail.smtpHost.toLowerCase());
+                                                            }
+
                                                             if (p.id !== 'OTHER') {
                                                                 // Provider Preset Logic
-                                                                const updates: Record<string, string> = {
+                                                                const updates = {
                                                                     smtpHost: p.host,
                                                                     smtpPort: p.port,
-                                                                    smtpUser: '',
-                                                                    smtpPass: '',
-                                                                    fromEmail: ''
+                                                                    smtpUser: (shouldRestore && savedEmail?.smtpUser) ? (savedEmail.smtpUser || '') : '',
+                                                                    smtpPass: (shouldRestore && savedEmail?.smtpPass) ? (savedEmail.smtpPass || '') : '',
+                                                                    fromEmail: (shouldRestore && savedEmail?.fromEmail) ? (savedEmail.fromEmail || '') : ''
                                                                 };
-                                                                // Gmail Auto-fill
-                                                                if (p.id === 'GMAIL' && profile.email?.includes('@gmail.com')) {
+
+                                                                // Gmail Auto-fill (only if not restored and fields are empty)
+                                                                if (!updates['smtpUser'] && p.id === 'GMAIL' && profile.email?.includes('@gmail.com')) {
                                                                     updates['smtpUser'] = profile.email;
                                                                     updates['fromEmail'] = profile.email;
                                                                 }
+
                                                                 setProfile(prev => ({
                                                                     ...prev,
                                                                     integrations: {
                                                                         ...prev.integrations,
                                                                         email: {
-                                                                            smtpHost: '',
-                                                                            smtpPort: '',
-                                                                            smtpUser: '',
-                                                                            smtpPass: '',
-                                                                            fromEmail: '',
                                                                             ...prev.integrations.email,
                                                                             ...updates
                                                                         }
@@ -476,19 +488,17 @@ export default function SettingsPage() {
                                                                 }));
                                                             } else {
                                                                 // "OTHER" Logic
-                                                                // We just clear the host/port to let user type freely.
-                                                                // Also likely want to clear user/pass to avoid confusion.
                                                                 setProfile(prev => ({
                                                                     ...prev,
                                                                     integrations: {
                                                                         ...prev.integrations,
                                                                         email: {
                                                                             ...prev.integrations.email,
-                                                                            smtpHost: '',
-                                                                            smtpPort: '',
-                                                                            smtpUser: '',
-                                                                            smtpPass: '',
-                                                                            fromEmail: ''
+                                                                            smtpHost: (shouldRestore && savedEmail?.smtpHost) ? (savedEmail.smtpHost || '') : '',
+                                                                            smtpPort: (shouldRestore && savedEmail?.smtpPort) ? (savedEmail.smtpPort || '') : '',
+                                                                            smtpUser: (shouldRestore && savedEmail?.smtpUser) ? (savedEmail.smtpUser || '') : '',
+                                                                            smtpPass: (shouldRestore && savedEmail?.smtpPass) ? (savedEmail.smtpPass || '') : '',
+                                                                            fromEmail: (shouldRestore && savedEmail?.fromEmail) ? (savedEmail.fromEmail || '') : ''
                                                                         }
                                                                     }
                                                                 }));

@@ -302,10 +302,11 @@ export default function SignUpPage() {
             </div>
 
             {/* Right Panel - Sign Up Form */}
-            <div className="flex items-center justify-center p-6 sm:p-12 bg-white relative">
+            <div className="flex flex-col items-center justify-center p-6 sm:p-12 bg-white relative">
                 {/* Subtle Background Pattern */}
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000002_1px,transparent_1px),linear-gradient(to_bottom,#00000002_1px,transparent_1px)] bg-[size:32px_32px]" />
 
+                <div id="clerk-captcha"></div>
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -328,7 +329,7 @@ export default function SignUpPage() {
                         </Link>
                     </div>
 
-                    <div id="clerk-captcha"></div>
+
 
                     <div className="text-center lg:text-left">
                         <h2 className="text-3xl font-bold font-display text-slate-900 tracking-tight">Create your free account</h2>

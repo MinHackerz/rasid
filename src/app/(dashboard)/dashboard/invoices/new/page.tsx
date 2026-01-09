@@ -13,9 +13,9 @@ interface LineItem {
     description: string;
     quantity: number;
     unit: string;
-    unitPrice: number;
-    taxRate: number;
-    discount: number;
+    unitPrice: number | string;
+    taxRate: number | string;
+    discount: number | string;
     discountType: 'AMOUNT' | 'PERCENT';
     isManual: boolean;
     inventoryItemId?: string; // Track inventory item for stock deduction
@@ -73,7 +73,14 @@ export default function NewInvoicePage() {
             const day = String(d.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         })(),
-        dueDate: '',
+        dueDate: (() => {
+            const d = new Date();
+            d.setDate(d.getDate() + 30);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        })(),
         notes: '',
         terms: 'Payment is due within 30 days of invoice date.',
         currency: 'INR',
@@ -240,20 +247,24 @@ export default function NewInvoicePage() {
         } else {
             updated[index] = {
                 ...updated[index],
-                [field]: (field === 'description' || field === 'unit' || field === 'discountType') ? value :
-                    field === 'isManual' ? value : Number(value),
+                [field]: value,
             };
         }
         setItems(updated);
     };
 
     const calculateItemTotal = (item: LineItem) => {
-        const discountAmount = item.discountType === 'PERCENT'
-            ? (item.quantity * item.unitPrice * item.discount / 100)
-            : item.discount;
+        const quantity = Number(item.quantity) || 0;
+        const unitPrice = Number(item.unitPrice) || 0;
+        const discountVal = Number(item.discount) || 0;
+        const taxRate = Number(item.taxRate) || 0;
 
-        const subtotal = item.quantity * item.unitPrice - discountAmount;
-        const tax = subtotal * (item.taxRate / 100);
+        const discountAmount = item.discountType === 'PERCENT'
+            ? (quantity * unitPrice * discountVal / 100)
+            : discountVal;
+
+        const subtotal = quantity * unitPrice - discountAmount;
+        const tax = subtotal * (taxRate / 100);
         return { subtotal, tax, total: subtotal + tax, discountAmount };
     };
 
@@ -292,6 +303,9 @@ export default function NewInvoicePage() {
                         const { discountAmount } = calculateItemTotal(item);
                         return {
                             ...item,
+                            unitPrice: Number(item.unitPrice),
+                            taxRate: Number(item.taxRate),
+                            quantity: Number(item.quantity),
                             discount: discountAmount // Normalize to amount for backend
                         };
                     }),
@@ -691,7 +705,7 @@ export default function NewInvoicePage() {
                                                 <Input
                                                     type="number"
                                                     min="1"
-                                                    step="0.01"
+                                                    step="1"
                                                     value={item.quantity}
                                                     onChange={(e) => updateItem(index, 'quantity', e.target.value)}
                                                     required

@@ -14,7 +14,7 @@ import { prisma } from '@/lib/prisma';
 import { getTemplateById } from './templates';
 import type { InvoiceWithRelations } from '@/types';
 
-const PDF_OUTPUT_DIR = process.env.UPLOAD_DIR || './uploads';
+
 
 // ============================================
 // QR Code Generation
@@ -60,7 +60,10 @@ async function getImageAsBase64(imagePath: string): Promise<string | null> {
 // ============================================
 // PDF Generation
 // ============================================
-export async function generateInvoicePDF(invoiceId: string): Promise<string> {
+// ============================================
+// PDF Generation
+// ============================================
+export async function generateInvoicePDF(invoiceId: string): Promise<Buffer> {
   // Fetch invoice with all relations
   const invoice = await prisma.invoice.findUnique({
     where: { id: invoiceId },
@@ -89,7 +92,14 @@ export async function generateInvoicePDF(invoiceId: string): Promise<string> {
   const qrCodeDataUrl = await generateQRCode(verificationUrl);
 
   // Get logo as base64
-  let logoBase64 = invoice.seller.logo ? await getImageAsBase64(invoice.seller.logo) : null;
+  let logoBase64: string | null = null;
+
+  if ((invoice.seller as any).logoData) {
+    // We store the full Data URL string as bytes, so just decode it
+    logoBase64 = Buffer.from((invoice.seller as any).logoData).toString('utf-8');
+  } else if (invoice.seller.logo) {
+    logoBase64 = await getImageAsBase64(invoice.seller.logo);
+  }
 
   // Apply digitized invoice overrides if available
   let seller = invoice.seller;
@@ -174,22 +184,18 @@ export async function generateInvoicePDF(invoiceId: string): Promise<string> {
       },
     });
 
-    // Save PDF to disk
-    const pdfDir = path.join(PDF_OUTPUT_DIR, invoice.sellerId, 'invoices');
-    await fs.mkdir(pdfDir, { recursive: true });
-
-    const pdfFilename = `${invoice.invoiceNumber.replace(/[^a-zA-Z0-9-]/g, '_')}.pdf`;
-    const pdfPath = path.join(pdfDir, pdfFilename);
-    await fs.writeFile(pdfPath, pdfBuffer);
-
-    // Update invoice with PDF URL
+    // Save PDF to database
+    // Update invoice with PDF URL (kept for API consistency) and Binary Data
     const pdfUrl = `/api/invoices/${invoice.id}/pdf`;
     await prisma.invoice.update({
       where: { id: invoice.id },
-      data: { pdfUrl },
+      data: {
+        pdfUrl,
+        pdfData: pdfBuffer
+      } as any,
     });
 
-    return pdfPath;
+    return Buffer.from(pdfBuffer);
   } finally {
     await browser.close();
   }
@@ -205,21 +211,18 @@ export async function getInvoicePDFBuffer(invoiceId: string): Promise<Buffer | n
       id: true,
       invoiceNumber: true,
       sellerId: true,
-    },
+      pdfData: true
+    } as any,
   });
 
   if (!invoice) {
     return null;
   }
 
-  const pdfFilename = `${invoice.invoiceNumber.replace(/[^a-zA-Z0-9-]/g, '_')}.pdf`;
-  const pdfPath = path.join(PDF_OUTPUT_DIR, invoice.sellerId, 'invoices', pdfFilename);
-
-  try {
-    return await fs.readFile(pdfPath);
-  } catch {
-    // PDF doesn't exist, generate it
-    await generateInvoicePDF(invoiceId);
-    return await fs.readFile(pdfPath);
+  if ((invoice as any).pdfData) {
+    return (invoice as any).pdfData;
   }
+
+  // PDF data missing, generate it
+  return generateInvoicePDF(invoiceId);
 }

@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { currentUser } from '@clerk/nextjs/server';
-import { join } from 'path';
-import { writeFile, mkdir } from 'fs/promises';
 
 export async function POST(req: Request) {
     try {
@@ -19,21 +17,20 @@ export async function POST(req: Request) {
         const taxId = formData.get('taxId') as string;
         const logoFile = formData.get('logo') as File | null;
 
-        let logoUrl: string | undefined;
+        // Convert logo file to Base64 data URL and store as Buffer
+        let logoDataBuffer: Buffer | null = null;
 
-        if (logoFile) {
+        if (logoFile && logoFile.size > 0) {
             const bytes = await logoFile.arrayBuffer();
             const buffer = Buffer.from(bytes);
 
-            // Create unique filename
-            const ext = logoFile.name.split('.').pop() || 'png';
-            const filename = `logo-${user.id}-${Date.now()}.${ext}`;
-            const uploadDir = join(process.cwd(), 'public', 'logos');
+            // Determine mime type
+            const mimeType = logoFile.type || 'image/png';
 
-            await mkdir(uploadDir, { recursive: true });
-            await writeFile(join(uploadDir, filename), buffer);
-
-            logoUrl = `/logos/${filename}`;
+            // Create data URL string and convert to Buffer for storage
+            const base64 = buffer.toString('base64');
+            const dataUrl = `data:${mimeType};base64,${base64}`;
+            logoDataBuffer = Buffer.from(dataUrl, 'utf-8');
         }
 
         // Check if a business with this name already exists for this user (Update vs Create)
@@ -52,17 +49,13 @@ export async function POST(req: Request) {
                     businessAddress,
                     phone,
                     taxId,
-                    ...(logoUrl && { logo: logoUrl }),
-                },
+                    ...(logoDataBuffer && { logoData: logoDataBuffer, logo: null }),
+                } as any,
             });
             return NextResponse.json({ success: true, data: updatedSeller });
         }
 
         // Create new Seller linked to Clerk User
-        // Note: We removed the email-linking logic because with multi-business support, 
-        // passing an email doesn't uniquely identify a "legacy" account safely anymore.
-        // Users should sign in with the correct account first.
-
         const formEmail = formData.get('email') as string;
         const email = formEmail || user.emailAddresses[0]?.emailAddress;
 
@@ -78,10 +71,11 @@ export async function POST(req: Request) {
                 businessAddress,
                 phone,
                 taxId,
-                logo: logoUrl || null,
+                logoData: logoDataBuffer,
+                logo: null, // Legacy field cleared
                 passwordHash: '', // No password for clerk-auth users
                 emailVerified: true,
-            },
+            } as any,
         });
         return NextResponse.json({ success: true, data: newSeller });
     } catch (error) {

@@ -24,7 +24,8 @@ model Seller {
   businessName      String
   businessAddress   String?
   phone             String?
-  logo              String?   // URL to logo image
+  logo              String?   // URL to logo image (deprecated)
+  logoData          Bytes?    // Binary logo data
   taxId             String?   // GST/VAT number
   state             String?   // State for GST calculation
   bankDetails       Json?     // Bank account details for invoices
@@ -137,7 +138,8 @@ model Invoice {
   
   // PDF storage
   pdfUrl              String?
-  
+  pdfData             Bytes?    // Binary PDF data
+
   // Source tracking
   sourceType          SourceType    @default(MANUAL)
   sourceDocumentId    String?       // Link to uploaded document if OCR
@@ -240,7 +242,8 @@ model UploadedDocument {
   
   // File info
   originalName    String
-  storagePath     String          // Path in storage
+  storagePath     String?         // Path in storage (deprecated)
+  fileData        Bytes?          // Binary file data
   mimeType        String
   fileSize        Int             // Size in bytes
   pageCount       Int             @default(1)
