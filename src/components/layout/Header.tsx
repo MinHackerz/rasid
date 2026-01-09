@@ -13,9 +13,10 @@ interface HeaderProps {
     action?: React.ReactNode;
     businessName?: string;
     businesses?: { id: string; businessName: string | null }[];
+    role?: 'OWNER' | 'ADMIN' | 'VIEWER';
 }
 
-const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, businessName, businesses }) => {
+const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, businessName, businesses, role }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
@@ -92,6 +93,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, busi
                 onClose={() => setMobileMenuOpen(false)}
                 businessName={businessName}
                 businesses={businesses}
+                role={role}
             />
         </>
     );

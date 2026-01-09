@@ -63,7 +63,7 @@ async function getImageAsBase64(imagePath: string): Promise<string | null> {
 // ============================================
 // PDF Generation
 // ============================================
-export async function generateInvoicePDF(invoiceId: string): Promise<Buffer> {
+export async function generateInvoicePDF(invoiceId: string, templateOverride?: string): Promise<Buffer> {
   // Fetch invoice with all relations
   const invoice = await prisma.invoice.findUnique({
     where: { id: invoiceId },
@@ -81,10 +81,11 @@ export async function generateInvoicePDF(invoiceId: string): Promise<Buffer> {
     throw new Error('Invoice not found');
   }
 
-  // Get seller's template preference
+  // Get template - use override if provided, otherwise seller's preference
   const invoiceDefaults = invoice.seller.invoiceDefaults as Record<string, unknown> | null;
-  const templateId = (invoiceDefaults?.templateId as string) || 'classic';
+  const templateId = templateOverride || (invoiceDefaults?.templateId as string) || 'classic';
   const template = getTemplateById(templateId);
+
 
   // Generate verification URL and QR code
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';

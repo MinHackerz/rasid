@@ -34,6 +34,7 @@ export interface AuthSession {
     sellerId: string;
     email: string;
     businessName: string;
+    role?: 'OWNER' | 'ADMIN' | 'VIEWER';
 }
 
 export interface LoginCredentials {

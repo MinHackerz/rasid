@@ -158,7 +158,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }: ModalProps) =>
 /* ============================================
    BADGE
    ============================================ */
-type BadgeVariant = 'default' | 'draft' | 'pending' | 'sent' | 'paid' | 'overdue' | 'cancelled' | 'success' | 'error' | 'warning';
+type BadgeVariant = 'default' | 'draft' | 'pending' | 'sent' | 'paid' | 'overdue' | 'cancelled' | 'success' | 'error' | 'warning' | 'destructive';
 
 interface BadgeProps {
     children: React.ReactNode;
@@ -179,6 +179,7 @@ const Badge = ({ children, variant = 'default', dot, className }: BadgeProps) =>
         success: 'bg-emerald-500/10 text-emerald-700 border border-emerald-200',
         error: 'bg-destructive/10 text-destructive border border-destructive/20',
         warning: 'bg-yellow-500/10 text-yellow-700 border border-yellow-200',
+        destructive: 'bg-red-500/10 text-red-700 border border-red-300 dark:text-red-400 dark:border-red-500/30',
     };
 
     const dotColors: Record<BadgeVariant, string> = {
@@ -192,6 +193,7 @@ const Badge = ({ children, variant = 'default', dot, className }: BadgeProps) =>
         success: 'bg-emerald-500',
         error: 'bg-red-500',
         warning: 'bg-yellow-500',
+        destructive: 'bg-red-500',
     };
 
     return (

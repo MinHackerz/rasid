@@ -39,10 +39,17 @@ export const metadata: Metadata = {
     },
 };
 
+import { HelpHeader } from '@/components/help/HelpHeader';
+
 export default function HelpLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    return <>{children}</>;
+    return (
+        <div className="min-h-screen bg-neutral-50">
+            <HelpHeader />
+            {children}
+        </div>
+    );
 }

@@ -7,13 +7,61 @@ export async function getSession(): Promise<AuthSession | null> {
     const user = await currentUser();
     if (!user) return null;
 
-    // Fetch all businesses owned by this user
-    const sellers = await prisma.seller.findMany({
+    const userEmail = user.emailAddresses[0]?.emailAddress;
+
+    // 1. Fetch owned businesses
+    const ownedSellers = await prisma.seller.findMany({
         where: { clerkUserId: user.id },
         select: { id: true, email: true, businessName: true, isActive: true },
     });
 
-    if (!sellers || sellers.length === 0) {
+    // 2. Fetch member businesses
+    let memberSellers: any[] = [];
+    if (userEmail) {
+        // Auto-accept pending invites for this email (Case Insensitive)
+        const pendingInvites = await prisma.teamMember.findMany({
+            where: {
+                email: { equals: userEmail, mode: 'insensitive' },
+                status: 'PENDING'
+            }
+        });
+
+        if (pendingInvites.length > 0) {
+            // Update each pending invite
+            // Note: updateMany doesn't support insensitive directly in 'where' in all prisma versions effectively for safety, 
+            // but we can use the IDs we just found.
+            await prisma.teamMember.updateMany({
+                where: {
+                    id: { in: pendingInvites.map(p => p.id) }
+                },
+                data: { status: 'ACCEPTED' }
+            });
+        }
+
+        const memberships = await prisma.teamMember.findMany({
+            where: {
+                email: { equals: userEmail, mode: 'insensitive' }
+            },
+            include: {
+                seller: {
+                    select: { id: true, email: true, businessName: true, isActive: true }
+                }
+            }
+        });
+
+        memberSellers = memberships.map(m => ({
+            ...m.seller,
+            role: m.role, // 'ADMIN' | 'VIEWER'
+            // Ensure we use the correct team member email case if needed, but session usually uses user's email
+        }));
+    }
+
+    const allSellers = [
+        ...ownedSellers.map(s => ({ ...s, role: 'OWNER' })),
+        ...memberSellers
+    ];
+
+    if (allSellers.length === 0) {
         return null;
     }
 
@@ -21,10 +69,10 @@ export async function getSession(): Promise<AuthSession | null> {
     const cookieStore = await cookies();
     const activeBusinessId = cookieStore.get('rashid-active-business')?.value;
 
-    let activeSeller = sellers[0];
+    let activeSeller = allSellers[0];
 
     if (activeBusinessId) {
-        const found = sellers.find(s => s.id === activeBusinessId);
+        const found = allSellers.find(s => s.id === activeBusinessId);
         if (found) {
             activeSeller = found;
         }
@@ -38,6 +86,7 @@ export async function getSession(): Promise<AuthSession | null> {
         sellerId: activeSeller.id,
         email: activeSeller.email,
         businessName: activeSeller.businessName,
+        role: activeSeller.role as 'OWNER' | 'ADMIN' | 'VIEWER',
     };
 }
 
@@ -54,9 +103,28 @@ export async function getUserBusinesses() {
     const user = await currentUser();
     if (!user) return [];
 
-    return prisma.seller.findMany({
+    const userEmail = user.emailAddresses[0]?.emailAddress;
+
+    const owned = await prisma.seller.findMany({
         where: { clerkUserId: user.id },
         select: { id: true, businessName: true },
         orderBy: { createdAt: 'desc' }
     });
+
+    let memberBusinesses: any[] = [];
+    if (userEmail) {
+        const memberships = await prisma.teamMember.findMany({
+            where: {
+                email: { equals: userEmail, mode: 'insensitive' }
+            },
+            include: { seller: { select: { id: true, businessName: true } } }
+        });
+        memberBusinesses = memberships.map(m => ({ ...m.seller, role: m.role }));
+    }
+
+    // Combine and deduplicate
+    const all = [...owned.map(s => ({ ...s, role: 'OWNER' })), ...memberBusinesses];
+    const unique = Array.from(new Map(all.map(item => [item.id, item])).values());
+
+    return unique;
 }

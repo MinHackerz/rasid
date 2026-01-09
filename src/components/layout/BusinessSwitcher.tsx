@@ -42,6 +42,9 @@ export function BusinessSwitcher({ currentBusinessName, businesses, className }:
         router.refresh();
     };
 
+    const currentBusiness = businesses.find(b => b.businessName === currentBusinessName);
+    const canAddBusiness = !currentBusiness || (currentBusiness as any).role === 'OWNER' || !(currentBusiness as any).role;
+
     return (
         <div className={cn("relative px-4 py-6", className)} ref={containerRef}>
             <button
@@ -89,17 +92,19 @@ export function BusinessSwitcher({ currentBusinessName, businesses, className }:
                             </button>
                         ))}
                     </div>
-                    <div className="border-t border-border/50 mt-1 pt-2">
-                        <button
-                            onClick={() => router.push('/onboarding')}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors border border-dashed border-border/50 hover:border-primary/30"
-                        >
-                            <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center">
-                                <Plus className="w-3 h-3" />
-                            </div>
-                            <span>Add New Business</span>
-                        </button>
-                    </div>
+                    {canAddBusiness && (
+                        <div className="border-t border-border/50 mt-1 pt-2">
+                            <button
+                                onClick={() => router.push('/onboarding')}
+                                className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors border border-dashed border-border/50 hover:border-primary/30"
+                            >
+                                <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center">
+                                    <Plus className="w-3 h-3" />
+                                </div>
+                                <span>Add New Business</span>
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

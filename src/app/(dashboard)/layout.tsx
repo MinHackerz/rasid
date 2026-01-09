@@ -27,13 +27,14 @@ export default async function DashboardLayout({
 
     return (
         <div className="min-h-screen bg-background-subtle">
-            <Sidebar businessName={session.businessName} businesses={businesses} />
+            <Sidebar businessName={session.businessName} businesses={businesses} role={session.role} />
 
             <main className="lg:ml-64 ml-0 min-h-screen flex flex-col transition-all duration-300">
                 <Header
                     showSearch
                     businessName={session.businessName}
                     businesses={businesses}
+                    role={session.role}
                 />
                 <div className="flex-1 p-6 lg:p-10 max-w-[1600px] mx-auto w-full animate-enter">
                     {children}

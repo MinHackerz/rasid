@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardBody, Input, Textarea, Button, ImageUpload, Select } from '@/components/ui';
 import { Save, Building2, FileText, CheckCircle2, Globe, Mail, MessageSquare, ExternalLink, Info, Palette } from 'lucide-react';
 import { CURRENCIES } from '@/lib/currencies';
@@ -8,6 +9,8 @@ import { INDIAN_STATES } from '@/lib/constants/indian-states';
 
 import { INVOICE_TEMPLATES } from '@/lib/invoice-templates';
 import { PaymentMethodsSettings } from '@/components/dashboard/PaymentMethodsSettings';
+import { getMembers, inviteMember, removeMember } from '@/app/actions/team';
+import { Users, Trash2, Plus, Shield } from 'lucide-react';
 
 interface SellerProfile {
     businessName: string;
@@ -38,13 +41,19 @@ interface SellerProfile {
         autoSend?: boolean;
         templateId?: string;
     };
+    role?: 'OWNER' | 'ADMIN' | 'VIEWER';
 }
 
 export default function SettingsPage() {
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [saved, setSaved] = useState(false);
-    const [activeTab, setActiveTab] = useState<'general' | 'integrations' | 'preferences'>('general');
+    const [activeTab, setActiveTab] = useState<'general' | 'integrations' | 'preferences' | 'team'>('general');
     const [initialProfile, setInitialProfile] = useState<SellerProfile | null>(null);
+    const [members, setMembers] = useState<any[]>([]);
+    const [inviteEmail, setInviteEmail] = useState('');
+    const [inviteLoading, setInviteLoading] = useState(false);
+    const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
     const [profile, setProfile] = useState<SellerProfile>({
         businessName: '',
@@ -73,7 +82,14 @@ export default function SettingsPage() {
                 const response = await fetch('/api/profile');
                 const data = await response.json();
                 if (data.success) {
-                    // Merge fetched data with default structure to prevent null errors
+                    // Check if user is owner, redirect non-owners to dashboard
+                    if (data.data.role !== 'OWNER') {
+                        setIsAuthorized(false);
+                        router.replace('/dashboard');
+                        return;
+                    }
+                    setIsAuthorized(true);
+
                     const mergedProfile = {
                         ...data.data,
                         integrations: {
@@ -90,7 +106,47 @@ export default function SettingsPage() {
             }
         };
         fetchProfile();
-    }, []);
+    }, [router]);
+
+    useEffect(() => {
+        if (activeTab === 'team' && profile.role === 'OWNER') {
+            loadMembers();
+        }
+    }, [activeTab, profile.role]);
+
+    const loadMembers = async () => {
+        const result = await getMembers();
+        if (result.success) {
+            setMembers(result.data || []);
+        }
+    };
+
+    const handleInvite = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setInviteLoading(true);
+        try {
+            const result = await inviteMember(inviteEmail);
+            if (result.success) {
+                setInviteEmail('');
+                loadMembers();
+                // Optional: Show toast
+            } else {
+                alert(result.error);
+            }
+        } finally {
+            setInviteLoading(false);
+        }
+    };
+
+    const handleRemoveMember = async (id: string) => {
+        if (!confirm('Are you sure you want to remove this member?')) return;
+        const result = await removeMember(id);
+        if (result.success) {
+            loadMembers();
+        } else {
+            alert(result.error);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -130,39 +186,51 @@ export default function SettingsPage() {
         });
     };
 
+    // Show nothing while checking authorization or redirecting
+    if (isAuthorized === null || isAuthorized === false) {
+        return null;
+    }
+
     return (
         <div className="max-w-6xl mx-auto space-y-8">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">Settings</h1>
-                    <p className="text-neutral-500 mt-1">Manage your business profile and preferences</p>
+            <div className="flex flex-col gap-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">Settings</h1>
+                        <p className="text-neutral-500 mt-1">Manage your business profile and preferences</p>
+                    </div>
                 </div>
-                <div className="flex bg-neutral-100 p-1.5 rounded-xl md:self-auto overflow-x-auto no-scrollbar w-full md:w-auto">
-                    <button
-                        onClick={() => setActiveTab('general')}
-                        className={`flex-1 md:flex-none px-4 md:px-6 py-2.5 min-w-[100px] md:min-w-[120px] rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'general' ? 'bg-white text-neutral-900 border border-neutral-900 shadow-sm' : 'text-neutral-500 hover:text-neutral-900'
-                            }`}
-                    >
-                        General
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('integrations')}
-                        className={`flex-1 md:flex-none px-4 md:px-6 py-2.5 min-w-[100px] md:min-w-[120px] rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'integrations' ? 'bg-white text-neutral-900 border border-neutral-900 shadow-sm' : 'text-neutral-500 hover:text-neutral-900'
-                            }`}
-                    >
-                        Integrations
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('preferences')}
-                        className={`flex-1 md:flex-none px-4 md:px-6 py-2.5 min-w-[100px] md:min-w-[120px] rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'preferences' ? 'bg-white text-neutral-900 border border-neutral-900 shadow-sm' : 'text-neutral-500 hover:text-neutral-900'
-                            }`}
-                    >
-                        Preferences
-                    </button>
+
+                {/* Tabs */}
+                <div className="w-full bg-neutral-100/50 p-1 rounded-xl overflow-x-auto no-scrollbar">
+                    <div className="flex min-w-full md:min-w-0 md:justify-start gap-1">
+                        {[
+                            { id: 'general', label: 'General', icon: Building2 },
+                            { id: 'integrations', label: 'Integrations', icon: Globe },
+                            { id: 'preferences', label: 'Preferences', icon: Palette },
+                            ...(profile.role === 'OWNER' ? [{ id: 'team', label: 'Team', icon: Users }] : [])
+                        ].map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id as any)}
+                                className={`
+                                    flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap flex-1 md:flex-none
+                                    ${activeTab === tab.id
+                                        ? 'bg-white text-neutral-900 shadow-sm ring-1 ring-black/5'
+                                        : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-200/50'
+                                    }
+                                `}
+                            >
+                                <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? 'text-neutral-900' : 'text-neutral-400'}`} />
+                                <span>{tab.label}</span>
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
+            {/* Content */}
             <div className="space-y-6">
 
                 {/* GENERAL TAB */}
@@ -808,19 +876,102 @@ export default function SettingsPage() {
                     )
                 }
 
+                {/* TEAM MEMBERS TAB */}
+                {activeTab === 'team' && profile.role === 'OWNER' && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                        <Card>
+                            <CardHeader
+                                title="Invite Team Members"
+                                description="Invite others to help manage your business"
+                            />
+                            <CardBody className="space-y-6">
+                                <form onSubmit={handleInvite} className="flex flex-col md:flex-row gap-4 items-end">
+                                    <div className="w-full md:flex-1">
+                                        <Input
+                                            label="Email Address"
+                                            type="email"
+                                            value={inviteEmail}
+                                            onChange={(e) => setInviteEmail(e.target.value)}
+                                            placeholder="colleague@example.com"
+                                            required
+                                        />
+                                    </div>
+                                    <Button type="submit" loading={inviteLoading} className="w-full md:w-auto mb-[2px]">
+                                        <Plus className="w-4 h-4 mr-2" />
+                                        Send Invite
+                                    </Button>
+                                </form>
+                            </CardBody>
+                        </Card>
+
+                        <Card>
+                            <CardHeader
+                                title="Team Members"
+                                description="Manage existing team members and their access"
+                            />
+                            <CardBody className="p-0">
+                                <div className="divide-y divide-neutral-100">
+                                    {members.length === 0 ? (
+                                        <div className="p-8 text-center text-neutral-500">
+                                            No team members yet. Invite someone above!
+                                        </div>
+                                    ) : (
+                                        members.map((member) => (
+                                            <div key={member.id} className="p-4 flex items-center justify-between hover:bg-neutral-50 transition-colors">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 font-medium">
+                                                        {member.email.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-neutral-900">{member.email}</p>
+                                                        <div className="flex items-center gap-2 mt-0.5">
+                                                            <span className="text-xs text-neutral-500 capitalize">{member.role.toLowerCase()}</span>
+                                                            <span className={`inline-block w-1.5 h-1.5 rounded-full ${member.status === 'ACCEPTED' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                                            <span className="text-xs text-neutral-400 capitalize">{member.status.toLowerCase()}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleRemoveMember(member.id)}
+                                                    className="p-2 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                                    title="Remove member"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </CardBody>
+                        </Card>
+                    </div>
+                )}
+
                 {/* Save Button */}
-                <div className="flex items-center justify-end gap-4 pt-4 border-t border-neutral-200">
-                    {saved && (
-                        <span className="flex items-center gap-2 text-emerald-600 text-sm">
-                            <CheckCircle2 className="w-4 h-4" />
-                            Changes saved successfully
-                        </span>
-                    )}
-                    <Button type="button" onClick={handleSubmit} loading={loading} className="px-8">
-                        <Save className="w-4 h-4 mr-2" />
-                        Save All Changes
-                    </Button>
-                </div>
+
+                {/* Static Save Button (Hide if not Owner or on Team tab) */}
+                {profile.role === 'OWNER' && activeTab !== 'team' && (
+                    <div className="flex justify-end gap-3 pt-6 border-t border-neutral-200">
+                        <Button
+                            onClick={handleSubmit}
+                            loading={loading}
+                            disabled={loading}
+                            className={`min-w-[150px] ${saved ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                        >
+                            {saved ? (
+                                <>
+                                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                                    Saved Changes
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="w-4 h-4 mr-2" />
+                                    Save Changes
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                )}
             </div >
         </div >
     );

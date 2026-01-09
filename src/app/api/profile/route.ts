@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            data: { ...seller, logo, logoData: undefined },
+            data: { ...seller, logo, logoData: undefined, role: session.role || 'OWNER' },
         });
     } catch (error) {
         if (error instanceof Error && error.message === 'Unauthorized') {

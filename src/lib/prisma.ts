@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+// Prisma client with ApiKey model support
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;

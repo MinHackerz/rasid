@@ -15,7 +15,8 @@ import {
     LogOut,
     X,
     HelpCircle,
-    Package
+    Package,
+    Code2
 } from 'lucide-react';
 import { BusinessSwitcher } from './BusinessSwitcher';
 import { useClerk } from "@clerk/nextjs";
@@ -26,6 +27,7 @@ const navigation = [
     { name: 'Inventory', href: '/dashboard/inventory', icon: Package },
     { name: 'Upload & Convert', href: '/dashboard/upload', icon: Upload },
     { name: 'Buyers', href: '/dashboard/buyers', icon: Users },
+    { name: 'API Platform', href: '/dashboard/developer', icon: Code2 },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
@@ -34,13 +36,15 @@ interface MobileSidebarProps {
     onClose: () => void;
     businessName?: string | null;
     businesses?: { id: string; businessName: string | null }[];
+    role?: 'OWNER' | 'ADMIN' | 'VIEWER';
 }
 
 export const MobileSidebar: React.FC<MobileSidebarProps> = ({
     isOpen,
     onClose,
     businessName = 'My Business',
-    businesses = []
+    businesses = [],
+    role
 }) => {
     const pathname = usePathname();
     const { signOut } = useClerk();
@@ -94,6 +98,10 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
                             Main Menu
                         </p>
                         {navigation.map((item) => {
+                            // Hide API Platform and Settings for non-owners
+                            if (item.name === 'API Platform' && role !== 'OWNER') return null;
+                            if (item.name === 'Settings' && role !== 'OWNER') return null;
+
                             const isActive = pathname === item.href ||
                                 (pathname.startsWith(item.href + '/') && item.href !== '/dashboard');
 

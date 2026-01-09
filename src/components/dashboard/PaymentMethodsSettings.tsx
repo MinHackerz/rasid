@@ -213,10 +213,10 @@ export function PaymentMethodsSettings() {
             </CardBody>
 
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add Payment Method">
-                <form onSubmit={handleSave} className="space-y-4 md:space-y-6 max-h-[70vh] overflow-y-auto pr-2 no-scrollbar">
+                <form onSubmit={handleSave} className="space-y-4 md:space-y-6 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
                     <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-2">Payment Type</label>
-                        <div className="grid grid-cols-2 gap-2 md:grid-cols-2 md:gap-3">
+                        <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3">
                             {[
                                 { id: 'BANK_TRANSFER', label: 'Bank', icon: Banknote },
                                 { id: 'UPI', label: 'UPI', icon: Smartphone },
@@ -227,12 +227,12 @@ export function PaymentMethodsSettings() {
                                     type="button"
                                     key={t.id}
                                     onClick={() => setFormData({ ...formData, type: t.id, details: {} })}
-                                    className={`flex flex-col md:flex-row items-center justify-center md:justify-start gap-1.5 md:gap-2 p-2.5 md:p-3 rounded-xl border text-xs md:text-sm font-medium transition-all ${formData.type === t.id
+                                    className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border text-sm font-medium transition-all ${formData.type === t.id
                                         ? 'border-neutral-900 bg-neutral-900 text-white shadow-md'
                                         : 'border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50'
                                         }`}
                                 >
-                                    <t.icon className="w-4 h-4" />
+                                    <t.icon className="w-5 h-5" />
                                     {t.label}
                                 </button>
                             ))}

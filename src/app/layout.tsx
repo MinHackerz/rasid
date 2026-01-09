@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://rasid.in"),
   title: "Rasid - Modern Invoice Generation Platform",
   description: "Professional invoice generation platform for modern businesses. Create, digitize, and verify invoices with ease.",
   keywords: ["invoice", "billing", "receipt", "OCR", "digital invoice", "rashid"],

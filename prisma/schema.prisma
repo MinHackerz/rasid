@@ -50,6 +50,8 @@ model Seller {
   uploadedDocuments UploadedDocument[]
   paymentMethods    PaymentMethod[]
   inventoryItems    InventoryItem[]
+  members           TeamMember[]
+  apiKeys           ApiKey[]
   
   @@index([email])
 }
@@ -357,3 +359,57 @@ model InventoryItem {
   @@map("inventory_management")
   @@index([sellerId])
 }
+
+// ============================================
+// TEAM MEMBERS - Access control for businesses
+// ============================================
+model TeamMember {
+  id        String       @id @default(cuid())
+  sellerId  String
+  email     String
+  role      MemberRole   @default(VIEWER)
+  status    MemberStatus @default(PENDING)
+  
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  
+  seller    Seller       @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  
+  @@unique([sellerId, email])
+  @@index([sellerId])
+  @@index([email])
+}
+
+enum MemberRole {
+  ADMIN
+  VIEWER
+}
+
+enum MemberStatus {
+  PENDING
+  ACCEPTED
+}
+
+// ============================================
+// API KEYS - For external integrations
+// ============================================
+model ApiKey {
+  id          String    @id @default(cuid())
+  sellerId    String
+  name        String
+  key         String    @unique // The API key itself starts with rsd_
+  templateId  String    @default("classic") // Invoice template to use
+  
+  usage       Int       @default(0)
+  limit       Int       @default(100000)
+  
+  lastUsedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  seller      Seller    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  
+  @@index([sellerId])
+  @@index([key])
+}
+
