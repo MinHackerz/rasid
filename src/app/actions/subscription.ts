@@ -147,3 +147,32 @@ export async function cancelSubscription() {
     }
 }
 
+// ... (existing code)
+
+export async function getSubscriptionDetails() {
+    const user = await currentUser();
+    if (!user) return null;
+
+    // Use getSession logic-like queries or just find by clerkId for simplicity if not multi-tenant context critical
+    // But subscription actions use email.
+    // Let's stick to email enabling for now to match 'createSubscriptionCheckout' logic
+    const email = user.emailAddresses[0]?.emailAddress;
+    if (!email) return null;
+
+    const seller = await prisma.seller.findFirst({
+        where: { email },
+        select: {
+            plan: true,
+            cancelledAt: true,
+            subscriptionEndsAt: true
+        }
+    });
+
+    if (!seller) return null;
+
+    return {
+        plan: (seller.plan || 'FREE') as PlanType,
+        hasPendingCancellation: seller.plan !== 'FREE' && !!seller.cancelledAt,
+        subscriptionEndsAt: seller.subscriptionEndsAt ? seller.subscriptionEndsAt.toISOString() : null
+    };
+}

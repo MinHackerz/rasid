@@ -10,10 +10,27 @@ import { useUser, UserButton } from '@clerk/nextjs';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { PricingSection } from '@/components/landing/PricingSection';
 import { Footer } from '@/components/layout/Footer';
+import { PlanType } from '@/lib/constants/plans';
+import { getSubscriptionDetails } from '@/app/actions/subscription';
 
 export default function LandingPage() {
   const { isSignedIn, isLoaded } = useUser();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [subscriptionDetails, setSubscriptionDetails] = React.useState<{
+    plan: PlanType;
+    hasPendingCancellation: boolean;
+    subscriptionEndsAt: string | null;
+  } | null>(null);
+
+  React.useEffect(() => {
+    if (isSignedIn) {
+      getSubscriptionDetails().then(details => {
+        if (details) {
+          setSubscriptionDetails(details);
+        }
+      });
+    }
+  }, [isSignedIn]);
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -236,7 +253,12 @@ export default function LandingPage() {
       <FeaturesSection />
 
       {/* Pricing Section */}
-      <PricingSection />
+      <PricingSection
+        currentPlan={subscriptionDetails?.plan}
+        hasPendingCancellation={subscriptionDetails?.hasPendingCancellation}
+        subscriptionEndsAt={subscriptionDetails?.subscriptionEndsAt}
+        isLoggedIn={isSignedIn}
+      />
 
       {/* About Section */}
       <section id="about" className="py-24 bg-white">
