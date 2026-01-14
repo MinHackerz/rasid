@@ -1,10 +1,11 @@
 'use client';
 
 import * as React from 'react';
-import { ChevronDown, Plus, Check } from 'lucide-react';
+import { ChevronDown, Plus, Check, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { switchBusiness } from '@/lib/actions';
+import { PLANS, PlanType } from '@/lib/constants/plans';
 
 interface Business {
     id: string;
@@ -15,9 +16,10 @@ interface BusinessSwitcherProps {
     currentBusinessName: string | null;
     businesses: Business[];
     className?: string; // Add className prop for flexibility
+    plan?: PlanType; // Add plan prop to check limits
 }
 
-export function BusinessSwitcher({ currentBusinessName, businesses, className }: BusinessSwitcherProps) {
+export function BusinessSwitcher({ currentBusinessName, businesses, className, plan = 'FREE' }: BusinessSwitcherProps) {
     const [isOpen, setIsOpen] = React.useState(false);
     const containerRef = React.useRef<HTMLDivElement>(null);
     const router = useRouter();
@@ -45,6 +47,24 @@ export function BusinessSwitcher({ currentBusinessName, businesses, className }:
     const currentBusiness = businesses.find(b => b.businessName === currentBusinessName);
     const canAddBusiness = !currentBusiness || (currentBusiness as any).role === 'OWNER' || !(currentBusiness as any).role;
 
+    // Check business limits
+    const planLimits = PLANS[plan]?.limits;
+    const businessLimit = planLimits?.businesses || 1;
+    const ownedBusinesses = businesses.filter((b: any) => !b.role || b.role === 'OWNER');
+    const currentBusinessCount = ownedBusinesses.length;
+    const hasReachedLimit = currentBusinessCount >= businessLimit;
+    const isUnlimited = businessLimit >= 999999;
+
+    const handleAddBusiness = () => {
+        if (hasReachedLimit) {
+            // Redirect to pricing page
+            router.push('/pricing');
+        } else {
+            router.push('/onboarding');
+        }
+        setIsOpen(false);
+    };
+
     return (
         <div className={cn("relative px-4 py-6", className)} ref={containerRef}>
             <button
@@ -71,9 +91,16 @@ export function BusinessSwitcher({ currentBusinessName, businesses, className }:
                     style={{ backgroundColor: '#ffffff', opacity: 1 }}
                 >
                     <div className="max-h-[240px] overflow-y-auto custom-scrollbar">
-                        <p className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                            My Businesses
-                        </p>
+                        <div className="flex items-center justify-between px-2 py-1.5">
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                My Businesses
+                            </p>
+                            {!isUnlimited && (
+                                <p className="text-[10px] font-semibold text-muted-foreground">
+                                    {currentBusinessCount}/{businessLimit}
+                                </p>
+                            )}
+                        </div>
                         {businesses.map((business) => (
                             <button
                                 key={business.id}
@@ -95,14 +122,33 @@ export function BusinessSwitcher({ currentBusinessName, businesses, className }:
                     {canAddBusiness && (
                         <div className="border-t border-border/50 mt-1 pt-2">
                             <button
-                                onClick={() => router.push('/onboarding')}
-                                className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors border border-dashed border-border/50 hover:border-primary/30"
+                                onClick={handleAddBusiness}
+                                className={cn(
+                                    "w-full flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors border border-dashed",
+                                    hasReachedLimit
+                                        ? "text-amber-600 bg-amber-50/50 border-amber-200 hover:bg-amber-100/50 hover:border-amber-300"
+                                        : "text-muted-foreground hover:text-primary hover:bg-primary/5 border-border/50 hover:border-primary/30"
+                                )}
                             >
-                                <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center">
-                                    <Plus className="w-3 h-3" />
+                                <div className={cn(
+                                    "w-5 h-5 rounded-full flex items-center justify-center",
+                                    hasReachedLimit ? "bg-amber-100" : "bg-muted"
+                                )}>
+                                    {hasReachedLimit ? (
+                                        <Lock className="w-3 h-3 text-amber-600" />
+                                    ) : (
+                                        <Plus className="w-3 h-3" />
+                                    )}
                                 </div>
-                                <span>Add New Business</span>
+                                <span className="flex-1 text-left">
+                                    {hasReachedLimit ? 'Upgrade to Add More' : 'Add New Business'}
+                                </span>
                             </button>
+                            {hasReachedLimit && (
+                                <p className="text-[10px] text-amber-600 px-2 py-1 text-center">
+                                    {plan === 'FREE' ? 'Upgrade to add more businesses' : `Limit: ${businessLimit} businesses`}
+                                </p>
+                            )}
                         </div>
                     )}
                 </div>

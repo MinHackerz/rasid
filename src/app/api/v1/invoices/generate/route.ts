@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { createInvoice } from '@/lib/services';
 import { generateInvoicePDF } from '@/lib/pdf';
 import { z } from 'zod';
+import { checkLimit, canUseTemplate } from '@/lib/access-control';
 
 // Rate limiting: 60 requests per minute per key
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
@@ -95,7 +96,26 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // 5. Parse and validate request body
+        // 5. Check Subscription Limits (PDF API Usage)
+        const canUseApi = await checkLimit(keyRecord.sellerId, 'pdfApi');
+        if (!canUseApi) {
+            return NextResponse.json(
+                { success: false, error: 'Monthly PDF API limit reached. Upgrade your plan.' },
+                { status: 403 }
+            );
+        }
+
+        // 6. Check Template Access
+        const templateId = keyRecord.templateId || 'classic';
+        const canUse = await canUseTemplate(keyRecord.sellerId, templateId);
+        if (!canUse) {
+            return NextResponse.json(
+                { success: false, error: `Your plan does not support the '${templateId}' template.` },
+                { status: 403 }
+            );
+        }
+
+        // 7. Parse and validate request body
         const body = await request.json();
         const validated = apiInvoiceSchema.parse(body);
 
@@ -124,7 +144,6 @@ export async function POST(request: NextRequest) {
         });
 
         // 7. Generate PDF with the template specified in the API key
-        const templateId = keyRecord.templateId || 'classic';
         await generateInvoicePDF(invoice.id, templateId);
 
         // 8. Update API key usage (type assertion for IDE compatibility)
@@ -134,6 +153,12 @@ export async function POST(request: NextRequest) {
                 usage: { increment: 1 },
                 lastUsedAt: new Date(),
             },
+        });
+
+        // Increment Subscription Usage
+        await (prisma as any).seller.update({
+            where: { id: keyRecord.sellerId },
+            data: { pdfApiUsage: { increment: 1 } }
         });
 
         // 9. Build PDF URL

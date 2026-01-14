@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/auth';
 import { listInvoices, createInvoice } from '@/lib/services';
 import { createInvoiceSchema } from '@/lib/validations';
 import { z } from 'zod';
+import { checkLimit } from '@/lib/access-control';
 
 // GET /api/invoices - List invoices
 export async function GET(request: NextRequest) {
@@ -49,6 +50,15 @@ export async function POST(request: NextRequest) {
 
         // Validate input
         const validated = createInvoiceSchema.parse(body);
+
+        // Check subscription limit
+        const canCreate = await checkLimit(session.sellerId, 'invoices');
+        if (!canCreate) {
+            return NextResponse.json(
+                { success: false, error: 'Invoice limit reached. Upgrade your plan at /pricing' },
+                { status: 403 }
+            );
+        }
 
         // Create invoice
         const invoice = await createInvoice(session.sellerId, validated);

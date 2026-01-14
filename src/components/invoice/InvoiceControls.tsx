@@ -11,6 +11,7 @@ interface InvoiceControlsProps {
     hasWhatsApp: boolean; // Is WhatsApp integration configured?
     hasEmail: boolean;
     showSendButtons?: boolean; // Hide buttons if auto-send is enabled
+    isFreePlan?: boolean;
 }
 
 export default function InvoiceControls({
@@ -19,6 +20,7 @@ export default function InvoiceControls({
     hasWhatsApp,
     hasEmail,
     showSendButtons = true,
+    isFreePlan = false,
 }: InvoiceControlsProps) {
     const router = useRouter();
     const [status, setStatus] = useState(initialStatus);
@@ -103,7 +105,8 @@ export default function InvoiceControls({
                 <Button
                     onClick={() => handleSend('EMAIL')}
                     loading={sending === 'EMAIL'}
-                    disabled={!!sending || success === 'EMAIL'}
+                    disabled={!!sending || success === 'EMAIL' || isFreePlan}
+                    title={isFreePlan ? "Upgrade to Basic plan to send emails" : undefined}
                     variant={success === 'EMAIL' ? 'primary' : 'outline'}
                     size="sm"
                     className={`border border-neutral-900 shadow-none h-9 transition-all duration-300 ${success === 'EMAIL' ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-transparent' : ''}`}
@@ -126,7 +129,8 @@ export default function InvoiceControls({
                 <Button
                     onClick={() => handleSend('WHATSAPP')}
                     loading={sending === 'WHATSAPP'}
-                    disabled={!!sending || success === 'WHATSAPP'}
+                    disabled={!!sending || success === 'WHATSAPP' || isFreePlan}
+                    title={isFreePlan ? "Upgrade to Basic plan to send WhatsApp" : undefined}
                     size="sm"
                     className={`border border-neutral-900 shadow-none h-9 transition-all duration-300 ${success === 'WHATSAPP' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-[#25D366] hover:bg-[#128C7E] text-white'}`}
                 >

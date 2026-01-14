@@ -6,6 +6,7 @@ import { Bell, Plus, Search, Menu } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { UserButton } from "@clerk/nextjs";
 import { MobileSidebar } from './MobileSidebar';
+import { PlanType } from '@/lib/constants/plans';
 
 interface HeaderProps {
     title?: string;
@@ -14,9 +15,10 @@ interface HeaderProps {
     businessName?: string;
     businesses?: { id: string; businessName: string | null }[];
     role?: 'OWNER' | 'ADMIN' | 'VIEWER';
+    plan?: PlanType;
 }
 
-const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, businessName, businesses, role }) => {
+const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, businessName, businesses, role, plan }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
@@ -94,6 +96,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, busi
                 businessName={businessName}
                 businesses={businesses}
                 role={role}
+                plan={plan}
             />
         </>
     );

@@ -4,7 +4,8 @@ import {
     FileText,
     ArrowUpRight,
     Plus,
-    CreditCard
+    CreditCard,
+    BarChart2
 } from 'lucide-react';
 import Link from 'next/link';
 import { Suspense } from 'react';
@@ -40,13 +41,22 @@ export default async function DashboardPage() {
                         Overview
                     </h1>
                 </div>
-                <Link
-                    href="/dashboard/invoices/new"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold bg-primary text-primary-foreground rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 hover:shadow-primary/30 transition-all duration-200 active:scale-95"
-                >
-                    <Plus className="w-5 h-5" />
-                    Create New Invoice
-                </Link>
+                <div className="flex gap-3">
+                    <Link
+                        href="/dashboard/analytics"
+                        className="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold bg-background border border-border text-foreground hover:bg-muted/50 rounded-xl transition-all duration-200"
+                    >
+                        <BarChart2 className="w-5 h-5" />
+                        Advanced Analytics
+                    </Link>
+                    <Link
+                        href="/dashboard/invoices/new"
+                        className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold bg-primary text-primary-foreground border border-border rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 hover:shadow-primary/30 transition-all duration-200 active:scale-95"
+                    >
+                        <Plus className="w-5 h-5" />
+                        Create New Invoice
+                    </Link>
+                </div>
             </div>
 
             {/* Stats Grid */}

@@ -10,15 +10,22 @@ import { INVOICE_TEMPLATES } from '@/lib/invoice-templates';
 
 interface Props {
     initialKeys: ApiKey[];
+    usageLimit: number;
+    totalUsage: number;
+    currentPlan: string;
 }
 
-export function DeveloperPlatform({ initialKeys }: Props) {
+export function DeveloperPlatform({ initialKeys, usageLimit, totalUsage, currentPlan }: Props) {
     const [keys, setKeys] = useState(initialKeys);
     const [newKeyName, setNewKeyName] = useState('');
     const [selectedTemplate, setSelectedTemplate] = useState('classic');
     const [isPending, startTransition] = useTransition();
 
-    // Modal state for showing the newly generated key
+    // Determine available templates based on plan
+    const isBasicPlan = currentPlan === 'BASIC';
+    const availableTemplates = isBasicPlan ? INVOICE_TEMPLATES.slice(0, 5) : INVOICE_TEMPLATES;
+
+    // ... existing modal state code ...
     const [showKeyModal, setShowKeyModal] = useState(false);
     const [newlyCreatedKey, setNewlyCreatedKey] = useState<string | null>(null);
     const [keyCopied, setKeyCopied] = useState(false);
@@ -28,6 +35,7 @@ export function DeveloperPlatform({ initialKeys }: Props) {
     const [keyToDelete, setKeyToDelete] = useState<string | null>(null);
 
     const handleCreate = () => {
+        // ... unchanged ...
         if (!newKeyName.trim()) return;
 
         startTransition(async () => {
@@ -36,11 +44,9 @@ export function DeveloperPlatform({ initialKeys }: Props) {
                 setNewKeyName('');
 
                 if (result.key && result.apiKey) {
-                    // Show the modal with the new key
                     setNewlyCreatedKey(result.key);
                     setShowKeyModal(true);
                     setKeyCopied(false);
-                    // Add to list, keeping only unique keys (though new one should be unique)
                     setKeys(prev => [result.apiKey!, ...prev]);
                 }
             } catch (error) {
@@ -49,6 +55,7 @@ export function DeveloperPlatform({ initialKeys }: Props) {
         });
     };
 
+    // ... unchanged ...
     const confirmDelete = () => {
         if (!keyToDelete) return;
 
@@ -103,7 +110,12 @@ export function DeveloperPlatform({ initialKeys }: Props) {
                 <div className="space-y-4">
                     <div>
                         <h2 className="text-lg font-semibold">Generate New Key</h2>
-                        <p className="text-sm text-muted-foreground">Limit: 100,000 requests per key. Keys are only shown once upon creation.</p>
+                        <div className="flex items-center gap-2 mt-1">
+                            <p className="text-sm text-muted-foreground">Total Usage:</p>
+                            <Badge variant={totalUsage >= usageLimit ? 'destructive' : 'secondary'}>
+                                {totalUsage.toLocaleString()} / {usageLimit > 100000 ? 'Unlimited' : usageLimit.toLocaleString()} Requests
+                            </Badge>
+                        </div>
                     </div>
                     <div className="grid gap-4 max-w-2xl">
                         <div className="grid sm:grid-cols-2 gap-4">
@@ -116,12 +128,15 @@ export function DeveloperPlatform({ initialKeys }: Props) {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Invoice Template</label>
+                                <label className="text-sm font-medium">
+                                    Invoice Template
+                                    {isBasicPlan && <span className="text-xs text-amber-600 ml-2 font-normal">(Basic Plan: 5 templates)</span>}
+                                </label>
                                 <Select
                                     value={selectedTemplate}
                                     onChange={(e) => setSelectedTemplate(e.target.value)}
                                 >
-                                    {INVOICE_TEMPLATES.map((template) => (
+                                    {availableTemplates.map((template) => (
                                         <option key={template.id} value={template.id}>
                                             {template.name}
                                         </option>
@@ -172,30 +187,19 @@ export function DeveloperPlatform({ initialKeys }: Props) {
                                 </div>
 
                                 <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
-                                    <div className="text-right">
-                                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Usage</div>
-                                        <div className="text-2xl font-bold font-mono">
-                                            {key.usage.toLocaleString()} <span className="text-sm text-muted-foreground font-sans text-base font-normal">/ {(key.limit / 1000).toFixed(0)}k</span>
-                                        </div>
-                                    </div>
                                     <Button
                                         variant="destructive"
                                         size="sm"
                                         onClick={() => handleDelete(key.id)}
                                         disabled={isPending}
-                                        className="h-10 w-10 p-0"
+                                        className="gap-2"
                                     >
                                         <Trash2 className="w-4 h-4" />
+                                        Revoke
                                     </Button>
                                 </div>
                             </div>
-                            {/* Progress bar for usage */}
-                            <div className="h-1 w-full bg-muted">
-                                <div
-                                    className={`h-full ${key.usage >= key.limit ? 'bg-destructive' : 'bg-primary'}`}
-                                    style={{ width: `${Math.min((key.usage / key.limit) * 100, 100)}%` }}
-                                />
-                            </div>
+                            {/* Removed individual usage progress bar since usage is aggregated globally for the user based on subscription */}
                         </Card>
                     ))}
 
@@ -287,6 +291,6 @@ export function DeveloperPlatform({ initialKeys }: Props) {
                     </div>
                 </div>
             </Modal>
-        </div>
+        </div >
     );
 }

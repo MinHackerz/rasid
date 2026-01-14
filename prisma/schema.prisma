@@ -44,6 +44,19 @@ model Seller {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   
+  // Subscription & Limits
+  plan              PlanTier  @default(FREE)
+  subscriptionId    String?   // External subscription ID (Dodo)
+  customerId        String?   // External customer ID (Dodo)
+  cancelledAt       DateTime? // When cancellation was requested
+  subscriptionEndsAt DateTime? // When the subscription will actually end
+  
+  // Usage Tracking (Resets monthly)
+  invoicesCount     Int       @default(0)
+  pdfApiUsage       Int       @default(0)
+  ocrUsage          Int       @default(0)
+  lastResetDate     DateTime  @default(now())
+
   // Relations
   invoices          Invoice[]
   buyers            Buyer[]
@@ -54,6 +67,14 @@ model Seller {
   apiKeys           ApiKey[]
   
   @@index([email])
+}
+
+enum PlanTier {
+  FREE
+  BASIC
+  PRO
+  PREMIUM
+  LIFETIME
 }
 
 model PaymentMethod {

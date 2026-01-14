@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
                 integrations: true,
                 invoiceDefaults: true,
                 isActive: true,
+                plan: true,
             } as any,
         });
 

@@ -14,9 +14,11 @@ import {
     LogOut,
     Package,
     Code2,
+    CreditCard,
 } from 'lucide-react';
 import { BusinessSwitcher } from './BusinessSwitcher';
 import { useClerk } from "@clerk/nextjs";
+import { PlanType } from '@/lib/constants/plans';
 
 const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -24,6 +26,7 @@ const navigation = [
     { name: 'Inventory', href: '/dashboard/inventory', icon: Package },
     { name: 'Upload & Convert', href: '/dashboard/upload', icon: Upload },
     { name: 'Buyers', href: '/dashboard/buyers', icon: Users },
+    { name: 'Subscription', href: '/dashboard/subscription', icon: CreditCard },
     { name: 'API Platform', href: '/dashboard/developer', icon: Code2 },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
@@ -32,9 +35,10 @@ interface SidebarProps {
     businessName?: string;
     businesses?: { id: string; businessName: string }[];
     role?: 'OWNER' | 'ADMIN' | 'VIEWER';
+    plan?: PlanType;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ businessName = 'My Business', businesses = [], role }) => {
+const Sidebar: React.FC<SidebarProps> = ({ businessName = 'My Business', businesses = [], role, plan = 'FREE' }) => {
     const pathname = usePathname();
     const { signOut } = useClerk();
 
@@ -60,7 +64,7 @@ const Sidebar: React.FC<SidebarProps> = ({ businessName = 'My Business', busines
             </div>
 
             {/* Business Selector */}
-            <BusinessSwitcher currentBusinessName={businessName} businesses={businesses} />
+            <BusinessSwitcher currentBusinessName={businessName} businesses={businesses} plan={plan} />
 
             {/* Navigation */}
             <nav className="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar">
@@ -68,8 +72,10 @@ const Sidebar: React.FC<SidebarProps> = ({ businessName = 'My Business', busines
                     Main Menu
                 </p>
                 {navigation.map((item) => {
-                    // Hide API Platform and Settings for non-owners
+
+                    // Hide API Platform, Subscription, and Settings for non-owners
                     if (item.name === 'API Platform' && role !== 'OWNER') return null;
+                    if (item.name === 'Subscription' && role !== 'OWNER') return null;
                     if (item.name === 'Settings' && role !== 'OWNER') return null;
 
                     const isActive = pathname === item.href ||

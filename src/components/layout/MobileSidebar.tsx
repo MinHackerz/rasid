@@ -16,10 +16,12 @@ import {
     X,
     HelpCircle,
     Package,
-    Code2
+    Code2,
+    CreditCard
 } from 'lucide-react';
 import { BusinessSwitcher } from './BusinessSwitcher';
 import { useClerk } from "@clerk/nextjs";
+import { PlanType } from '@/lib/constants/plans';
 
 const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -27,6 +29,7 @@ const navigation = [
     { name: 'Inventory', href: '/dashboard/inventory', icon: Package },
     { name: 'Upload & Convert', href: '/dashboard/upload', icon: Upload },
     { name: 'Buyers', href: '/dashboard/buyers', icon: Users },
+    { name: 'Subscription', href: '/dashboard/subscription', icon: CreditCard },
     { name: 'API Platform', href: '/dashboard/developer', icon: Code2 },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
@@ -37,6 +40,7 @@ interface MobileSidebarProps {
     businessName?: string | null;
     businesses?: { id: string; businessName: string | null }[];
     role?: 'OWNER' | 'ADMIN' | 'VIEWER';
+    plan?: PlanType;
 }
 
 export const MobileSidebar: React.FC<MobileSidebarProps> = ({
@@ -44,7 +48,8 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
     onClose,
     businessName = 'My Business',
     businesses = [],
-    role
+    role,
+    plan = 'FREE'
 }) => {
     const pathname = usePathname();
     const { signOut } = useClerk();
@@ -91,15 +96,16 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
                 </div>
 
                 <div className="overflow-y-auto flex-1 flex flex-col">
-                    <BusinessSwitcher currentBusinessName={businessName} businesses={businesses} />
+                    <BusinessSwitcher currentBusinessName={businessName} businesses={businesses} plan={plan} />
 
                     <nav className="flex-1 px-4 space-y-1 mt-4">
                         <p className="px-3 py-2 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">
                             Main Menu
                         </p>
                         {navigation.map((item) => {
-                            // Hide API Platform and Settings for non-owners
+                            // Hide API Platform, Subscription, and Settings for non-owners
                             if (item.name === 'API Platform' && role !== 'OWNER') return null;
+                            if (item.name === 'Subscription' && role !== 'OWNER') return null;
                             if (item.name === 'Settings' && role !== 'OWNER') return null;
 
                             const isActive = pathname === item.href ||

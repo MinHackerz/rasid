@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { sendInvoice } from '@/lib/services';
 import { z } from 'zod';
+import { checkLimit } from '@/lib/access-control';
 
 const sendSchema = z.object({
     method: z.enum(['EMAIL', 'WHATSAPP', 'SMS']).optional(),
@@ -23,6 +24,15 @@ export async function POST(
         const invoice = await prisma.invoice.findFirst({
             where: { id, sellerId: session.sellerId },
         });
+
+        // Check subscription limit
+        const canSend = await checkLimit(session.sellerId, 'emailIntegration');
+        if (!canSend) {
+            return NextResponse.json(
+                { success: false, error: 'Email/Whatsapp sharing is not available on your plan. Upgrade your plan at /pricing' },
+                { status: 403 }
+            );
+        }
 
         if (!invoice) {
             return NextResponse.json({ error: 'Invoice not found' }, { status: 404 });

@@ -65,7 +65,7 @@ export default function OnboardingPage() {
                 throw new Error(result.error || 'Failed to save business details. Please try again.');
             }
 
-            router.push('/dashboard');
+            router.push('/pricing');
         } catch (err: any) {
             console.error('Onboarding error:', err);
             setError(err.message || 'Something went wrong. Please try again.');

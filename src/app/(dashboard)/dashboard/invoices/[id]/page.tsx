@@ -38,12 +38,14 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
             phone: true,
             email: true,
             logo: true,
-            taxId: true
-        }
-    }));
+            taxId: true,
+            plan: true
+        } as any
+    })) as any;
 
     // Check if auto-send is enabled
     const autoSendEnabled = (sellerSettings?.invoiceDefaults as any)?.autoSend === true;
+    const isFreePlan = sellerSettings?.plan === 'FREE';
 
     // Check buyer contact info availability
     const hasWhatsApp = Boolean(invoice.buyer?.phone);
@@ -108,6 +110,7 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
                         hasWhatsApp={hasWhatsApp}
                         hasEmail={hasEmail}
                         showSendButtons={showSendButtons}
+                        isFreePlan={isFreePlan}
                     />
                     <a
                         href={`/api/invoices/${invoice.id}/pdf`}

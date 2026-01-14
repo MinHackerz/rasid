@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { saveUploadedFile, queueDocumentForProcessing, getDocumentStatus } from '@/lib/ocr';
+import { checkLimit } from '@/lib/access-control';
 
 // POST /api/upload - Upload files for OCR processing
 export async function POST(request: NextRequest) {
@@ -14,6 +15,15 @@ export async function POST(request: NextRequest) {
             return NextResponse.json(
                 { success: false, error: 'No files provided' },
                 { status: 400 }
+            );
+        }
+
+        // Check subscription limit
+        const canUpload = await checkLimit(session.sellerId, 'ocr');
+        if (!canUpload) {
+            return NextResponse.json(
+                { success: false, error: 'OCR limit reached. Upgrade your plan at /pricing' },
+                { status: 403 }
             );
         }
 

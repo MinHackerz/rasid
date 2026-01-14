@@ -29,6 +29,14 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
     // Statuses helper for rendering tabs (static list)
     const statuses = ['ALL', 'DRAFT', 'PENDING', 'SENT', 'PAID'];
 
+    // Fetch seller plan
+    const seller = await import('@/lib/prisma').then(m => m.prisma.seller.findUnique({
+        where: { id: session.sellerId },
+        select: { plan: true } as any
+    })) as any;
+
+    const isFreePlan = seller?.plan === 'FREE';
+
     return (
         <div className="space-y-6 max-w-7xl mx-auto">
             {/* Header */}
@@ -66,8 +74,8 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
             <div className="flex flex-col gap-4">
                 {/* Source Dropdown */}
                 <div>
-                    <InvoiceSourceDropdown 
-                        currentSource={source} 
+                    <InvoiceSourceDropdown
+                        currentSource={source}
                         currentStatus={status}
                         currentSearch={search}
                     />
@@ -101,7 +109,7 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
 
             {/* Invoices Table */}
             <Suspense key={JSON.stringify(params)} fallback={<InvoicesTableSkeleton />}>
-                <InvoicesTable searchParams={params} />
+                <InvoicesTable searchParams={params} isFreePlan={isFreePlan} />
             </Suspense>
         </div>
     );

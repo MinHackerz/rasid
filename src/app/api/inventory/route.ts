@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { checkLimit } from '@/lib/access-control';
 
 export async function GET(req: NextRequest) {
     const session = await getSession();
@@ -28,7 +29,13 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+
     try {
+        const canManageInventory = await checkLimit(session.sellerId, 'inventory');
+        if (!canManageInventory) {
+            return NextResponse.json({ error: 'Inventory management is not available on your plan.' }, { status: 403 });
+        }
+
         const body = await req.json();
         const { description, note, sku, hsnCode, quantity, unit, price, taxRate } = body;
 

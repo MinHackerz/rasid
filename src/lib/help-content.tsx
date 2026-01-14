@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, FileText, Settings, Users, Shield, Upload, Package } from 'lucide-react';
+import { BookOpen, FileText, Settings, Users, Shield, Upload, Package, BarChart3 } from 'lucide-react';
 
 export interface HelpSection {
     id: string;
@@ -799,6 +799,38 @@ https://yourdomain.com/verify/[12-character-hash]
                 tips: [
                     'Include verification links in invoice PDFs for easy access',
                     'Verification links never expire and remain valid permanently'
+                ]
+            }
+        ]
+    },
+    {
+        id: 'analytics',
+        title: 'Advanced Analytics',
+        description: 'Detailed insights into your business performance',
+        icon: <BarChart3 className="w-5 h-5" />,
+        subsections: [
+            {
+                id: 'analytics-overview',
+                title: 'Analytics Overview',
+                content: `**Advanced Analytics Dashboard:**
+    - Access via the **Advanced Analytics** button on the Dashboard Overview
+        - Available for **Pro, Premium, and Lifetime** plans
+            - Provides visual charts and data to help you track your business growth
+                
+                ** Key Metrics:**
+                    - ** Total Revenue **: Cumulative revenue from all PAID invoices
+                        - ** Pending Amount **: Total potential revenue from PENDING invoices
+                            - ** Overdue Amount **: Total value of overdue invoices needing attention
+                                - ** Average Invoice Value **: The average amount of your invoices
+                                    
+                                    ** Charts:**
+                                        - ** Revenue Trend **: Visualizes your monthly revenue growth over time
+                                            - ** Invoice Status Distribution **: Pie chart showing the ratio of Paid, Pending, and Overdue invoices
+                                                - ** Top Performing Clients **: Bar chart showing your top 5 clients by revenue`,
+                tips: [
+                    'Use analytics to identify your best customers',
+                    'Monitor overdue amounts to improve cash flow',
+                    'Check revenue trends to plan for busy or slow months'
                 ]
             }
         ]

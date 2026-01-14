@@ -176,7 +176,7 @@ export class OCRPipeline {
             const dataUrl = `data:image/jpeg;base64,${base64Image}`; // Assuming JPEG/PNG, GPT-4o typically handles standard image formats
 
             const completion = await this.openai.chat.completions.create({
-                model: "gpt-4o",
+                model: "gpt-4o-mini",
                 messages: [
                     {
                         role: "system",

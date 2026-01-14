@@ -2,6 +2,8 @@ import { currentUser } from '@clerk/nextjs/server';
 import { prisma } from './prisma';
 import type { AuthSession } from '@/types';
 import { cookies } from 'next/headers';
+import { cache } from 'react';
+import type { PlanType } from '@/lib/constants/plans';
 
 export async function getSession(): Promise<AuthSession | null> {
     const user = await currentUser();
@@ -128,3 +130,16 @@ export async function getUserBusinesses() {
 
     return unique;
 }
+
+// Cached helper to get user's plan - prevents duplicate DB queries in the same request
+export const getUserPlan = cache(async (): Promise<PlanType> => {
+    const session = await getSession();
+    if (!session) return 'FREE';
+
+    const seller = await (prisma.seller as any).findUnique({
+        where: { id: session.sellerId },
+        select: { plan: true }
+    });
+
+    return (seller?.plan || 'FREE') as PlanType;
+});

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { sendEmail } from '@/lib/email';
+import { checkLimit } from '@/lib/access-control';
 
 export async function getMembers() {
     try {
@@ -45,6 +46,12 @@ export async function inviteMember(email: string) {
 
         if (existing) {
             return { success: false, error: 'User is already a team member.' };
+        }
+
+        // Check subscription limit
+        const canInvite = await checkLimit(session.sellerId, 'teamMembers');
+        if (!canInvite) {
+            return { success: false, error: 'Team member limit reached. Please upgrade your plan.' };
         }
 
         // Create member with default role VIEWER (Read-only settings)

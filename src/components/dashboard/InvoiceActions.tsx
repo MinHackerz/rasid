@@ -8,9 +8,10 @@ interface InvoiceActionsProps {
     invoiceId: string;
     hasEmail: boolean;
     hasPhone: boolean;
+    isFreePlan?: boolean;
 }
 
-export function InvoiceActions({ invoiceId, hasEmail, hasPhone }: InvoiceActionsProps) {
+export function InvoiceActions({ invoiceId, hasEmail, hasPhone, isFreePlan = false }: InvoiceActionsProps) {
     const [sending, setSending] = useState<'EMAIL' | 'WHATSAPP' | null>(null);
     const [success, setSuccess] = useState<'EMAIL' | 'WHATSAPP' | null>(null);
 
@@ -59,9 +60,9 @@ export function InvoiceActions({ invoiceId, hasEmail, hasPhone }: InvoiceActions
 
             <button
                 onClick={() => handleSend('EMAIL')}
-                disabled={!hasEmail || !!sending || success === 'EMAIL'}
+                disabled={!hasEmail || !!sending || success === 'EMAIL' || isFreePlan}
                 className={`p-2 rounded-lg transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed ${success === 'EMAIL' ? 'text-emerald-600 bg-emerald-50' : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900'}`}
-                title={success === 'EMAIL' ? 'Sent' : 'Send via Email'}
+                title={isFreePlan ? "Upgrade to Basic plan to send emails" : success === 'EMAIL' ? 'Sent' : 'Send via Email'}
             >
                 {success === 'EMAIL' ? (
                     <CheckCircle2 className="w-4 h-4" />
@@ -74,9 +75,9 @@ export function InvoiceActions({ invoiceId, hasEmail, hasPhone }: InvoiceActions
 
             <button
                 onClick={() => handleSend('WHATSAPP')}
-                disabled={!hasPhone || !!sending || success === 'WHATSAPP'}
+                disabled={!hasPhone || !!sending || success === 'WHATSAPP' || isFreePlan}
                 className={`p-2 rounded-lg transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed ${success === 'WHATSAPP' ? 'text-emerald-600 bg-emerald-50' : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900'}`}
-                title={success === 'WHATSAPP' ? 'Sent' : 'Send via WhatsApp'}
+                title={isFreePlan ? "Upgrade to Basic plan to send WhatsApp" : success === 'WHATSAPP' ? 'Sent' : 'Send via WhatsApp'}
             >
                 {success === 'WHATSAPP' ? (
                     <CheckCircle2 className="w-4 h-4" />

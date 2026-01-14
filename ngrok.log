@@ -1,0 +1,8 @@
+t=2026-01-10T03:04:49+0530 lvl=info msg="no configuration paths supplied"
+t=2026-01-10T03:04:49+0530 lvl=info msg="using configuration at default config path" path="/Users/mhoque/Library/Application Support/ngrok/ngrok.yml"
+t=2026-01-10T03:04:49+0530 lvl=info msg="open config file" path="/Users/mhoque/Library/Application Support/ngrok/ngrok.yml" err=nil
+t=2026-01-10T03:04:49+0530 lvl=info msg="starting web service" obj=web addr=127.0.0.1:4040 allow_hosts=[]
+t=2026-01-10T03:04:50+0530 lvl=info msg="client session established" obj=tunnels.session
+t=2026-01-10T03:04:50+0530 lvl=info msg="tunnel session started" obj=tunnels.session
+t=2026-01-10T03:04:50+0530 lvl=info msg="started tunnel" obj=tunnels name=command_line addr=http://localhost:3000 url=https://cb6a17ef9eb0.ngrok-free.app
+t=2026-01-10T03:04:51+0530 lvl=info msg="update available" obj=updater

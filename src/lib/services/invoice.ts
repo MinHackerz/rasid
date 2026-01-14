@@ -151,6 +151,12 @@ export async function createInvoice(
             },
         });
 
+        // Increment invoice count
+        await tx.seller.update({
+            where: { id: sellerId },
+            data: { invoicesCount: { increment: 1 } }
+        });
+
         // Create invoice items
         await tx.invoiceItem.createMany({
             data: input.items.map((item, index) => {

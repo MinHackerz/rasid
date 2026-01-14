@@ -15,9 +15,10 @@ interface InvoicesTableProps {
         buyerId?: string;
         source?: string;
     };
+    isFreePlan?: boolean;
 }
 
-export async function InvoicesTable({ searchParams }: InvoicesTableProps) {
+export async function InvoicesTable({ searchParams, isFreePlan = false }: InvoicesTableProps) {
     const session = await getSession();
     if (!session) return null;
 
@@ -134,6 +135,7 @@ export async function InvoicesTable({ searchParams }: InvoicesTableProps) {
                                                     invoiceId={invoice.id}
                                                     hasEmail={!!invoice.buyer?.email}
                                                     hasPhone={!!invoice.buyer?.phone}
+                                                    isFreePlan={isFreePlan}
                                                 />
                                             </td>
                                         </tr>
