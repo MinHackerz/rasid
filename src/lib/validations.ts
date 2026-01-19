@@ -51,6 +51,7 @@ export const invoiceItemSchema = z.object({
     unitPrice: z.number().min(0, 'Price cannot be negative'),
     taxRate: z.number().min(0).max(100).default(0),
     discount: z.number().min(0).default(0),
+    inventoryItemId: z.string().optional(),
 });
 
 // ============================================

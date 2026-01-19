@@ -121,7 +121,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }: ModalProps) =>
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -130,14 +130,20 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }: ModalProps) =>
                         onClick={onClose}
                     />
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                        initial={{ opacity: 0, y: 100 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 100 }}
                         transition={{ type: "spring", duration: 0.5 }}
-                        className={cn('relative w-full bg-background rounded-2xl shadow-2xl border border-border/50 overflow-hidden', sizes[size])}
+                        className={cn(
+                            'relative w-full bg-background shadow-2xl border border-border/50 overflow-hidden',
+                            'rounded-t-2xl sm:rounded-2xl',
+                            'max-h-[90vh] sm:max-h-[85vh]',
+                            'flex flex-col',
+                            sizes[size]
+                        )}
                     >
                         {title && (
-                            <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-muted/10">
+                            <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border/50 bg-muted/10 flex-shrink-0">
                                 <h2 className="text-md font-semibold text-foreground">{title}</h2>
                                 <button
                                     onClick={onClose}
@@ -147,7 +153,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }: ModalProps) =>
                                 </button>
                             </div>
                         )}
-                        <div className="p-6">{children}</div>
+                        <div className="p-4 sm:p-6 overflow-y-auto flex-1">{children}</div>
                     </motion.div>
                 </div>
             )}

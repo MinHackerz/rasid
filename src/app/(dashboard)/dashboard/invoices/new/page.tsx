@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Button, Input, Textarea, Card, CardHeader, CardBody, CardFooter, FormRow, Select } from '@/components/ui';
-import { Plus, Trash2, ArrowLeft, AlertCircle } from 'lucide-react';
+import { Button, Input, Textarea, Card, CardHeader, CardBody, CardFooter, FormRow, Select, BarcodeScanner } from '@/components/ui';
+import { Plus, Trash2, ArrowLeft, AlertCircle, ScanBarcode, Search, UserCheck } from 'lucide-react';
 import Link from 'next/link';
 
 import { CURRENCIES, getCurrencySymbol, getCurrencyTaxName, getCurrencyTaxIdLabel } from '@/lib/currencies';
@@ -58,6 +58,22 @@ export default function NewInvoicePage() {
 
     const [defaultTaxRate, setDefaultTaxRate] = useState(0);
     const [inventory, setInventory] = useState<InventoryItem[]>([]);
+    const [scannerOpen, setScannerOpen] = useState(false);
+    const [scanningItemIndex, setScanningItemIndex] = useState<number | null>(null);
+
+    // Customer search
+    const [customerSearch, setCustomerSearch] = useState('');
+    const [customerResults, setCustomerResults] = useState<Array<{
+        id: string;
+        name: string;
+        email: string | null;
+        phone: string | null;
+        address: string | null;
+        state: string | null;
+        taxId: string | null;
+    }>>([]);
+    const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+    const [searchingCustomers, setSearchingCustomers] = useState(false);
 
     const [formData, setFormData] = useState<InvoiceFormData>({
         buyerName: '',
@@ -237,6 +253,19 @@ export default function NewInvoicePage() {
     const removeItem = (index: number) => {
         if (items.length > 1) {
             setItems(items.filter((_, i) => i !== index));
+        } else {
+            // Reset the single item to default state
+            setItems([{
+                description: '',
+                quantity: 1,
+                unit: 'pcs',
+                unitPrice: 0,
+                taxRate: defaultTaxRate,
+                discount: 0,
+                discountType: 'AMOUNT',
+                isManual: inventory.length === 0,
+                inventoryItemId: undefined
+            }]);
         }
     };
 
@@ -275,6 +304,48 @@ export default function NewInvoicePage() {
     const formatAmount = (amount: number) => {
         const symbol = getCurrencySymbol(formData.currency);
         return `${symbol}${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    };
+
+    const handleBarcodeScanForItem = async (barcode: string) => {
+        if (scanningItemIndex === null) return;
+
+        try {
+            const response = await fetch(`/api/barcode/lookup?barcode=${encodeURIComponent(barcode)}`);
+            const data = await response.json();
+
+            if (data.success && data.data) {
+                if (data.data.source === 'inventory') {
+                    // Product exists in inventory - use it
+                    const invItem = data.data.inventoryItem;
+                    updateItem(scanningItemIndex, {
+                        description: invItem.description,
+                        unitPrice: Number(invItem.price),
+                        unit: invItem.unit,
+                        taxRate: Number(invItem.taxRate),
+                        quantity: 1,
+                        inventoryItemId: invItem.id,
+                        isManual: false
+                    });
+                } else if (data.data.found && data.data.product) {
+                    // External API found product
+                    const product = data.data.product;
+                    updateItem(scanningItemIndex, {
+                        description: product.name,
+                        isManual: true,
+                        quantity: 1
+                    });
+                } else {
+                    // Not found - just set manual mode
+                    updateItem(scanningItemIndex, { isManual: true });
+                    setError(`Product not found for barcode: ${barcode}. Please enter manually.`);
+                }
+            }
+        } catch (err) {
+            console.error('Barcode lookup error:', err);
+            setError('Failed to lookup barcode.');
+        } finally {
+            setScanningItemIndex(null);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -513,8 +584,91 @@ export default function NewInvoicePage() {
 
                 {/* Buyer Details */}
                 <Card className="mb-6">
-                    <CardHeader title="Buyer Details" description="Who is this invoice for?" />
+                    <CardHeader
+                        title="Buyer Details"
+                        description="Who is this invoice for?"
+                    />
                     <CardBody className="space-y-5">
+                        {/* Customer Search */}
+                        <div className="relative mb-2">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
+                                <input
+                                    type="text"
+                                    placeholder="Search existing customer (name, email or phone)..."
+                                    value={customerSearch}
+                                    onChange={async (e) => {
+                                        const query = e.target.value;
+                                        setCustomerSearch(query);
+                                        if (query.length >= 2) {
+                                            setSearchingCustomers(true);
+                                            try {
+                                                const res = await fetch(`/api/buyers/search?q=${encodeURIComponent(query)}`);
+                                                const data = await res.json();
+                                                if (data.success) {
+                                                    setCustomerResults(data.data);
+                                                    setShowCustomerDropdown(true);
+                                                }
+                                            } catch (err) {
+                                                console.error('Search error:', err);
+                                            } finally {
+                                                setSearchingCustomers(false);
+                                            }
+                                        } else {
+                                            setCustomerResults([]);
+                                            setShowCustomerDropdown(false);
+                                        }
+                                    }}
+                                    className="w-full h-10 pl-10 pr-3 text-sm rounded-xl border border-neutral-200 focus:outline-none focus:border-neutral-400 bg-neutral-50/50 focus:bg-white transition-colors"
+                                />
+                                {searchingCustomers && (
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                        <div className="w-4 h-4 border-2 border-neutral-300 border-t-neutral-600 rounded-full animate-spin"></div>
+                                    </div>
+                                )}
+                            </div>
+                            {showCustomerDropdown && customerResults.length > 0 && (
+                                <div className="absolute left-0 right-0 top-full mt-1 bg-white/95 backdrop-blur-xl border border-neutral-200 rounded-xl shadow-2xl z-20 max-h-60 overflow-auto">
+                                    {customerResults.map((customer) => (
+                                        <button
+                                            key={customer.id}
+                                            type="button"
+                                            onClick={() => {
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    buyerName: customer.name,
+                                                    buyerEmail: customer.email || '',
+                                                    buyerPhone: customer.phone || '',
+                                                    buyerAddress: customer.address || '',
+                                                    buyerState: customer.state || '',
+                                                    buyerTaxId: customer.taxId || '',
+                                                }));
+                                                setCustomerSearch('');
+                                                setShowCustomerDropdown(false);
+                                            }}
+                                            className="w-full px-4 py-3 text-left hover:bg-neutral-50 border-b border-neutral-100 last:border-0 transition-colors"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
+                                                    <UserCheck className="w-4 h-4 text-green-600" />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="font-medium text-sm text-neutral-900 truncate">{customer.name}</p>
+                                                    <p className="text-xs text-neutral-500 truncate">
+                                                        {customer.email || customer.phone || 'No contact info'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Divider */}
+                        <div className="relative py-2 flex justify-center">
+                            <span className="text-xs text-neutral-400 font-medium uppercase tracking-wider">or enter details manually</span>
+                        </div>
                         <FormRow>
                             <Input
                                 label="Buyer Name"
@@ -641,19 +795,63 @@ export default function NewInvoicePage() {
                         title="Line Items"
                         description="Add products or services"
                         action={
-                            <Button type="button" variant="secondary" size="sm" onClick={addItem}>
-                                <Plus className="w-4 h-4" />
-                                Add Item
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() => {
+                                        // Check if last item is empty and reuse it
+                                        const lastIndex = items.length - 1;
+                                        const lastItem = items[lastIndex];
+                                        const isEmpty = items.length > 0 && (!lastItem.description || lastItem.description === '') && Number(lastItem.unitPrice) === 0;
+
+                                        if (isEmpty) {
+                                            setScanningItemIndex(lastIndex);
+                                            setScannerOpen(true);
+                                        } else {
+                                            // Add a new item and open scanner for it
+                                            const newIndex = items.length;
+                                            addItem();
+                                            setTimeout(() => {
+                                                setScanningItemIndex(newIndex);
+                                                setScannerOpen(true);
+                                            }, 100);
+                                        }
+                                    }}
+                                    className="border-2 border-neutral-400 hover:border-neutral-600 shadow-sm"
+                                >
+                                    <ScanBarcode className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Scan Barcode</span>
+                                    <span className="sm:hidden">Scan</span>
+                                </Button>
+                                <Button type="button" variant="secondary" size="sm" onClick={addItem}>
+                                    <Plus className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Add Item</span>
+                                    <span className="sm:hidden">Add</span>
+                                </Button>
+                            </div>
                         }
                     />
                     <CardBody className="p-0">
                         <div className="divide-y divide-neutral-100">
                             {items.map((item, index) => (
                                 <div key={index} className="group p-4 md:p-6 hover:bg-neutral-50/50 transition-colors relative">
+                                    {/* Mobile Header: Item Label & Delete Button */}
+                                    <div className="flex md:hidden justify-between items-center mb-3 pb-3 border-b border-neutral-100">
+                                        <span className="text-[10px] font-bold text-neutral-400 tracking-wider">ITEM {index + 1}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => removeItem(index)}
+                                            className="text-neutral-400 hover:text-red-500 transition-colors p-1"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+
                                     <div className="space-y-4">
-                                        <div className="grid grid-cols-12 gap-4">
-                                            {/* Description - Full width on mobile, large portion on desktop */}
+                                        <div className="grid grid-cols-12 gap-x-3 gap-y-4">
+                                            {/* Description - Full width */}
                                             <div className="col-span-12 md:col-span-4">
                                                 <label className="block text-xs font-medium text-neutral-500 mb-1.5 flex justify-between">
                                                     <span>Item Description</span>
@@ -674,14 +872,13 @@ export default function NewInvoicePage() {
                                                         value={inventory.find(inv => inv.description === item.description && Number(inv.price) === item.unitPrice)?.id || ''}
                                                         currencySymbol={getCurrencySymbol(formData.currency)}
                                                         onChange={(product) => {
-                                                            // Atomically update all fields to prevent race conditions and ensure UI reflects state immediately
                                                             updateItem(index, {
                                                                 description: product.description,
                                                                 unitPrice: Number(product.price),
                                                                 unit: product.unit,
                                                                 taxRate: Number(product.taxRate),
-                                                                quantity: 1, // Default to 1 as requested
-                                                                inventoryItemId: product.id // Track for stock deduction
+                                                                quantity: 1,
+                                                                inventoryItemId: product.id
                                                             });
                                                         }}
                                                         onManualSelect={() => {
@@ -699,7 +896,7 @@ export default function NewInvoicePage() {
                                                 )}
                                             </div>
 
-                                            {/* Quantity - Half on mobile */}
+                                            {/* Quantity */}
                                             <div className="col-span-6 md:col-span-2">
                                                 <label className="block text-xs font-medium text-neutral-500 mb-1.5 ">Quantity</label>
                                                 <Input
@@ -713,7 +910,7 @@ export default function NewInvoicePage() {
                                                 />
                                             </div>
 
-                                            {/* Unit - Half on mobile */}
+                                            {/* Unit */}
                                             <div className="col-span-6 md:col-span-1">
                                                 <label className="block text-xs font-medium text-neutral-500 mb-1.5 ">Unit</label>
                                                 <Input
@@ -724,7 +921,7 @@ export default function NewInvoicePage() {
                                                 />
                                             </div>
 
-                                            {/* Price - Half on mobile */}
+                                            {/* Price */}
                                             <div className="col-span-6 md:col-span-2">
                                                 <label className="block text-xs font-medium text-neutral-500 mb-1.5 ">Unit Price</label>
                                                 <Input
@@ -738,7 +935,7 @@ export default function NewInvoicePage() {
                                                 />
                                             </div>
 
-                                            {/* Tax - Half on mobile */}
+                                            {/* Tax */}
                                             <div className="col-span-6 md:col-span-1">
                                                 <label className="block text-xs font-medium text-neutral-500 mb-1.5 ">{getCurrencyTaxName(formData.currency)} (%)</label>
                                                 <Input
@@ -752,7 +949,7 @@ export default function NewInvoicePage() {
                                                 />
                                             </div>
 
-                                            {/* Discount - Full on mobile (or half/half with Amount?) Let's do Half */}
+                                            {/* Discount */}
                                             <div className="col-span-6 md:col-span-2">
                                                 <label className="block text-xs font-medium text-neutral-500 mb-1.5 ">Discount</label>
                                                 <div className="flex gap-2">
@@ -767,7 +964,7 @@ export default function NewInvoicePage() {
                                                     <select
                                                         className="h-11 px-2 text-sm bg-neutral-50 border border-neutral-200 rounded-lg focus:outline-none focus:border-neutral-900 transition-all font-medium w-12 md:w-20"
                                                         value={item.discountType}
-                                                        onChange={(e) => updateItem(index, 'discountType', e.target.value)}
+                                                        onChange={(e) => updateItem(index, 'discountType', e.target.value as any)}
                                                     >
                                                         <option value="AMOUNT">{getCurrencySymbol(formData.currency)}</option>
                                                         <option value="PERCENT">%</option>
@@ -775,7 +972,7 @@ export default function NewInvoicePage() {
                                                 </div>
                                             </div>
 
-                                            {/* Amount - Styled as a prominent display, positioned below Discount on the right */}
+                                            {/* Amount */}
                                             <div className="col-span-6 md:col-span-2 col-start-7 md:col-start-11 flex items-end justify-end">
                                                 <div className="w-full bg-gradient-to-br from-neutral-900 to-neutral-800 rounded-xl px-4 py-3 text-right shadow-sm">
                                                     <p className="text-[10px] text-neutral-400 uppercase tracking-wider mb-0.5">Line Total</p>
@@ -787,12 +984,11 @@ export default function NewInvoicePage() {
                                         </div>
                                     </div>
 
-                                    {/* Remove Button */}
+                                    {/* Desktop Remove Button */}
                                     <button
                                         type="button"
                                         onClick={() => removeItem(index)}
-                                        className="absolute top-4 right-4 p-2 text-neutral-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                                        disabled={items.length === 1}
+                                        className="hidden md:block absolute top-4 right-4 p-2 text-neutral-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                                         title="Remove Item"
                                     >
                                         <Trash2 className="w-4 h-4" />
@@ -900,6 +1096,17 @@ export default function NewInvoicePage() {
                     </Button>
                 </div>
             </form>
+
+            {/* Barcode Scanner Modal */}
+            <BarcodeScanner
+                isOpen={scannerOpen}
+                onClose={() => {
+                    setScannerOpen(false);
+                    setScanningItemIndex(null);
+                }}
+                onScan={handleBarcodeScanForItem}
+                title="Scan Product Barcode"
+            />
         </div>
     );
 }

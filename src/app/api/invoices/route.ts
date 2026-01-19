@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
         // Revalidate paths
         revalidatePath('/dashboard/invoices');
         revalidatePath('/dashboard/scans');
+        revalidatePath('/dashboard/inventory'); // Ensure stock levels are updated
         revalidatePath('/dashboard');
 
         return NextResponse.json({

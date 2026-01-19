@@ -74,14 +74,16 @@ export default function InventorySelector({
                     <span className="text-neutral-500">Select Product...</span>
                 )}
 
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-500">
-                    <ChevronDown className="w-4 h-4" />
-                </div>
+                {selectedItem && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-500">
+                        <ChevronDown className="w-4 h-4" />
+                    </div>
+                )}
             </div>
 
             {/* Dropdown Menu */}
             {isOpen && (
-                <div className="absolute left-0 top-full mt-1 w-full min-w-[300px] z-50 bg-white/80 backdrop-blur-md border border-neutral-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute left-0 top-full mt-1 w-full min-w-[300px] z-50 bg-white/80 backdrop-blur-md border border-neutral-200 rounded-xl shadow-lg max-h-60 overflow-y-auto no-scrollbar">
                     <div className="p-1">
                         {inventory.map((item) => (
                             <div

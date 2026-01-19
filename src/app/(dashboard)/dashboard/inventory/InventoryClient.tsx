@@ -3,8 +3,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Input, Textarea, Card, CardBody, Badge, EmptyState, Modal, FormRow } from '@/components/ui';
-import { Plus, Package, Search, Pencil, Trash2, AlertCircle } from 'lucide-react';
+import { Button, Input, Textarea, Card, CardBody, Badge, EmptyState, Modal, FormRow, BarcodeScanner } from '@/components/ui';
+import { Plus, Package, Search, Pencil, Trash2, AlertCircle, ScanBarcode, Loader2 } from 'lucide-react';
 import { getCurrencySymbol, getCurrencyTaxName } from '@/lib/currencies';
 // import { InventoryItem } from '@prisma/client'; 
 
@@ -15,6 +15,7 @@ interface InventoryItem {
     note: string | null; // Was description
     sku: string | null;
     hsnCode: string | null;
+    barcode: string | null; // Scanned barcode
     quantity: number;
     unit: string;
     price: any; // Decimal
@@ -36,8 +37,12 @@ export default function InventoryClient({ initialData }: InventoryClientProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [currency, setCurrency] = useState('INR'); // Default currency
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
+    const [scanLoading, setScanLoading] = useState(false);
 
     // Fetch default currency from profile/preferences
+    const [deleteId, setDeleteId] = useState<string | null>(null);
+
     useEffect(() => {
         fetch('/api/profile')
             .then(res => res.json())
@@ -55,6 +60,7 @@ export default function InventoryClient({ initialData }: InventoryClientProps) {
         note: '', // Was description
         sku: '',
         hsnCode: '',
+        barcode: '',
         price: '',
         quantity: '',
         unit: 'pcs',
@@ -70,10 +76,11 @@ export default function InventoryClient({ initialData }: InventoryClientProps) {
         if (item) {
             setEditingItem(item);
             setFormData({
-                description: item.description, // description -> name (in form)
-                note: item.note || '', // note -> description (in form)
+                description: item.description,
+                note: item.note || '',
                 sku: item.sku || '',
                 hsnCode: item.hsnCode || '',
+                barcode: item.barcode || '',
                 price: item.price.toString(),
                 quantity: item.quantity.toString(),
                 unit: item.unit,
@@ -86,6 +93,7 @@ export default function InventoryClient({ initialData }: InventoryClientProps) {
                 note: '',
                 sku: '',
                 hsnCode: '',
+                barcode: '',
                 price: '',
                 quantity: '0',
                 unit: 'pcs',
@@ -94,6 +102,79 @@ export default function InventoryClient({ initialData }: InventoryClientProps) {
         }
         setError('');
         setIsModalOpen(true);
+    };
+
+    const handleBarcodeScan = async (barcode: string) => {
+        setScanLoading(true);
+        setError('');
+
+        try {
+            const response = await fetch(`/api/barcode/lookup?barcode=${encodeURIComponent(barcode)}`);
+            const data = await response.json();
+
+            if (data.success && data.data) {
+                if (data.data.source === 'inventory') {
+                    // Product already exists in inventory - Open validation/edit modal
+                    const existingItem = items.find(item => item.id === data.data.inventoryItem.id);
+
+                    if (existingItem) {
+                        setEditingItem(existingItem);
+                        setFormData({
+                            description: existingItem.description,
+                            note: existingItem.note || '',
+                            sku: existingItem.sku || '',
+                            hsnCode: existingItem.hsnCode || '',
+                            barcode: existingItem.barcode || '',
+                            price: existingItem.price.toString(),
+                            quantity: existingItem.quantity.toString(),
+                            unit: existingItem.unit,
+                            taxRate: existingItem.taxRate.toString()
+                        });
+                        setIsModalOpen(true);
+                    } else {
+                        // If for some reason not in local state, show error or fetch?
+                        // For now fallback to error to be safe, or just use API data
+                        setError(`Product exists but not found in local list. Please refresh.`);
+                    }
+                } else if (data.data.found && data.data.product) {
+                    // External API found product - pre-fill form
+                    const product = data.data.product;
+                    setFormData({
+                        description: product.name || '',
+                        note: product.description || (product.brand ? `Brand: ${product.brand}` : ''),
+                        sku: '',
+                        hsnCode: '',
+                        barcode: barcode,
+                        price: '',
+                        quantity: '0',
+                        unit: product.quantity?.includes('kg') ? 'kg' : 'pcs',
+                        taxRate: '0'
+                    });
+                    setIsModalOpen(true);
+                } else {
+                    // Product not found - open modal with barcode pre-filled
+                    setFormData({
+                        description: '',
+                        note: '',
+                        sku: '',
+                        hsnCode: '',
+                        barcode: barcode,
+                        price: '',
+                        quantity: '0',
+                        unit: 'pcs',
+                        taxRate: '0'
+                    });
+                    setIsModalOpen(true);
+                }
+            }
+        } catch (err) {
+            console.error('Barcode lookup error:', err);
+            setError('Failed to lookup barcode. Please enter details manually.');
+            setFormData(prev => ({ ...prev, barcode }));
+            setIsModalOpen(true);
+        } finally {
+            setScanLoading(false);
+        }
     };
 
     const handleSave = async (e: React.FormEvent) => {
@@ -139,11 +220,15 @@ export default function InventoryClient({ initialData }: InventoryClientProps) {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this item?')) return;
+    const handleDelete = (id: string) => {
+        setDeleteId(id);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteId) return;
 
         try {
-            const response = await fetch(`/api/inventory/${id}`, {
+            const response = await fetch(`/api/inventory/${deleteId}`, {
                 method: 'DELETE'
             });
 
@@ -152,10 +237,12 @@ export default function InventoryClient({ initialData }: InventoryClientProps) {
                 throw new Error(data.error || 'Failed to delete item');
             }
 
-            setItems(items.filter(i => i.id !== id));
+            setItems(items.filter(i => i.id !== deleteId));
             router.refresh();
         } catch (err) {
             alert(err instanceof Error ? err.message : 'An error occurred');
+        } finally {
+            setDeleteId(null);
         }
     };
 
@@ -173,10 +260,23 @@ export default function InventoryClient({ initialData }: InventoryClientProps) {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <Button onClick={() => openModal()}>
-                    <Plus className="w-4 h-4" />
-                    Add Product
-                </Button>
+                <div className="flex gap-2 w-full sm:w-auto">
+                    <Button
+                        variant="secondary"
+                        onClick={() => setIsScannerOpen(true)}
+                        disabled={scanLoading}
+                        className="flex-1 sm:flex-none border-2 border-neutral-400 hover:border-neutral-600 shadow-sm"
+                    >
+                        {scanLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ScanBarcode className="w-4 h-4" />}
+                        <span className="hidden sm:inline">Scan Barcode</span>
+                        <span className="sm:hidden">Scan</span>
+                    </Button>
+                    <Button onClick={() => openModal()} className="flex-1 sm:flex-none">
+                        <Plus className="w-4 h-4" />
+                        <span className="hidden sm:inline">Add Product</span>
+                        <span className="sm:hidden">Add</span>
+                    </Button>
+                </div>
             </div>
 
             {/* List */}
@@ -256,11 +356,11 @@ export default function InventoryClient({ initialData }: InventoryClientProps) {
                 onClose={() => setIsModalOpen(false)}
                 title={editingItem ? 'Edit Product' : 'Add New Product'}
             >
-                <form onSubmit={handleSave} className="space-y-4">
+                <form onSubmit={handleSave} className="space-y-3">
                     {error && (
-                        <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2">
-                            <AlertCircle className="w-4 h-4" />
-                            {error}
+                        <div className="p-2 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                            <span className="text-xs">{error}</span>
                         </div>
                     )}
 
@@ -270,14 +370,6 @@ export default function InventoryClient({ initialData }: InventoryClientProps) {
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         required
                         placeholder="e.g. Wireless Mouse"
-                    />
-
-                    <Textarea
-                        label="Internal Note / Details"
-                        value={formData.note}
-                        onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                        placeholder="Extra details..."
-                        rows={2}
                     />
 
                     <FormRow>
@@ -303,7 +395,7 @@ export default function InventoryClient({ initialData }: InventoryClientProps) {
 
                     <FormRow>
                         <Input
-                            label="Stock Quantity"
+                            label="Stock Qty"
                             type="number"
                             min="0"
                             value={formData.quantity}
@@ -313,24 +405,39 @@ export default function InventoryClient({ initialData }: InventoryClientProps) {
                             label="Unit"
                             value={formData.unit}
                             onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                            placeholder="e.g. pcs, kg"
+                            placeholder="pcs, kg"
+                        />
+                        <Input
+                            label="Barcode"
+                            value={formData.barcode}
+                            onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
+                            placeholder="EAN/UPC"
                         />
                     </FormRow>
 
                     <FormRow>
                         <Input
-                            label="SKU (Optional)"
+                            label="SKU"
                             value={formData.sku}
                             onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                            placeholder="Optional"
                         />
                         <Input
-                            label="HSN Code (Optional)"
+                            label="HSN Code"
                             value={formData.hsnCode}
                             onChange={(e) => setFormData({ ...formData, hsnCode: e.target.value })}
+                            placeholder="Optional"
                         />
                     </FormRow>
 
-                    <div className="flex justify-end gap-3 pt-4 border-t border-neutral-100">
+                    <Input
+                        label="Note (Optional)"
+                        value={formData.note}
+                        onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                        placeholder="Internal details..."
+                    />
+
+                    <div className="flex justify-end gap-3 pt-3 border-t border-neutral-100">
                         <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>
                             Cancel
                         </Button>
@@ -340,6 +447,39 @@ export default function InventoryClient({ initialData }: InventoryClientProps) {
                     </div>
                 </form>
             </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                isOpen={!!deleteId}
+                onClose={() => setDeleteId(null)}
+                title="Confirm Deletion"
+                size="sm"
+            >
+                <div className="space-y-4">
+                    <p className="text-sm text-neutral-600">
+                        Are you sure you want to delete this item? This action cannot be undone.
+                    </p>
+                    <div className="flex justify-end gap-3 pt-2">
+                        <Button variant="secondary" onClick={() => setDeleteId(null)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={confirmDelete}
+                        >
+                            Delete
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Barcode Scanner Modal */}
+            <BarcodeScanner
+                isOpen={isScannerOpen}
+                onClose={() => setIsScannerOpen(false)}
+                onScan={handleBarcodeScan}
+                title="Scan Product Barcode"
+            />
         </div>
     );
 }

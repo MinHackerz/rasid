@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { description, note, sku, hsnCode, quantity, unit, price, taxRate } = body;
+        const { description, note, sku, hsnCode, barcode, quantity, unit, price, taxRate } = body;
 
         if (!description || price === undefined) {
             return NextResponse.json({ error: 'Description and Price are required' }, { status: 400 });
@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
                 note,
                 sku,
                 hsnCode,
+                barcode,
                 quantity: quantity || 0,
                 unit: unit || 'pcs',
                 price,

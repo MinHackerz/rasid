@@ -34,3 +34,4 @@ export type { FileWithPreview } from './FileUpload';
 
 export { ImageUpload } from './ImageUpload';
 export { Progress } from './Progress';
+export { BarcodeScanner } from './BarcodeScanner';

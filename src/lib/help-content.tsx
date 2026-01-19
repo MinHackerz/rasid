@@ -544,6 +544,73 @@ export const helpContent: HelpSection[] = [
                     'Inventory items speed up invoice creation significantly',
                     'You can override auto-filled prices for specific invoices'
                 ]
+            },
+            {
+                id: 'barcode-scanning',
+                title: 'Barcode Scanning',
+                content: `**Barcode Scanner Feature (Pro, Premium, Lifetime):**
+
+Quickly add products to your inventory or invoices by scanning barcodes using your device's camera.
+
+**Adding Products via Barcode:**
+1. Go to **Inventory** page
+2. Click the **"Scan Barcode"** button
+3. Point your camera at the product barcode
+4. Product details are automatically fetched from global databases
+5. Review and edit details, then save
+
+**Supported Barcode Types:**
+- EAN-13 / EAN-8 (retail products)
+- UPC-A / UPC-E (US products)
+- Code-128 / Code-39 (industrial)
+- QR Codes
+
+**Product Data Sources:**
+- Your local inventory (checked first)
+- Open Food Facts (global food database)
+- UPCitemdb (consumer products)
+
+**Tips for Better Scanning:**
+- Hold the barcode steady in the green frame
+- Ensure good lighting
+- For laptop webcams, hold the barcode closer`,
+                tips: [
+                    'Laptop webcams work but may need the barcode held closer',
+                    'Product data is cached for faster future lookups',
+                    'Manual entry is always available if barcode not found'
+                ]
+            },
+            {
+                id: 'customer-search',
+                title: 'Customer Search & Auto-fill',
+                content: `**Quick Customer Lookup (Pro, Premium, Lifetime):**
+
+Search and select existing customers when creating invoices to auto-fill all buyer details.
+
+**How to Use:**
+1. Go to **Invoices → Create New Invoice**
+2. In the **Buyer Details** section, find the search box in the header
+3. Type at least 2 characters (name, email, or phone)
+4. Matching customers appear in a dropdown
+5. Click a customer to auto-fill all fields
+
+**Fields Auto-filled:**
+- Buyer Name
+- Email
+- Phone
+- Address
+- State
+- Tax ID / GSTIN
+
+**Benefits:**
+- No need to remember customer details
+- Reduces data entry errors
+- Consistent customer information across invoices`,
+                tips: [
+                    'Search works with name, email, or phone number',
+                    'Customer data is saved automatically when you create invoices',
+                    'Great for repeat customers - just search and select'
+                ]
             }
         ]
     },

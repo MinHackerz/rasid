@@ -367,6 +367,7 @@ model InventoryItem {
   note        String?  // Was description, internal or extra notes
   sku         String?
   hsnCode     String?
+  barcode     String?  // Scanned barcode (EAN/UPC) for quick lookup
   quantity    Int      @default(0)
   unit        String   @default("pcs")
   price       Decimal  @db.Decimal(12, 2)
@@ -379,6 +380,7 @@ model InventoryItem {
 
   @@map("inventory_management")
   @@index([sellerId])
+  @@index([barcode])
 }
 
 // ============================================
