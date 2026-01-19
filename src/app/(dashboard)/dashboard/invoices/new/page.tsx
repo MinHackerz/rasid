@@ -270,15 +270,39 @@ export default function NewInvoicePage() {
     };
 
     const updateItem = (index: number, field: keyof LineItem | Partial<LineItem>, value?: string | number | boolean) => {
-        const updated = [...items];
+        const currentItem = items[index];
+        let newItem: LineItem = { ...currentItem };
+
         if (typeof field === 'object') {
-            updated[index] = { ...updated[index], ...field };
+            newItem = { ...newItem, ...field };
         } else {
-            updated[index] = {
-                ...updated[index],
+            newItem = {
+                ...newItem,
                 [field]: value,
             };
         }
+
+        // Validate Stock if Inventory Item
+        if (!newItem.isManual && newItem.inventoryItemId && inventory.length > 0) {
+            const invItem = inventory.find(i => i.id === newItem.inventoryItemId);
+            if (invItem) {
+                if (Number(newItem.quantity) > invItem.quantity) {
+                    setError(`Cannot exceed available stock (${invItem.quantity} ${invItem.unit}) for ${invItem.description}`);
+
+                    // Revert to max stock or previous value? 
+                    // Let's force it to max stock to be helpful
+                    newItem = { ...newItem, quantity: invItem.quantity };
+                } else {
+                    // Clear error checks if we were previously invalid? 
+                    if (error && error.includes('Cannot exceed available stock')) {
+                        setError('');
+                    }
+                }
+            }
+        }
+
+        const updated = [...items];
+        updated[index] = newItem;
         setItems(updated);
     };
 
@@ -314,10 +338,14 @@ export default function NewInvoicePage() {
             const data = await response.json();
 
             if (data.success && data.data) {
+                let productData: Partial<LineItem> | null = null;
+                let matchId: string | undefined = undefined;
+
                 if (data.data.source === 'inventory') {
-                    // Product exists in inventory - use it
+                    // Product exists in inventory
                     const invItem = data.data.inventoryItem;
-                    updateItem(scanningItemIndex, {
+                    matchId = invItem.id;
+                    productData = {
                         description: invItem.description,
                         unitPrice: Number(invItem.price),
                         unit: invItem.unit,
@@ -325,17 +353,90 @@ export default function NewInvoicePage() {
                         quantity: 1,
                         inventoryItemId: invItem.id,
                         isManual: false
-                    });
+                    };
                 } else if (data.data.found && data.data.product) {
                     // External API found product
                     const product = data.data.product;
-                    updateItem(scanningItemIndex, {
+                    productData = {
                         description: product.name,
+                        unitPrice: product.price ? Number(product.price) : 0,
+                        unit: product.unit || 'pcs',
+                        quantity: 1,
                         isManual: true,
-                        quantity: 1
+                        inventoryItemId: undefined
+                    };
+                }
+
+                if (productData) {
+                    // Check if product already exists in items
+                    const existingIndex = items.findIndex((item, idx) => {
+                        if (idx === scanningItemIndex) return false; // Don't match self (the placeholder)
+
+                        // Match by Inventory ID
+                        if (matchId && item.inventoryItemId === matchId) return true;
+
+                        // Match by Description (for external items or robust fallback)
+                        if (item.description.trim().toLowerCase() === productData!.description?.trim().toLowerCase()) {
+                            // Optional: also check price equality to avoid merging if price differs?
+                            // For now, let's assume description match is sufficient for scan aggregation intent
+                            return true;
+                        }
+                        return false;
                     });
+
+                    if (existingIndex !== -1) {
+                        // Check stock before incrementing
+                        const existingItem = items[existingIndex];
+                        const newQuantity = Number(existingItem.quantity) + 1;
+
+                        if (!existingItem.isManual && existingItem.inventoryItemId) {
+                            const invItem = inventory.find(i => i.id === existingItem.inventoryItemId);
+                            if (invItem && newQuantity > invItem.quantity) {
+                                setError(`Cannot exceed available stock (${invItem.quantity} ${invItem.unit}) for ${invItem.description}`);
+                                setScanningItemIndex(null);
+                                return; // Stop here
+                            }
+                        }
+
+                        // Increment existing item
+                        const newItems = [...items];
+                        newItems[existingIndex] = {
+                            ...existingItem,
+                            quantity: newQuantity
+                        };
+
+                        // Check if the current scanning placeholder is empty/unused, if so remove it
+                        const placeholder = newItems[scanningItemIndex];
+                        if (!placeholder.description && !placeholder.unitPrice) {
+                            // Remove the placeholder. 
+                            // CAUTION: Removing changes indices. 
+                            // If scanningItemIndex > existingIndex, strict splice is fine.
+                            // If scanningItemIndex < existingIndex, existingIndex would have shifted? No, we accessed it before splice.
+                            // But usually usage pattern: Scan -> Add Row (last) -> Scan fills last.
+                            // Existing item is usually above.
+                            newItems.splice(scanningItemIndex, 1);
+                        } else {
+                            // If placeholder had some data, maybe we shouldn't delete it?
+                            // But user intended to scan INTO this line.
+                            // Since we merged into another line, this line is now "abandoned" regarding this scan.
+                            // If it was empty, deleting is correct.
+                            // If it wasn't empty (user clicked scan on a filled row?), then we probably shouldn't merge?
+                            // Actually, if user Scans on a filled row A, and gets Product B (which is already in row C).
+                            // We should probably increment C. And what happens to A?
+                            // Logic: The scan was successful. The result is aggregated into C. 
+                            // Row A remains as it was before the scan?
+                            // But the user physically clicked "Scan" on Row A.
+                            // If Row A was empty, delete. If not, leave alone.
+                        }
+
+                        setItems(newItems);
+                        // Maybe show toast: "Added to existing line item"
+                    } else {
+                        // New item
+                        updateItem(scanningItemIndex, productData);
+                    }
                 } else {
-                    // Not found - just set manual mode
+                    // Not found
                     updateItem(scanningItemIndex, { isManual: true });
                     setError(`Product not found for barcode: ${barcode}. Please enter manually.`);
                 }
