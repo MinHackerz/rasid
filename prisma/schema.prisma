@@ -65,6 +65,7 @@ model Seller {
   inventoryItems    InventoryItem[]
   members           TeamMember[]
   apiKeys           ApiKey[]
+  paymentReminders  PaymentReminder[]
   
   @@index([email])
 }
@@ -177,6 +178,7 @@ model Invoice {
   items               InvoiceItem[]
   deliveryLogs        DeliveryLog[]
   sourceDocument      UploadedDocument? @relation(fields: [sourceDocumentId], references: [id])
+  paymentReminders    PaymentReminder[]
   
   @@unique([sellerId, invoiceNumber])
   @@index([sellerId])
@@ -338,6 +340,57 @@ enum DeliveryStatus {
   DELIVERED
   FAILED
   BOUNCED
+}
+
+// ============================================
+// PAYMENT REMINDER - Automated payment reminders
+// ============================================
+model PaymentReminder {
+  id            String          @id @default(cuid())
+  invoiceId     String
+  sellerId      String
+  
+  // Reminder configuration
+  type          ReminderType    @default(BEFORE_DUE)
+  daysOffset    Int             @default(0) // Days before(-) or after(+) due date
+  channel       DeliveryMethod  @default(EMAIL)
+  
+  // Scheduling
+  scheduledFor  DateTime
+  status        ReminderStatus  @default(PENDING)
+  
+  // Tracking
+  sentAt        DateTime?
+  errorMessage  String?
+  messageId     String?         // External service message ID
+  
+  // Timestamps
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  
+  // Relations
+  invoice       Invoice         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  seller        Seller          @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  
+  @@index([invoiceId])
+  @@index([sellerId])
+  @@index([scheduledFor])
+  @@index([status])
+}
+
+enum ReminderType {
+  BEFORE_DUE    // Reminder before due date
+  ON_DUE        // Reminder on due date
+  AFTER_DUE     // Reminder after due date (overdue)
+  CUSTOM        // Custom scheduled reminder
+}
+
+enum ReminderStatus {
+  PENDING       // Waiting to be sent
+  SENT          // Successfully sent
+  FAILED        // Failed to send
+  CANCELLED     // Cancelled by user
+  SKIPPED       // Skipped (e.g., invoice already paid)
 }
 
 // ============================================

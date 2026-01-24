@@ -16,6 +16,7 @@ export interface PlanDetails {
         ocr: number;
         emailIntegration: boolean;
         businesses: number; // Number of businesses allowed (999999 means unlimited)
+        paymentReminders: boolean; // Smart payment reminders feature
     };
     dodoProductId?: string;
 }
@@ -41,7 +42,8 @@ export const PLANS: Record<PlanType, PlanDetails> = {
             inventory: false,
             ocr: 0,
             emailIntegration: false,
-            businesses: 1
+            businesses: 1,
+            paymentReminders: false
         }
     },
     BASIC: {
@@ -58,6 +60,7 @@ export const PLANS: Record<PlanType, PlanDetails> = {
             '3 team members',
             'Access to 5 pdf templates',
             '1000 pdf api/month',
+            'Smart Payment Reminders',
             'Basic email support'
         ],
         limits: {
@@ -69,7 +72,8 @@ export const PLANS: Record<PlanType, PlanDetails> = {
             inventory: false,
             ocr: 0,
             emailIntegration: true,
-            businesses: 3
+            businesses: 3,
+            paymentReminders: true
         },
         dodoProductId: process.env.DODO_PRODUCT_ID_BASIC
     },
@@ -91,6 +95,7 @@ export const PLANS: Record<PlanType, PlanDetails> = {
             'Barcode Scanner for Inventory',
             'Customer Search & Auto-fill',
             'Advanced Analytics Dashboard',
+            'Smart Payment Reminders',
             'Instant email support'
         ],
         limits: {
@@ -102,7 +107,8 @@ export const PLANS: Record<PlanType, PlanDetails> = {
             inventory: true,
             ocr: 0,
             emailIntegration: true,
-            businesses: 10
+            businesses: 10,
+            paymentReminders: true
         },
         dodoProductId: process.env.DODO_PRODUCT_ID_PRO
     },
@@ -124,6 +130,7 @@ export const PLANS: Record<PlanType, PlanDetails> = {
             'Barcode Scanner for Inventory',
             'Customer Search & Auto-fill',
             'Advanced Analytics Dashboard',
+            'Smart Payment Reminders',
             '2000 handwritten to digital invoices/month',
             'Exclusive access to upcoming features',
             'Instant email support'
@@ -137,7 +144,8 @@ export const PLANS: Record<PlanType, PlanDetails> = {
             inventory: true,
             ocr: 2000,
             emailIntegration: true,
-            businesses: 999999 // Unlimited
+            businesses: 999999, // Unlimited
+            paymentReminders: true
         },
         dodoProductId: process.env.DODO_PRODUCT_ID_PREMIUM
     },
@@ -160,6 +168,7 @@ export const PLANS: Record<PlanType, PlanDetails> = {
             'Barcode Scanner for Inventory',
             'Customer Search & Auto-fill',
             'Advanced Analytics Dashboard',
+            'Smart Payment Reminders',
             '10000 handwritten to digital invoices',
             'Exclusive access to upcoming features',
             'Direct support from the founder'
@@ -173,7 +182,8 @@ export const PLANS: Record<PlanType, PlanDetails> = {
             inventory: true,
             ocr: 10000,
             emailIntegration: true,
-            businesses: 999999 // Unlimited
+            businesses: 999999, // Unlimited
+            paymentReminders: true
         },
         dodoProductId: process.env.DODO_PRODUCT_ID_LIFETIME
     }

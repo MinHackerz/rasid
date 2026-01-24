@@ -8,6 +8,7 @@ import { ArrowLeft, Download, Printer, ExternalLink, Copy, QrCode, CheckCircle2 
 import InvoiceControls from '@/components/invoice/InvoiceControls';
 import VerificationLink from '@/components/invoice/VerificationLink';
 import InvoiceRenderer from '@/components/invoice/InvoiceRenderer';
+import PaymentReminders from '@/components/invoice/PaymentReminders';
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -139,6 +140,17 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
                     />
                 </CardBody>
             </Card>
+
+            {/* Payment Reminders Section */}
+            <PaymentReminders
+                invoiceId={invoice.id}
+                invoiceNumber={invoice.invoiceNumber}
+                dueDate={invoice.dueDate}
+                paymentStatus={invoice.paymentStatus}
+                hasEmail={hasEmail}
+                hasPhone={hasWhatsApp}
+                plan={sellerSettings?.plan || 'FREE'}
+            />
 
             {/* Verification Section */}
             <Card>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, FileText, Settings, Users, Shield, Upload, Package, BarChart3 } from 'lucide-react';
+import { BookOpen, FileText, Settings, Users, Shield, Upload, Package, BarChart3, Bell } from 'lucide-react';
 
 export interface HelpSection {
     id: string;
@@ -898,6 +898,107 @@ https://yourdomain.com/verify/[12-character-hash]
                     'Use analytics to identify your best customers',
                     'Monitor overdue amounts to improve cash flow',
                     'Check revenue trends to plan for busy or slow months'
+                ]
+            }
+        ]
+    },
+    {
+        id: 'payment-reminders',
+        title: 'Payment Reminders',
+        description: 'Automate payment follow-ups and get paid faster',
+        icon: <Bell className="w-5 h-5" />,
+        subsections: [
+            {
+                id: 'reminder-overview',
+                title: 'Smart Payment Reminders',
+                content: `**Available on Basic, Pro, Premium, and Lifetime plans**
+
+Smart Payment Reminders help you get paid faster by automatically sending payment reminders to your customers before, on, and after invoice due dates.
+
+**Key Features:**
+- **Automated Scheduling**: Reminders are automatically scheduled based on invoice due dates
+- **Multi-Channel Delivery**: Send reminders via Email or WhatsApp
+- **Smart Timing**: Customize when reminders are sent (before, on, or after due date)
+- **Intelligent Skipping**: Reminders are automatically skipped if invoice is already paid
+- **Escalating Messages**: Different message tones for friendly reminders vs. overdue notices
+
+**Default Reminder Schedule:**
+When you enable reminders for an invoice, the system creates:
+1. **3 days before due date** - Friendly heads-up reminder
+2. **1 day before due date** - Urgent reminder
+3. **On due date** - Payment due today notice
+4. **1 day after due date** - First overdue reminder
+5. **3 days after due date** - Follow-up overdue reminder
+6. **7 days after due date** - Final overdue notice`,
+                tips: [
+                    'Invoices must have a due date set to use payment reminders',
+                    'Configure email/WhatsApp integrations in Settings first',
+                    'Reminders are automatically cancelled when invoice is marked as PAID'
+                ]
+            },
+            {
+                id: 'setting-up-reminders',
+                title: 'Setting Up Reminders',
+                content: `**Prerequisites:**
+1. You must be on a **paid plan** (Basic or higher)
+2. Invoice must have a **due date** set
+3. Buyer must have **email** (for email) or **phone** (for WhatsApp)
+4. You must have configured **email/WhatsApp integration** in Settings
+
+**Creating Reminders:**
+1. Create or edit an invoice with a due date
+2. On the invoice detail page, look for the "Payment Reminders" section
+3. Click "Enable Reminders" to create the default reminder schedule
+4. Alternatively, create custom reminders with specific dates
+
+**Reminder Channels:**
+- **Email**: Sends a professionally formatted email with invoice details
+- **WhatsApp**: Sends a concise message with payment info and invoice link
+
+**Customizing Reminders:**
+- You can cancel individual reminders you don't want sent
+- Add custom reminders for specific dates
+- Switch the delivery channel (Email/WhatsApp) per reminder`,
+                tips: [
+                    'Test your email integration before enabling reminders',
+                    'Use WhatsApp for urgent or overdue reminders',
+                    'Check reminder status in your dashboard to track delivery'
+                ]
+            },
+            {
+                id: 'managing-reminders',
+                title: 'Managing Reminders',
+                content: `**Reminder Statuses:**
+- **PENDING**: Scheduled and waiting to be sent
+- **SENT**: Successfully delivered to buyer
+- **FAILED**: Delivery failed (check error message)
+- **SKIPPED**: Skipped because invoice was paid
+- **CANCELLED**: Manually cancelled by you
+
+**Viewing Reminders:**
+- View all reminders on the invoice detail page
+- See upcoming reminders in your dashboard
+- Track sent and failed reminders for troubleshooting
+
+**Cancelling Reminders:**
+1. Go to the invoice detail page
+2. Find the reminder you want to cancel
+3. Click the cancel button
+4. Cancelled reminders will not be sent
+
+**When Invoice is Paid:**
+- All pending reminders are automatically skipped
+- No further action needed from you
+
+**Troubleshooting Failed Reminders:**
+1. Check the error message for details
+2. Verify buyer has valid email/phone
+3. Confirm your integration settings are correct
+4. Try resending manually if needed`,
+                tips: [
+                    'Regularly check for failed reminders and fix issues promptly',
+                    'Update buyer contact info if reminders are bouncing',
+                    'Use the dashboard to monitor reminder performance'
                 ]
             }
         ]
