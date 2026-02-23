@@ -7,12 +7,19 @@ import { Button } from '@/components/ui';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Terms of Service - Rasid',
-    description: 'Read the Terms of Service for using Rasid platform for authentic invoice generation and verification.',
+    title: 'Terms of Service',
+    description: 'Read the Terms of Service for using Rasid platform for authentic invoice generation and cryptographic verification.',
     openGraph: {
         title: 'Terms of Service - Rasid',
-        description: 'Read the Terms of Service for using Rasid platform for authentic invoice generation and verification.',
-    }
+        description: 'Terms for using Rasid platform for authentic invoice generation and verification.',
+        images: [{ url: '/api/og?page=terms', width: 1200, height: 630, alt: 'Rasid Terms of Service' }],
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'Terms of Service - Rasid',
+        description: 'Terms for using Rasid for invoice generation and verification.',
+        images: ['/api/og?page=terms'],
+    },
 };
 
 export default function TermsPage() {

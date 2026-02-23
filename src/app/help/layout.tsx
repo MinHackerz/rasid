@@ -17,11 +17,13 @@ export const metadata: Metadata = {
         title: 'Help Center - Rasid Invoice Platform',
         description: 'Comprehensive help guide for Rasid invoice management platform. Learn how to create invoices, digitize documents with AI OCR, manage buyers, configure settings, and verify invoice authenticity.',
         type: 'website',
+        images: [{ url: '/api/og?page=help', width: 1200, height: 630, alt: 'Rasid Help Center' }],
     },
     twitter: {
         card: 'summary_large_image',
         title: 'Help Center - Rasid Invoice Platform',
         description: 'Comprehensive help guide for Rasid invoice management platform.',
+        images: ['/api/og?page=help'],
     },
     robots: {
         index: true,

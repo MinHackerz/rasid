@@ -8,6 +8,7 @@ import { prisma } from '@/lib/prisma';
 import { sendInvoiceEmail, sendInvoiceWhatsApp } from '@/lib/delivery';
 import { sendEmail } from '@/lib/email';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { logReminderSent } from '@/lib/services/activity';
 import { addDays, subDays, isAfter, isBefore, startOfDay } from 'date-fns';
 
 export type ReminderType = 'BEFORE_DUE' | 'ON_DUE' | 'AFTER_DUE' | 'CUSTOM';
@@ -241,6 +242,14 @@ export async function sendReminder(reminderId: string) {
                     messageId: result.messageId
                 }
             });
+
+            // Log to activity timeline
+            logReminderSent(
+                invoice.id,
+                reminder.channel,
+                buyer?.email || buyer?.phone || 'Unknown'
+            );
+
             return { success: true };
         } else {
             await prisma.paymentReminder.update({

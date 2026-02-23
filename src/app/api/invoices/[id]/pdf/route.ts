@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { getInvoicePDFBuffer } from '@/lib/pdf';
 import { prisma } from '@/lib/prisma';
+import { logPDFDownloaded } from '@/lib/services/activity';
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -34,6 +35,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
                 { status: 500 }
             );
         }
+
+        // Log download activity
+        logPDFDownloaded(id, 'SELLER', session.businessName || 'Seller');
 
         // Return PDF
         return new NextResponse(new Uint8Array(pdfBuffer), {

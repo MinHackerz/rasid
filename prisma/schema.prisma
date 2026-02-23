@@ -179,6 +179,7 @@ model Invoice {
   deliveryLogs        DeliveryLog[]
   sourceDocument      UploadedDocument? @relation(fields: [sourceDocumentId], references: [id])
   paymentReminders    PaymentReminder[]
+  activities          InvoiceActivity[]
   
   @@unique([sellerId, invoiceNumber])
   @@index([sellerId])
@@ -188,6 +189,58 @@ model Invoice {
   @@index([status])
   @@index([paymentStatus])
   @@index([deliveryStatus])
+}
+
+// ============================================
+// INVOICE ACTIVITY - Audit trail / timeline
+// ============================================
+model InvoiceActivity {
+  id            String          @id @default(cuid())
+  invoiceId     String
+  
+  // Activity details
+  type          ActivityType
+  title         String          // Human-readable title (e.g. "Invoice Created")
+  description   String?         // Optional detail (e.g. "Sent to john@email.com via Email")
+  
+  // Actor info
+  actorType     ActorType       @default(SYSTEM)
+  actorId       String?         // Seller ID, or null for anonymous/system
+  actorName     String?         // Display name ("John Doe" or "Customer" or "System")
+  
+  // Extra data
+  metadata      Json?           // Flexible: { ip, userAgent, method, channel, oldStatus, newStatus, etc. }
+  
+  // Timestamps
+  createdAt     DateTime        @default(now())
+  
+  // Relations
+  invoice       Invoice         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  @@index([invoiceId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+enum ActivityType {
+  CREATED           // Invoice was created
+  UPDATED           // Invoice was edited
+  STATUS_CHANGED    // Payment/delivery status changed
+  SENT              // Sent via email/whatsapp/sms
+  VIEWED            // Verification page was viewed by someone
+  VERIFIED          // QR verification completed
+  DOWNLOADED        // PDF was downloaded
+  REMINDER_SENT     // Payment reminder was sent
+  REMINDER_CREATED  // Payment reminder was scheduled
+  PAYMENT_RECORDED  // Payment was recorded
+  DELETED           // Invoice was deleted
+}
+
+enum ActorType {
+  SELLER    // The business owner / team member
+  BUYER     // The customer (e.g. viewing verification page)
+  SYSTEM    // Automated action (cron, auto-reminder)
+  ANONYMOUS // Unknown / public (e.g. someone scanning QR)
 }
 
 enum InvoiceStatus {

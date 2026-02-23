@@ -6,8 +6,21 @@ import { CodeTabs } from '@/components/api-docs/CodeTabs';
 import { Endpoint } from '@/components/api-docs/Endpoint';
 
 export const metadata: Metadata = {
-    title: 'API Documentation | Rasid',
-    description: 'Complete API documentation for programmatically generating invoices with Rasid',
+    title: 'API Documentation',
+    description: 'Complete REST API documentation for programmatically generating invoices with Rasid. Code examples in cURL, JavaScript, Python, PHP, and Go.',
+    keywords: ['Rasid API', 'invoice API', 'REST API', 'invoice generation API', 'developer API', 'programmatic invoices'],
+    openGraph: {
+        title: 'API Documentation | Rasid',
+        description: 'Build invoicing into your app. Generate professional PDF invoices programmatically with our REST API.',
+        type: 'website',
+        images: [{ url: '/api/og?page=api-docs', width: 1200, height: 630, alt: 'Rasid API Documentation' }],
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'API Documentation | Rasid',
+        description: 'Build invoicing into your app with Rasid\'s REST API.',
+        images: ['/api/og?page=api-docs'],
+    },
 };
 
 // Code Examples

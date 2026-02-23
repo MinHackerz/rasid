@@ -3,6 +3,10 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 // Define which routes are public
 const isPublicRoute = createRouteMatcher([
     '/',
+    '/api/og(.*)',     // Public OpenGraph image generation
+    '/api-docs',       // Public API documentation
+    '/pricing',        // Public pricing page
+    '/help(.*)',       // Public help center (all sub-routes)
     '/sign-in(.*)',
     '/sign-up(.*)',
     '/api/upload(.*)', // Allow upload API for now, consider securing
@@ -11,7 +15,6 @@ const isPublicRoute = createRouteMatcher([
     '/sso-callback',    // SSO callback for OAuth (Google Sign-in)
     '/privacy',         // Public privacy policy
     '/terms',           // Public terms of service
-    '/help',            // Public help center
     '/api/v1/invoices/generate(.*)', // Public invoice generation API (protected by API key)
     '/api/webhooks(.*)' // Public webhooks
 ]);

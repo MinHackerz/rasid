@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Bell, Plus, Search, Menu } from 'lucide-react';
 import { Button } from '@/components/ui';
-import { UserButton } from "@clerk/nextjs";
+import PlanAvatarRing from '@/components/layout/PlanAvatarRing';
 import { MobileSidebar } from './MobileSidebar';
 import { PlanType } from '@/lib/constants/plans';
 
@@ -76,15 +76,9 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, busi
                             </Link>
                         )}
 
-                        {/* User Avatar */}
-                        <div className="ml-2 w-10 h-10 rounded-full overflow-hidden border-2 border-neutral-200 flex items-center justify-center bg-neutral-100">
-                            <UserButton
-                                appearance={{
-                                    elements: {
-                                        avatarBox: "w-full h-full rounded-full"
-                                    }
-                                }}
-                            />
+                        {/* User Avatar with Plan Ring */}
+                        <div className="ml-2">
+                            <PlanAvatarRing plan={plan} />
                         </div>
                     </div>
                 </div>

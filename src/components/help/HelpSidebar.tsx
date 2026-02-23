@@ -16,11 +16,16 @@ export function HelpSidebar({ sections }: HelpSidebarProps) {
     const [expandedSections, setExpandedSections] = useState<string[]>([]);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    // Automatically expand the section that matches the current path on mount or navigation
+    // On the landing page (/help), expand all sections for full visibility.
+    // On sub-pages, expand only the active section.
     useEffect(() => {
-        const activeSection = sections.find(section => pathname.includes(`/help/${section.id}`));
-        if (activeSection && !expandedSections.includes(activeSection.id)) {
-            setExpandedSections(prev => [...prev, activeSection.id]);
+        if (pathname === '/help') {
+            setExpandedSections(sections.map(s => s.id));
+        } else {
+            const activeSection = sections.find(section => pathname.includes(`/help/${section.id}`));
+            if (activeSection && !expandedSections.includes(activeSection.id)) {
+                setExpandedSections(prev => [...prev, activeSection.id]);
+            }
         }
         // Close mobile menu on navigation
         setIsMobileMenuOpen(false);
@@ -81,8 +86,8 @@ export function HelpSidebar({ sections }: HelpSidebarProps) {
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className={`p-1.5 rounded-md transition-colors ${isActiveSection ? 'bg-neutral-900 text-white shadow-sm' :
-                                                isExpanded ? 'bg-white shadow-sm text-neutral-900' :
-                                                    'bg-neutral-100 text-neutral-500 group-hover:text-neutral-900 group-hover:bg-white'
+                                            isExpanded ? 'bg-white shadow-sm text-neutral-900' :
+                                                'bg-neutral-100 text-neutral-500 group-hover:text-neutral-900 group-hover:bg-white'
                                             }`}>
                                             {// Render icon - cloning to control size if needed, but lucid icons usually accept classNames
                                                 section.icon}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, FileText, Settings, Users, Shield, Upload, Package, BarChart3, Bell } from 'lucide-react';
+import { BookOpen, FileText, Settings, Users, Shield, Upload, Package, BarChart3, Bell, Clock } from 'lucide-react';
 
 export interface HelpSection {
     id: string;
@@ -370,6 +370,45 @@ export const helpContent: HelpSection[] = [
                 tips: [
                     'Test email/WhatsApp integration before sending important invoices',
                     'Enable auto-send to streamline your workflow'
+                ]
+            },
+            {
+                id: 'activity-timeline',
+                title: 'Activity Timeline',
+                content: `**Track every action on your invoices with a full audit trail.**
+
+Every invoice in Rasid has an Activity Timeline that records each significant event — from creation to payment. You'll find it on the **Invoice Detail Page**, between Payment Reminders and Invoice Verification.
+
+**How to Access:**
+1. Navigate to **Invoices** in the sidebar
+2. Click on any invoice to open its detail page
+3. Scroll down past the invoice preview and payment reminders
+4. The **Activity Timeline** card shows all recorded events
+
+**Events Tracked:**
+- **Invoice Created** — When and how the invoice was created (manual or OCR digitized)
+- **Invoice Sent** — Delivery via Email or WhatsApp, including recipient
+- **Status Changed** — Any status update (Draft → Pending → Paid, etc.)
+- **QR Verified** — When someone scans the QR code to verify authenticity
+- **PDF Downloaded** — When the invoice PDF is downloaded
+- **Reminder Sent** — Payment reminder delivery with channel and recipient
+
+**Timeline Features:**
+- **Color-coded icons** for each event type for quick scanning
+- **Actor badges** show who performed the action (You, Customer, System, or Visitor)
+- **Relative timestamps** (e.g., "5m ago", "2d ago") with full date on hover
+- **Expandable list** — shows the 5 most recent events, with option to view all
+- **Refresh button** to load the latest activity
+
+**Who Sees What:**
+- Only the invoice owner (seller) can view the full activity timeline
+- Verification events include anonymized visitor info (IP, browser)
+- All timestamps are shown in your local timezone`,
+                tips: [
+                    'Use the timeline to track when customers view or verify your invoices',
+                    'Check the timeline to confirm invoices were successfully delivered',
+                    'Status change history helps with payment dispute resolution',
+                    'Click the refresh icon to see the latest activity in real-time'
                 ]
             }
         ]
@@ -828,16 +867,21 @@ Team members who belong to multiple businesses can switch between them using the
 - **Verification Hash**: Unique 12-character code for each invoice
 - **Cryptographic Signature**: Prevents tampering
 - **Public Verification**: Anyone can verify without login
+- **Activity Logging**: Every verification attempt is recorded in the invoice's Activity Timeline
 
 **What Gets Verified:**
 - Invoice number
 - Total amount
 - Issue date
 - Seller information
-- Data integrity (tamper detection)`,
+- Data integrity (tamper detection)
+
+**Verification & Activity Timeline:**
+When someone scans the QR code or visits the verification link, the event is automatically recorded in the invoice's Activity Timeline. You can see who verified, when, and whether the check passed or failed — all from the invoice detail page.`,
                 tips: [
                     'Share verification links with customers for transparency',
-                    'Verification works without requiring account access'
+                    'Verification works without requiring account access',
+                    'Check the Activity Timeline to see who has verified your invoices'
                 ]
             },
             {

@@ -6,8 +6,19 @@ import Image from 'next/image';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Verify Invoice - Rasid',
-    description: 'Verify the authenticity of digital invoices securely using Rasid\'s cryptographic verification system.',
+    title: 'Verify Invoice',
+    description: 'Verify the authenticity of digital invoices securely using Rasid\'s cryptographic verification system. Instant, tamper-proof, no login required.',
+    openGraph: {
+        title: 'Verify Invoice - Rasid',
+        description: 'Instantly verify invoice authenticity with Rasid\'s cryptographic tamper-proof system.',
+        images: [{ url: '/api/og?page=verify', width: 1200, height: 630, alt: 'Rasid Invoice Verification' }],
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'Verify Invoice - Rasid',
+        description: 'Verify invoice authenticity instantly — no login required.',
+        images: ['/api/og?page=verify'],
+    },
 };
 
 interface PageProps {

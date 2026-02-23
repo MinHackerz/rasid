@@ -7,12 +7,19 @@ import { Button } from '@/components/ui';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Privacy Policy - Rasid',
-    description: 'Learn how Rasid protects your invoice data, privacy, and business information with advanced security and cryptography.',
+    title: 'Privacy Policy',
+    description: 'Learn how Rasid protects your invoice data, privacy, and business information with advanced cryptographic security. We never sell your data.',
     openGraph: {
         title: 'Privacy Policy - Rasid',
-        description: 'Learn how Rasid protects your invoice data, privacy, and business information with advanced security and cryptography.',
-    }
+        description: 'Learn how Rasid protects your invoice data, privacy, and business information with advanced cryptographic security.',
+        images: [{ url: '/api/og?page=privacy', width: 1200, height: 630, alt: 'Rasid Privacy Policy' }],
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'Privacy Policy - Rasid',
+        description: 'How Rasid protects your invoice data with advanced security.',
+        images: ['/api/og?page=privacy'],
+    },
 };
 
 export default function PrivacyPage() {

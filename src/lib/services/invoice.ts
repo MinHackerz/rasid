@@ -9,6 +9,7 @@ import { generateInvoiceNumber, calculateInvoiceTotal } from '@/lib/utils';
 import { generateVerificationHash, generateInvoiceSignature, type InvoiceSignatureData } from '@/lib/verification';
 import { generateInvoicePDF } from '@/lib/pdf';
 import { deliverInvoice } from '@/lib/delivery';
+import { logInvoiceCreated, logStatusChanged, logInvoiceSent } from '@/lib/services/activity';
 import type { CreateInvoiceInput, InvoiceWithRelations, InvoiceStatus, PaymentStatus, InvoiceDeliveryStatus, DashboardStats, SalesBreakdown } from '@/types';
 
 // ============================================
@@ -319,7 +320,15 @@ export async function createInvoice(
         timeout: 20000,
     });
 
-    // Generate PDF asynchronously
+    // Log activity (fire-and-forget)
+    logInvoiceCreated(
+        invoice.id,
+        sellerId,
+        invoice.seller?.businessName || 'Unknown',
+        invoice.invoiceNumber,
+        input.sourceDocumentId ? 'OCR' : 'MANUAL'
+    );
+
     // Generate PDF asynchronously
     setImmediate(() => {
         generateInvoicePDF(invoice.id).catch((err) => {
@@ -714,6 +723,15 @@ export async function sendInvoice(
             where: { id: invoiceId },
             data: { status: 'SENT' },
         });
+
+        // Log send activity
+        logInvoiceSent(
+            invoiceId,
+            sellerId,
+            'Seller',
+            result.method || 'EMAIL',
+            invoice.buyer?.email || invoice.buyer?.phone || 'Unknown'
+        );
     }
 
     return {

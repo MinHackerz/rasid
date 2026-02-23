@@ -4,31 +4,48 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://rasid.in"),
-  title: "Rasid - Modern Invoice Generation Platform",
-  description: "Professional invoice generation platform for modern businesses. Create, digitize, and verify invoices with ease.",
-  keywords: ["invoice", "billing", "receipt", "OCR", "digital invoice", "rashid"],
+  title: {
+    default: "Rasid — AI-Powered Smart Invoice Platform",
+    template: "%s | Rasid",
+  },
+  description: "Create tamper-proof invoices with AI-powered OCR, cryptographic QR verification, automated payment reminders, and multi-channel delivery. Free plan available.",
+  keywords: ["invoice", "billing", "receipt", "OCR", "digital invoice", "invoice verification", "QR code invoice", "GST invoice", "payment reminder", "rasid"],
   authors: [{ name: "Rasid" }],
+  creator: "Rasid",
   openGraph: {
-    title: "Rasid - Modern Invoice Generation",
-    description: "Professional invoice generation platform for modern businesses",
+    title: "Rasid — AI-Powered Smart Invoice Platform",
+    description: "Create tamper-proof invoices with AI-powered OCR, cryptographic QR verification, and automated payment reminders.",
     type: "website",
+    siteName: "Rasid",
+    locale: "en_US",
     images: [
       {
-        url: "/images/rasid_thumbnail.png",
+        url: "/api/og?page=home",
         width: 1200,
         height: 630,
-        alt: "Rasid - Modern Invoice Generation Platform",
+        alt: "Rasid — AI-Powered Smart Invoice Platform",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Rasid - Modern Invoice Generation",
-    description: "Professional invoice generation platform for modern businesses",
-    images: ["/images/rasid_thumbnail.png"],
+    title: "Rasid — AI-Powered Smart Invoice Platform",
+    description: "Create tamper-proof invoices with AI-powered OCR, cryptographic QR verification, and automated payment reminders.",
+    images: ["/api/og?page=home"],
   },
   icons: {
     icon: "/icon.png",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large' as const,
+      'max-snippet': -1,
+    },
   },
 };
 

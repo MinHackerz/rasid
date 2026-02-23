@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { cancelInvoiceReminders } from '@/lib/services/payment-reminder';
+import { logStatusChanged } from '@/lib/services/activity';
 import { z } from 'zod';
 
 const statusSchema = z.object({
@@ -76,28 +77,16 @@ export async function PATCH(
             }
         }
 
-        // Log status change for audit purposes (especially important for PAID reversals)
+        // Log status change for audit purposes
         if (previousStatus !== validated.status) {
-            console.log(
-                `[AUDIT] Invoice ${invoice.invoiceNumber} status changed from ${previousStatus} to ${validated.status}` +
-                ` by seller ${session.sellerId} at ${new Date().toISOString()}` +
-                (isRevertingFromPaid ? ' [PAID REVERSAL]' : '')
+            logStatusChanged(
+                invoice.id,
+                session.sellerId,
+                session.businessName || 'Seller',
+                'Status',
+                previousStatus,
+                validated.status
             );
-
-            // Store audit log in database (using VerificationLog as a general audit log)
-            try {
-                await prisma.verificationLog.create({
-                    data: {
-                        hash: `audit:status:${invoice.id}:${Date.now()}`,
-                        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || null,
-                        userAgent: request.headers.get('user-agent') || null,
-                        result: true, // Status change was successful
-                    }
-                });
-            } catch (error) {
-                // Don't fail the request if audit log fails
-                console.error('Failed to create audit log:', error);
-            }
         }
 
         return NextResponse.json({ success: true, data: updatedInvoice });

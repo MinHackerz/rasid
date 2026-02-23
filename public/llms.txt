@@ -1,0 +1,239 @@
+# Rasid — AI-Powered Smart Invoice Platform
+> https://rasid.in
+
+Rasid is a premium, AI-powered invoice management platform designed for small businesses, freelancers, and independent professionals. It automates invoice creation, delivers cryptographic verification for fraud prevention, and helps businesses get paid faster with smart payment reminders.
+
+## Platform Overview
+
+Rasid combines modern invoicing with advanced technology to solve three key problems:
+1. **Manual Data Entry** — Eliminated through AI-powered OCR that converts handwritten/printed invoices into digital format.
+2. **Invoice Fraud** — Prevented through cryptographic signatures and tamper-proof QR verification.
+3. **Late Payments** — Reduced through automated multi-channel payment reminders.
+
+---
+
+## Core Features
+
+### Invoice Creation
+- Create professional digital invoices manually with a streamlined form
+- Auto-calculate subtotals, taxes (GST with CGST/SGST/IGST breakdown), and discounts
+- Support for 50+ currencies
+- Multiple premium PDF templates to choose from
+- Inventory integration to auto-fill line items
+- Barcode scanning to add products from global databases
+
+### AI-Powered Digitization (OCR)
+- Upload handwritten or printed invoices (JPG, PNG, WEBP, PDF)
+- AI extracts buyer details, items, amounts, dates, and business information
+- Confidence scoring for each extraction
+- Batch processing of up to 10 documents at once
+- Review and edit extracted data before creating the invoice
+
+### Cryptographic Verification
+- Every invoice is sealed with a unique cryptographic hash and digital signature
+- A QR code is embedded in each invoice PDF for instant verification
+- Public verification page at `/verify/[hash]` — no login required
+- Tamper detection: any modification to the invoice invalidates the signature
+- Verification history is logged in the invoice's Activity Timeline
+
+### Multi-Channel Delivery
+- **Email**: Send invoices as PDF attachments via configured SMTP (Gmail, Outlook, Hostinger, custom)
+- **WhatsApp**: Send invoices via WhatsApp Cloud API with PDF links
+- **PDF Download**: Generate and download professional PDF invoices
+- Auto-send feature: invoices are automatically delivered when created
+
+### Smart Payment Reminders
+- Automated reminder scheduling based on invoice due dates
+- Default schedule: 3 days before, 1 day before, on due date, 1 day after, 3 days after, 7 days after
+- Multi-channel: Email and WhatsApp delivery
+- Smart skipping: reminders auto-skip if invoice is marked as paid
+- Escalating message tones: friendly → urgent → overdue
+- Custom reminder dates supported
+
+### Invoice Activity Timeline
+- Full audit trail for each invoice recording: creation, sending, status changes, QR verification, PDF downloads, and reminder deliveries
+- Color-coded visual timeline with actor badges (Seller, Customer, System, Visitor)
+- Fire-and-forget logging that never blocks the main workflow
+- Accessible on the invoice detail page
+
+### Buyer Management
+- Buyers are automatically created when invoices are generated
+- Searchable buyer directory with contact details
+- Customer search and auto-fill in the invoice creation form
+- Click-to-filter: view all invoices for any buyer
+
+### Inventory Management
+- Add products with name, price, stock quantity, and default tax rate
+- Select items from inventory during invoice creation for instant auto-fill
+- Barcode scanner (camera-based) supporting EAN-13, UPC-A, Code-128, QR codes
+- Product data lookups via Open Food Facts and UPCitemdb
+
+### Team Management
+- Invite team members via email
+- Role-based access: Owner (full access) and Viewer (read-only)
+- Business switcher for users belonging to multiple businesses
+- Read-only mode for sensitive settings pages
+
+### Advanced Analytics
+- Revenue trends (monthly chart)
+- Invoice status distribution (pie chart)
+- Top performing clients (bar chart)
+- Key metrics: total revenue, pending amount, overdue amount, average invoice value
+
+---
+
+## Subscription Plans
+
+| Feature | Free | Basic | Pro | Premium | Lifetime |
+|---|---|---|---|---|---|
+| Invoices / month | 5 | 50 | Unlimited | Unlimited | Unlimited |
+| OCR Scans / month | 2 | 15 | 50 | Unlimited | Unlimited |
+| Invoice Templates | 2 | 5 | All | All | All |
+| Payment Reminders | — | ✓ | ✓ | ✓ | ✓ |
+| Advanced Analytics | — | — | ✓ | ✓ | ✓ |
+| Barcode Scanning | — | — | ✓ | ✓ | ✓ |
+| Customer Auto-fill | — | — | ✓ | ✓ | ✓ |
+| API Access | — | — | — | ✓ | ✓ |
+| Team Members | 1 | 2 | 5 | 10 | 10 |
+
+---
+
+## Developer API
+
+Rasid provides a RESTful API for programmatic invoice generation, available on Premium and Lifetime plans.
+
+- **Base URL**: `https://rasid.in/api/v1`
+- **Authentication**: API key via `x-api-key` header
+- **Main Endpoint**: `POST /api/v1/invoices/generate` — Creates an invoice and returns a hosted PDF URL
+- **Response**: JSON with invoice ID, number, PDF URL, total, and remaining quota
+- **Rate Limits**: Based on subscription plan quota
+- **Code Examples**: Available in cURL, JavaScript, Python, PHP, and Go
+
+### API Documentation
+Full documentation with interactive code samples: https://rasid.in/api-docs
+
+### Developer Dashboard
+Manage API keys and view usage: https://rasid.in/dashboard/developer
+
+---
+
+## Help Center
+
+Comprehensive documentation organized by topic: https://rasid.in/help
+
+### Getting Started
+- [Onboarding Process](/help/getting-started/onboarding) — Setting up your business profile, logo, and contact details
+- [First Steps After Sign Up](/help/getting-started/first-steps) — Dashboard overview, configuration, and first invoice
+
+### Dashboard Overview
+- [Understanding Your Dashboard](/help/dashboard/understanding) — Stats grid, recent invoices, invoice breakdown
+- [Quick Actions](/help/dashboard/quick-actions) — Upload, manage buyers, create invoices
+- [Statistics and Metrics](/help/dashboard/statistics) — Revenue, pending amounts, monthly tracking
+
+### Creating Invoices
+- [Creating a New Invoice Manually](/help/creating-invoices/manual-creation) — Step-by-step guide with all fields
+- [Creating from Digitized Documents](/help/creating-invoices/digitized) — Using OCR-extracted data
+- [Invoice Details and Line Items](/help/creating-invoices/line-items) — Items, taxes, discounts, calculations
+- [Invoice Statuses](/help/creating-invoices/statuses) — Draft, Pending, Sent, Paid workflow
+
+### Managing Invoices
+- [Viewing Invoices](/help/managing-invoices/viewing) — Table view, detail page, source types
+- [Invoice Tabs and Navigation](/help/managing-invoices/invoice-tabs) — Status tabs, source filters, combined filtering
+- [Filtering and Searching](/help/managing-invoices/filtering) — By status, source, search query
+- [Sending Invoices](/help/managing-invoices/sending) — Email, WhatsApp, auto-send configuration
+- [Activity Timeline](/help/managing-invoices/activity-timeline) — Audit trail with all invoice events
+
+### Digitizing Invoices (OCR)
+- [Uploading Documents](/help/digitizing/uploading) — Supported formats, best practices
+- [AI Processing](/help/digitizing/processing) — Processing stages, confidence scores
+- [Reviewing Extracted Data](/help/digitizing/reviewing) — Verification before invoice creation
+
+### Buyer Management
+- [Understanding Buyers](/help/buyers/understanding-buyers) — Auto-creation, stored information
+- [Viewing Buyer Information](/help/buyers/viewing-buyers) — Grid layout, filtering by buyer
+
+### Inventory Management
+- [Managing Inventory](/help/inventory/managing-inventory) — Adding, editing, deleting products
+- [Using Inventory in Invoices](/help/inventory/using-inventory) — Auto-fill from inventory
+- [Barcode Scanning](/help/inventory/barcode-scanning) — Camera-based scanning, supported formats
+- [Customer Search & Auto-fill](/help/inventory/customer-search) — Quick buyer lookup
+
+### Settings and Configuration
+- [General Settings](/help/settings/general) — Business profile, logo, contact info
+- [Payment Methods](/help/settings/payment-methods) — Bank transfer, UPI, QR code, PayPal
+- [Integrations](/help/settings/integrations) — WhatsApp Cloud API, SMTP email (Gmail, Outlook, etc.)
+- [Invoice Preferences](/help/settings/preferences) — Defaults, templates, auto-send
+
+### Team Management
+- [Inviting Members](/help/team-management/inviting-members) — Email invitations, joining flow
+- [Roles and Permissions](/help/team-management/roles-permissions) — Owner vs Viewer, read-only mode
+- [Managing Your Team](/help/team-management/managing-team) — Removing members, business switching
+
+### Invoice Verification
+- [How Verification Works](/help/verification/how-it-works) — Hashing, signatures, tamper detection
+- [Sharing Verification Links](/help/verification/sharing) — URL format, use cases
+
+### Advanced Analytics
+- [Analytics Overview](/help/analytics/analytics-overview) — Charts, metrics, business insights
+
+### Payment Reminders
+- [Smart Payment Reminders](/help/payment-reminders/reminder-overview) — Features, default schedule
+- [Setting Up Reminders](/help/payment-reminders/setting-up-reminders) — Prerequisites, channels, customization
+- [Managing Reminders](/help/payment-reminders/managing-reminders) — Statuses, cancellation, troubleshooting
+
+---
+
+## Security & Privacy
+
+- **Data Ownership**: Users own all their business data. Rasid does not sell data.
+- **Cryptographic Integrity**: SHA-256 based hashing with HMAC signatures for tamper detection.
+- **Authentication**: Clerk-based authentication with social login and SSO support.
+- **Role-Based Access**: Owner and Viewer roles with granular permission control.
+- **AI Processing**: OCR images are processed temporarily; invoice content is not used to train public AI models.
+- **Data Immutability**: Issued invoices cannot be deleted or altered to maintain verification integrity.
+- **Privacy Policy**: https://rasid.in/privacy
+- **Terms of Service**: https://rasid.in/terms
+
+---
+
+## Technology Stack
+
+- **Frontend**: Next.js 15 (App Router), React, Tailwind CSS, Framer Motion
+- **Backend**: Next.js API Routes, Prisma ORM
+- **Database**: PostgreSQL (Neon)
+- **Authentication**: Clerk
+- **PDF Generation**: Server-side rendering with premium templates
+- **AI/OCR**: Advanced AI engine for document text extraction
+- **Email**: SMTP integration (configurable)
+- **WhatsApp**: Meta Cloud API integration
+- **Payments**: Dodo Payments for subscriptions
+
+---
+
+## Page Index
+
+- **Home** — https://rasid.in — Landing page with product overview, demo video, features, pricing, and social proof
+- **Dashboard** — https://rasid.in/dashboard — Main overview with stats, recent invoices, quick actions
+- **Invoices** — https://rasid.in/dashboard/invoices — All invoices with tabs, filters, and search
+- **Create Invoice** — https://rasid.in/dashboard/invoices/new — Invoice creation form
+- **Upload & Digitize** — https://rasid.in/dashboard/upload — AI OCR document processing
+- **Pending Scans** — https://rasid.in/dashboard/scans — Review OCR-processed documents
+- **Buyers** — https://rasid.in/dashboard/buyers — Customer directory
+- **Inventory** — https://rasid.in/dashboard/inventory — Product and service management
+- **Analytics** — https://rasid.in/dashboard/analytics — Advanced charts and metrics
+- **Settings** — https://rasid.in/dashboard/settings — Business profile, integrations, preferences
+- **Subscription** — https://rasid.in/dashboard/subscription — Plan management
+- **Developer** — https://rasid.in/dashboard/developer — API key management
+- **API Docs** — https://rasid.in/api-docs — Public API documentation with code examples
+- **Help Center** — https://rasid.in/help — Comprehensive help articles
+- **Pricing** — https://rasid.in/pricing — Subscription plan comparison
+- **Verify Invoice** — https://rasid.in/verify/[hash] — Public invoice verification
+- **Privacy Policy** — https://rasid.in/privacy
+- **Terms of Service** — https://rasid.in/terms
+
+---
+
+## Contact
+
+- **Website**: https://rasid.in
+- **Privacy Inquiries**: privacy@rasid.in

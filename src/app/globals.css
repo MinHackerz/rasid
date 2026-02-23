@@ -319,3 +319,178 @@
   mask-image: linear-gradient(to right, black 90%, transparent 100%);
   -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
 }
+
+/* ============================================
+   PLAN-BASED AVATAR RING ANIMATIONS
+   Visual identity per subscription tier
+   ============================================ */
+
+.plan-avatar-ring {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.plan-avatar-ring__border {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+}
+
+.plan-avatar-ring__inner {
+  position: relative;
+  z-index: 2;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Plan indicator dot */
+.plan-avatar-ring__badge {
+  position: absolute;
+  z-index: 5;
+  bottom: -1px;
+  right: -1px;
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  border: 2px solid #fff;
+}
+
+/* ---- FREE ---- */
+.plan-ring-free .plan-avatar-ring__border {
+  border: 2px solid #e5e5e5;
+}
+
+/* ---- BASIC ---- Soft blue pulse */
+.plan-ring-basic .plan-avatar-ring__border {
+  border: 2px solid #60a5fa;
+  animation: basic-pulse 3s ease-in-out infinite;
+}
+
+.plan-badge-basic {
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+}
+
+@keyframes basic-pulse {
+  0%, 100% {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 0 rgba(96, 165, 250, 0);
+  }
+  50% {
+    border-color: #3b82f6;
+    box-shadow: 0 0 8px 2px rgba(59, 130, 246, 0.25);
+  }
+}
+
+/* ---- PRO ---- Rotating blue-violet gradient */
+.plan-ring-pro .plan-avatar-ring__border {
+  background: conic-gradient(from 0deg, #6366f1, #8b5cf6, #a78bfa, #6366f1);
+  animation: ring-spin 4s linear infinite;
+  padding: 2.5px;
+}
+
+.plan-ring-pro .plan-avatar-ring__inner {
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.15);
+}
+
+.plan-badge-pro {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  box-shadow: 0 0 6px rgba(99, 102, 241, 0.4);
+}
+
+/* ---- PREMIUM ---- Gold gradient ring + glow */
+.plan-ring-premium .plan-avatar-ring__border {
+  background: conic-gradient(from 0deg, #f59e0b, #d97706, #fbbf24, #f59e0b);
+  animation: ring-spin 3s linear infinite;
+  padding: 2.5px;
+}
+
+.plan-ring-premium .plan-avatar-ring__inner {
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.15);
+}
+
+.plan-badge-premium {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
+}
+
+/* Premium glow pulse */
+.plan-ring-premium::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  background: conic-gradient(from 0deg, transparent, rgba(251, 191, 36, 0.25), transparent);
+  animation: ring-spin 3s linear infinite, glow-pulse 2s ease-in-out infinite;
+  z-index: 0;
+}
+
+/* ---- LIFETIME ---- Rainbow prismatic ring + shimmer */
+.plan-ring-lifetime .plan-avatar-ring__border {
+  background: conic-gradient(
+    from 0deg,
+    #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #8b5cf6, #ec4899, #ef4444
+  );
+  animation: ring-spin 2.5s linear infinite;
+  padding: 2.5px;
+}
+
+.plan-ring-lifetime .plan-avatar-ring__inner {
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.15);
+}
+
+.plan-badge-lifetime {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  box-shadow: 0 0 6px rgba(139, 92, 246, 0.5);
+}
+
+/* Lifetime shimmer */
+.plan-ring-lifetime::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 10%,
+    transparent 20%
+  );
+  animation: ring-spin 2s linear infinite;
+  z-index: 0;
+}
+
+/* Lifetime outer glow */
+.plan-ring-lifetime::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(239,68,68,0.15), rgba(249,115,22,0.15), rgba(234,179,8,0.15),
+    rgba(34,197,94,0.15), rgba(59,130,246,0.15), rgba(139,92,246,0.15),
+    rgba(236,72,153,0.15), rgba(239,68,68,0.15)
+  );
+  animation: ring-spin 2.5s linear infinite, glow-pulse 2s ease-in-out infinite;
+  z-index: 0;
+  filter: blur(3px);
+}
+
+/* ---- Shared Keyframes ---- */
+@keyframes ring-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}

@@ -9,6 +9,7 @@ import InvoiceControls from '@/components/invoice/InvoiceControls';
 import VerificationLink from '@/components/invoice/VerificationLink';
 import InvoiceRenderer from '@/components/invoice/InvoiceRenderer';
 import PaymentReminders from '@/components/invoice/PaymentReminders';
+import InvoiceTimeline from '@/components/invoice/InvoiceTimeline';
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -151,6 +152,9 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
                 hasPhone={hasWhatsApp}
                 plan={sellerSettings?.plan || 'FREE'}
             />
+
+            {/* Activity Timeline */}
+            <InvoiceTimeline invoiceId={invoice.id} />
 
             {/* Verification Section */}
             <Card>
