@@ -59,7 +59,7 @@ export default function SignUpPage() {
                 if (signUp.createdSessionId) {
                     await setActive({ session: signUp.createdSessionId });
                 }
-                router.push('/onboarding');
+                router.push('/dashboard');
                 return;
             }
 
@@ -69,7 +69,7 @@ export default function SignUpPage() {
 
             if (completeSignUp.status === 'complete') {
                 await setActive({ session: completeSignUp.createdSessionId });
-                router.push('/onboarding');
+                router.push('/dashboard');
             } else {
                 setError('Verification failed. Use a new code?');
             }
@@ -82,7 +82,7 @@ export default function SignUpPage() {
                 errorMessage.toLowerCase().includes('already verified')) {
                 if (signUp.createdSessionId) {
                     await setActive({ session: signUp.createdSessionId });
-                    router.push('/onboarding');
+                    router.push('/dashboard');
                     return;
                 }
                 // If no session yet, redirect to sign-in
@@ -101,7 +101,7 @@ export default function SignUpPage() {
         signUp.authenticateWithRedirect({
             strategy: 'oauth_google',
             redirectUrl: '/sso-callback',
-            redirectUrlComplete: '/onboarding',
+            redirectUrlComplete: '/dashboard',
         });
     };
 

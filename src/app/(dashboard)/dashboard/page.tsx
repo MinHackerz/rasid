@@ -21,7 +21,7 @@ export default async function DashboardPage() {
     const session = await getSession();
 
     if (!session) {
-        return null;
+        return null; // Layout handles this
     }
 
     const getGreeting = () => {

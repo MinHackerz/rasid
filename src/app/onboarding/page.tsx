@@ -272,11 +272,16 @@ export default function OnboardingPage() {
                             </div>
 
                             {/* Submit Button */}
-                            <div className="pt-1">
+                            <div className="pt-1 flex flex-col gap-2">
                                 <Button type="submit" loading={loading} className="w-full h-10 text-sm font-semibold bg-neutral-900 hover:bg-neutral-800 text-white border border-neutral-900 shadow-none" size="lg">
                                     Continue to Dashboard
                                     <ArrowRight className="w-4 h-4 ml-2" />
                                 </Button>
+                                <Link href="/dashboard" className="w-full">
+                                    <Button type="button" variant="outline" className="w-full h-10 text-sm font-semibold border-neutral-200 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 shadow-none" size="lg">
+                                        Skip for now
+                                    </Button>
+                                </Link>
                             </div>
                             <p className="text-xs text-center text-neutral-400 leading-relaxed">
                                 You can update these details anytime in Settings.
