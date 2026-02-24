@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 import { getSession } from '@/lib/auth';
 import OpenAI from 'openai';
 // puppeteer is unused now, but kept in case robust fallback is needed later. 
