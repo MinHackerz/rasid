@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   ShieldCheck,
   Zap,
-  Globe,
   LayoutDashboard,
   Menu,
   X,
@@ -17,6 +16,7 @@ import {
   Send,
   FileText,
   Lock,
+  Package,
 } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui';
@@ -242,9 +242,8 @@ export default function LandingPage() {
 
             {/* Sub-headline — QR verification front and center */}
             <p className="text-xl md:text-2xl mb-12 max-w-3xl mx-auto leading-relaxed font-light text-slate-500">
-              Rasid seals every invoice with a unique cryptographic QR code.
-              Your customers scan it — <span className="text-slate-700 font-medium">instantly confirming it&apos;s authentic and untampered</span>.
-              No calls, no doubts, no fakes.
+              Rasid seals every invoice with a cryptographic QR code while <span className="text-slate-700 font-medium">intelligently automating your stock inventory</span>.
+              Customers scan to verify authenticity instantly — no fakes, no doubts, no out-of-stock surprises.
             </p>
 
             {/* CTAs */}
@@ -513,11 +512,11 @@ export default function LandingPage() {
                 desc: 'From minimal to classic — pick a template that represents your brand. Your invoices look great before the QR even seals them.',
               },
               {
-                icon: Globe,
+                icon: Package,
                 iconColor: 'text-sky-600',
                 iconBg: 'bg-sky-50',
-                title: '50+ Currencies Supported',
-                desc: 'Bill clients across the globe. Every currency-converted invoice is still cryptographically verified — trust knows no borders.',
+                title: 'Smart Inventory Sync',
+                desc: 'Stock counts update instantly as each verified invoice is generated. Receive low-stock alerts and never unexpectedly run out of products again.',
               },
               {
                 icon: Camera,

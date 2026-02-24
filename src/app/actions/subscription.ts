@@ -29,7 +29,7 @@ export async function createSubscriptionCheckout(planKey: PlanType) {
     });
 
     if (!seller) {
-        throw new Error('Seller profile not found');
+        return { url: '/onboarding' };
     }
 
     if (planKey === 'FREE') {
