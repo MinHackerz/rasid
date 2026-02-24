@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { helpContent } from '@/lib/help-content';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const domains = ['https://rasid.in', 'https://rasidapp.vercel.app'];
+    const domains = ['https://rasid.in'];
 
     const staticRoutes = [
         '',
