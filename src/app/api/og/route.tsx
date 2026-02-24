@@ -6,7 +6,7 @@ export const runtime = 'edge';
 const PAGES: Record<string, { title: string; subtitle: string; gradient: string; emoji: string }> = {
     home: {
         title: 'Rasid',
-        subtitle: 'AI-Powered Smart Invoice Platform',
+        subtitle: 'Smart Invoice Platform',
         gradient: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%)',
         emoji: '📄',
     },
@@ -214,7 +214,7 @@ export async function GET(request: NextRequest) {
                             fontWeight: 500,
                         }}
                     >
-                        <span style={{ display: 'flex' }}>AI-Powered</span>
+                        <span style={{ display: 'flex' }}>Smart Billing</span>
                         <span style={{ display: 'flex' }}>•</span>
                         <span style={{ display: 'flex' }}>Tamper-Proof</span>
                         <span style={{ display: 'flex' }}>•</span>

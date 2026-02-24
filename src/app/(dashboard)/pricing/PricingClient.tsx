@@ -241,7 +241,7 @@ export default function PricingClient({ currentPlan, hasPendingCancellation, sub
 
                 <div className="text-center py-8">
                     <p className="text-neutral-500 text-sm">
-                        Enterprise needs? <span className="text-neutral-900 font-medium hover:underline cursor-pointer">Contact Sales</span>
+                        Enterprise needs? <a href="mailto:menajul99mhq@gmail.com" className="text-neutral-900 font-medium hover:underline cursor-pointer">Contact Sales</a>
                     </p>
                 </div>
             </div>

@@ -200,9 +200,9 @@ export default function InvoiceControls({
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="relative bg-white rounded-xl shadow-xl max-w-md w-full mx-4 overflow-hidden border border-neutral-900"
+                            className="relative bg-white rounded-xl shadow-xl max-w-md w-full mx-4 overflow-hidden border border-neutral-900 max-h-[85dvh] flex flex-col"
                         >
-                            <div className="p-6">
+                            <div className="p-6 overflow-y-auto flex-1">
                                 <div className="flex items-start gap-4">
                                     <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
                                         <AlertTriangle className="w-6 h-6 text-amber-600" />

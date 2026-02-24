@@ -16,7 +16,7 @@ export default async function UploadPage() {
         <PremiumFeatureGuard
             isAllowed={isAllowed}
             featureName="Upload & Convert"
-            description="Transform handwritten invoices into digital format using AI-powered OCR technology."
+            description="Transform handwritten invoices into digital format using smart OCR technology."
         >
             <UploadPageClient />
         </PremiumFeatureGuard>

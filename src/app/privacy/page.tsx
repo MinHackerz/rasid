@@ -127,7 +127,7 @@ export default function PrivacyPage() {
                     <section>
                         <h2 className="text-2xl font-bold mb-4">5. Contact Us</h2>
                         <p>
-                            If you have questions about your data privacy or security, please contact our Data Protection Officer at <strong>privacy@rasid.in</strong>.
+                            If you have questions about your data privacy or security, please contact our Founder at <strong>menajul99mhq@gmail.com</strong>.
                         </p>
                     </section>
                 </div>

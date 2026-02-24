@@ -238,7 +238,7 @@ export default function SignUpPage() {
                                 </span>
                             </h1>
                             <p className="text-lg text-white/80 max-w-md leading-relaxed">
-                                Join thousands of businesses transforming their billing operations with AI-powered automation.
+                                Join thousands of businesses transforming their billing operations with smart automation.
                             </p>
                         </motion.div>
 

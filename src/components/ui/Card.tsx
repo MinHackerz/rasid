@@ -137,7 +137,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }: ModalProps) =>
                         className={cn(
                             'relative w-full bg-background shadow-2xl border border-border/50 overflow-hidden',
                             'rounded-t-2xl sm:rounded-2xl',
-                            'max-h-[90vh] sm:max-h-[85vh]',
+                            'max-h-[85dvh] sm:max-h-[85vh]',
                             'flex flex-col',
                             sizes[size]
                         )}

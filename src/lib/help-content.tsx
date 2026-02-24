@@ -422,7 +422,7 @@ Every invoice in Rasid has an Activity Timeline that records each significant ev
             {
                 id: 'uploading',
                 title: 'Uploading Documents',
-                content: `Transform handwritten or printed invoices into digital format using AI-powered OCR.
+                content: `Transform handwritten or printed invoices into digital format using smart OCR.
 
 ** Supported Formats:**
     - Images: JPG, PNG, WEBP

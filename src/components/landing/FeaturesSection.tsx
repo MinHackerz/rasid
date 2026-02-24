@@ -64,7 +64,7 @@ export function FeaturesSection() {
                     {/* Feature 3: AI Extraction */}
                     <div className="md:col-span-3 min-h-[400px]">
                         <FeatureCard
-                            title="AI-Powered Digitization"
+                            title="Smart Digitization"
                             description="Snap a photo of any handwritten or printed bill — our AI extracts all details into a clean digital invoice."
                             className="h-full flex flex-col"
                         >

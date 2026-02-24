@@ -73,7 +73,7 @@ export function BarcodeScanner({ isOpen, onClose, onScan, title = 'Scan Barcode'
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden max-h-[85dvh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-3 border-b border-neutral-100">
           <div className="flex items-center gap-3">

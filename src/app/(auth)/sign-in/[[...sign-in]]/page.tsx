@@ -136,7 +136,7 @@ export default function SignInPage() {
                             </div>
                             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-slate-300">
                                 <Zap className="w-4 h-4 text-yellow-400" />
-                                AI-Powered
+                                Lightning Fast
                             </div>
                             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-slate-300">
                                 <LockKeyhole className="w-4 h-4 text-blue-400" />

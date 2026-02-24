@@ -139,15 +139,22 @@ export default function InventoryClient({ initialData }: InventoryClientProps) {
                 } else if (data.data.found && data.data.product) {
                     // External API found product - pre-fill form
                     const product = data.data.product;
+                    const noteLines = [
+                        product.description || '',
+                        product.brand ? `Brand: ${product.brand}` : '',
+                        product.quantity ? `Size: ${product.quantity}` : '',
+                    ].filter(Boolean).join(' | ');
                     setFormData({
                         description: product.name || '',
-                        note: product.description || (product.brand ? `Brand: ${product.brand}` : ''),
+                        note: noteLines,
                         sku: '',
                         hsnCode: '',
                         barcode: barcode,
-                        price: '',
+                        price: product.price || '',
                         quantity: '0',
-                        unit: product.quantity?.includes('kg') ? 'kg' : 'pcs',
+                        unit: product.quantity?.toLowerCase().includes('kg') ? 'kg' :
+                            product.quantity?.toLowerCase().includes('ml') ? 'pcs' :
+                                product.quantity?.toLowerCase().includes('l') ? 'pcs' : 'pcs',
                         taxRate: '0'
                     });
                     setIsModalOpen(true);
