@@ -68,6 +68,10 @@ export async function createSubscriptionCheckout(planKey: PlanType) {
         // Use checkoutSessions for both one-time and recurring products
         // We cast to any because TS definitions might be missing checkoutSessions on the main client instance in some versions
         // but we verified it exists at runtime.
+        // Determine the app URL safely
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL
+            || (process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : 'https://rasid.in');
+
         const session = await (dodo as any).checkoutSessions.create({
             billing,
             customer,
@@ -75,7 +79,7 @@ export async function createSubscriptionCheckout(planKey: PlanType) {
                 product_id: plan.dodoProductId,
                 quantity: 1
             }],
-            return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?checkout=success`,
+            return_url: `${appUrl}/dashboard?checkout=success`,
         });
 
         return { url: session.checkout_url };
