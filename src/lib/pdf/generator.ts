@@ -7,7 +7,7 @@
  */
 
 import puppeteerCore from 'puppeteer-core';
-import chromium from '@sparticuz/chromium';
+import chromium from '@sparticuz/chromium-min';
 import { promises as fs } from 'fs';
 import path from 'path';
 import QRCode from 'qrcode';
@@ -20,10 +20,15 @@ import type { InvoiceWithRelations } from '@/types';
 // ============================================
 async function launchBrowser() {
   if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
-    // Production / Serverless: use @sparticuz/chromium
+    // Production / Serverless: use @sparticuz/chromium-min and download binary dynamically
+    // Download the appropriate version pack for puppeteer-core 24.x that is supported by sparticuz.
+    const executablePath = await chromium.executablePath(
+      'https://github.com/Sparticuz/chromium/releases/download/v133.0.0/chromium-v133.0.0-pack.tar'
+    );
+
     return puppeteerCore.launch({
       args: chromium.args,
-      executablePath: await chromium.executablePath(),
+      executablePath,
       headless: true,
     });
   }
