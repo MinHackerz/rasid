@@ -9,10 +9,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface InvoiceControlsProps {
     invoiceId: string;
     initialStatus: string;
-    hasWhatsApp: boolean; // Is WhatsApp integration configured?
+    hasWhatsApp: boolean;
     hasEmail: boolean;
-    showSendButtons?: boolean; // Hide buttons if auto-send is enabled
+    showSendButtons?: boolean;
     isFreePlan?: boolean;
+    children?: React.ReactNode;
 }
 
 export default function InvoiceControls({
@@ -22,6 +23,7 @@ export default function InvoiceControls({
     hasEmail,
     showSendButtons = true,
     isFreePlan = false,
+    children,
 }: InvoiceControlsProps) {
     const router = useRouter();
     const [status, setStatus] = useState(initialStatus);
@@ -109,77 +111,82 @@ export default function InvoiceControls({
 
     return (
         <>
-            <div className="flex items-center gap-3">
-                {/* Status Dropdown */}
-                <div className="relative">
-                    <select
-                        value={status}
-                        onChange={(e) => handleStatusChange(e.target.value)}
-                        disabled={updating}
-                        className="appearance-none h-9 bg-white border border-neutral-200 text-neutral-900 text-sm font-medium rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900"
-                    >
-                        <option value="DRAFT">Draft</option>
-                        <option value="PENDING">Pending</option>
-                        <option value="PAID">Paid</option>
-                    </select>
-                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
-                        {updating ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                        ) : (
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                        )}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                {/* Row 1 on mobile: Status + Email */}
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <div className="relative flex-1 sm:flex-none">
+                        <select
+                            value={status}
+                            onChange={(e) => handleStatusChange(e.target.value)}
+                            disabled={updating}
+                            className="appearance-none h-10 w-full sm:w-auto bg-white border border-neutral-900 text-neutral-900 text-sm font-medium rounded-xl pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900"
+                        >
+                            <option value="DRAFT">Draft</option>
+                            <option value="PENDING">Pending</option>
+                            <option value="PAID">Paid</option>
+                        </select>
+                        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                            {updating ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            )}
+                        </div>
                     </div>
+
+                    {showSendButtons && hasEmail && (
+                        <Button
+                            onClick={() => handleSend('EMAIL')}
+                            loading={sending === 'EMAIL'}
+                            disabled={!!sending || success === 'EMAIL' || isFreePlan}
+                            title={isFreePlan ? "Upgrade to Basic plan to send emails" : undefined}
+                            variant={success === 'EMAIL' ? 'primary' : 'outline'}
+                            size="md"
+                            className={`flex-1 sm:flex-none border border-neutral-900 shadow-none h-10 transition-all duration-300 ${success === 'EMAIL' ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-transparent' : ''}`}
+                        >
+                            {success === 'EMAIL' ? (
+                                <>
+                                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                                    Sent
+                                </>
+                            ) : (
+                                <>
+                                    <Send className="w-4 h-4 mr-2" />
+                                    {sending === 'EMAIL' ? 'Sending...' : 'Email'}
+                                </>
+                            )}
+                        </Button>
+                    )}
                 </div>
 
-                {/* Send Buttons */}
-                {showSendButtons && hasEmail && (
-                    <Button
-                        onClick={() => handleSend('EMAIL')}
-                        loading={sending === 'EMAIL'}
-                        disabled={!!sending || success === 'EMAIL' || isFreePlan}
-                        title={isFreePlan ? "Upgrade to Basic plan to send emails" : undefined}
-                        variant={success === 'EMAIL' ? 'primary' : 'outline'}
-                        size="sm"
-                        className={`border border-neutral-900 shadow-none h-9 transition-all duration-300 ${success === 'EMAIL' ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-transparent' : ''}`}
-                    >
-                        {success === 'EMAIL' ? (
-                            <>
-                                <CheckCircle2 className="w-4 h-4 mr-2" />
-                                Sent
-                            </>
-                        ) : (
-                            <>
-                                <Send className="w-4 h-4 mr-2" />
-                                {sending === 'EMAIL' ? 'Sending...' : 'Send Email'}
-                            </>
-                        )}
-                    </Button>
-                )}
-
-                {showSendButtons && hasWhatsApp && (
-                    <Button
-                        onClick={() => handleSend('WHATSAPP')}
-                        loading={sending === 'WHATSAPP'}
-                        disabled={!!sending || success === 'WHATSAPP' || isFreePlan}
-                        title={isFreePlan ? "Upgrade to Basic plan to send WhatsApp" : undefined}
-                        size="sm"
-                        className={`border border-neutral-900 shadow-none h-9 transition-all duration-300 ${success === 'WHATSAPP' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-[#25D366] hover:bg-[#128C7E] text-white'}`}
-                    >
-                        {success === 'WHATSAPP' ? (
-                            <>
-                                <CheckCircle2 className="w-4 h-4 mr-2" />
-                                Sent
-                            </>
-                        ) : (
-                            <>
-                                <Send className="w-4 h-4 mr-2" />
-                                {sending === 'WHATSAPP' ? 'Sending...' : 'WhatsApp'}
-                            </>
-                        )}
-                    </Button>
-                )}
+                {/* Row 2 on mobile: WhatsApp + Download (children) */}
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    {showSendButtons && hasWhatsApp && (
+                        <Button
+                            onClick={() => handleSend('WHATSAPP')}
+                            loading={sending === 'WHATSAPP'}
+                            disabled={!!sending || success === 'WHATSAPP' || isFreePlan}
+                            title={isFreePlan ? "Upgrade to Basic plan to send WhatsApp" : undefined}
+                            size="md"
+                            className={`flex-1 sm:flex-none border border-neutral-900 shadow-none h-10 transition-all duration-300 ${success === 'WHATSAPP' ? 'bg-emerald-600 hover:bg-emerald-700 border-transparent' : 'bg-[#25D366] hover:bg-[#128C7E] text-white'}`}
+                        >
+                            {success === 'WHATSAPP' ? (
+                                <>
+                                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                                    Sent
+                                </>
+                            ) : (
+                                <>
+                                    <Send className="w-4 h-4 mr-2" />
+                                    {sending === 'WHATSAPP' ? 'Sending...' : 'WhatsApp'}
+                                </>
+                            )}
+                        </Button>
+                    )}
+                    {children}
+                </div>
             </div>
 
             {/* Confirmation Modal */}
@@ -253,4 +260,3 @@ export default function InvoiceControls({
         </>
     );
 }
-

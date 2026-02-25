@@ -28,7 +28,7 @@ export default function InvoiceRenderer({ invoice, templateId = 'classic', busin
 
     return (
         <div
-            className="p-10 min-h-[800px] shadow-sm"
+            className="p-4 sm:p-10 min-h-[800px] shadow-sm"
             style={{
                 background: isDarkBg
                     ? template.colors.primary
@@ -36,7 +36,7 @@ export default function InvoiceRenderer({ invoice, templateId = 'classic', busin
             }}
         >
             {/* Header */}
-            <div className="flex justify-between items-start mb-10 pb-8" style={{ borderBottom: `2px solid ${template.colors.primary}20` }}>
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-6 sm:gap-0 mb-8 sm:mb-10 pb-8" style={{ borderBottom: `2px solid ${template.colors.primary}20` }}>
                 <div>
                     {businessProfile.logo && (
                         <div className="mb-4">
@@ -44,12 +44,12 @@ export default function InvoiceRenderer({ invoice, templateId = 'classic', busin
                             <img
                                 src={businessProfile.logo}
                                 alt="Business Logo"
-                                className="h-16 w-auto object-contain"
+                                className="h-12 sm:h-16 w-auto object-contain"
                             />
                         </div>
                     )}
                     <h2
-                        className="text-2xl font-bold mb-2"
+                        className="text-xl sm:text-2xl font-bold mb-2"
                         style={{ color: headerColor }}
                     >
                         {businessProfile.name}
@@ -68,15 +68,15 @@ export default function InvoiceRenderer({ invoice, templateId = 'classic', busin
                         )}
                     </div>
                 </div>
-                <div className="text-right">
+                <div className="sm:text-right w-full sm:w-auto">
                     <p
-                        className="text-4xl font-light tracking-widest mb-3 opacity-50"
+                        className="text-2xl sm:text-4xl font-light tracking-widest mb-2 sm:mb-3 opacity-50"
                         style={{ color: headerColor }}
                     >
                         INVOICE
                     </p>
                     <p
-                        className="text-xl font-semibold"
+                        className="text-lg sm:text-xl font-semibold"
                         style={{ color: bodyTextColor }}
                     >
                         {invoice.invoiceNumber}
@@ -85,16 +85,16 @@ export default function InvoiceRenderer({ invoice, templateId = 'classic', busin
             </div>
 
             {/* Billed To & Dates */}
-            <div className="grid grid-cols-2 gap-12 mb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-12 mb-10">
                 <div>
                     <p
-                        className="text-xs font-semibold uppercase tracking-wider mb-3 opacity-70"
+                        className="text-xs font-semibold uppercase tracking-wider mb-2 sm:mb-3 opacity-70"
                         style={{ color: headerColor }}
                     >
                         Billed To
                     </p>
                     <p
-                        className="text-lg font-semibold"
+                        className="text-base sm:text-lg font-semibold"
                         style={{ color: bodyTextColor }}
                     >
                         {invoice.buyer?.name || 'Walk-in Customer'}
@@ -108,8 +108,8 @@ export default function InvoiceRenderer({ invoice, templateId = 'classic', busin
                         {invoice.buyer?.phone && <p>{invoice.buyer.phone}</p>}
                     </div>
                 </div>
-                <div className="text-right">
-                    <div className="inline-block text-left">
+                <div className="sm:text-right">
+                    <div className="inline-block sm:text-left text-left w-full sm:w-auto">
                         <div className="mb-4">
                             <p
                                 className="text-xs font-semibold uppercase tracking-wider mb-1 opacity-70"
@@ -117,7 +117,7 @@ export default function InvoiceRenderer({ invoice, templateId = 'classic', busin
                             >
                                 Invoice Date
                             </p>
-                            <p className="font-medium" style={{ color: bodyTextColor }}>{formatDate(invoice.issueDate)}</p>
+                            <p className="font-medium text-sm sm:text-base" style={{ color: bodyTextColor }}>{formatDate(invoice.issueDate)}</p>
                         </div>
                         {invoice.dueDate && (
                             <div>
@@ -127,7 +127,7 @@ export default function InvoiceRenderer({ invoice, templateId = 'classic', busin
                                 >
                                     Due Date
                                 </p>
-                                <p className="font-medium" style={{ color: bodyTextColor }}>{formatDate(invoice.dueDate)}</p>
+                                <p className="font-medium text-sm sm:text-base" style={{ color: bodyTextColor }}>{formatDate(invoice.dueDate)}</p>
                             </div>
                         )}
                     </div>
@@ -136,57 +136,59 @@ export default function InvoiceRenderer({ invoice, templateId = 'classic', busin
 
             {/* Items Table */}
             <div className="mb-10 rounded-xl overflow-hidden" style={{ border: `1px solid ${template.colors.primary}15` }}>
-                <table className="w-full">
-                    <thead>
-                        <tr style={{ backgroundColor: `${template.colors.primary}08`, borderBottom: `1px solid ${template.colors.primary}15` }}>
-                            <th className="text-left px-5 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: headerColor }}>
-                                Description
-                            </th>
-                            <th className="text-center px-5 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: headerColor }}>
-                                Qty
-                            </th>
-                            <th className="text-center px-5 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: headerColor }}>
-                                Unit
-                            </th>
-                            <th className="text-right px-5 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: headerColor }}>
-                                Rate
-                            </th>
-                            <th className="text-right px-5 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: headerColor }}>
-                                {getCurrencyTaxName(invoice.currency)}
-                            </th>
-                            <th className="text-right px-5 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: headerColor }}>
-                                Amount
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {invoice.items.map((item: any, index: number) => (
-                            <tr
-                                key={item.id}
-                                style={{
-                                    borderBottom: index !== invoice.items.length - 1 ? `1px solid ${template.colors.primary}10` : 'none',
-                                    color: bodyTextColor
-                                }}
-                            >
-                                <td className="px-5 py-4 font-medium">{item.description}</td>
-                                <td className="px-5 py-4 text-center tabular-nums opacity-80">{item.quantity}</td>
-                                <td className="px-5 py-4 text-center opacity-80">{item.unit}</td>
-                                <td className="px-5 py-4 text-right tabular-nums opacity-80">
-                                    {formatCurrency(item.unitPrice, invoice.currency)}
-                                </td>
-                                <td className="px-5 py-4 text-right tabular-nums opacity-80">{item.taxRate}%</td>
-                                <td className="px-5 py-4 text-right font-semibold tabular-nums">
-                                    {formatCurrency(item.amount, invoice.currency)}
-                                </td>
+                <div className="overflow-x-auto">
+                    <table className="w-full min-w-[600px] sm:min-w-0">
+                        <thead>
+                            <tr style={{ backgroundColor: `${template.colors.primary}08`, borderBottom: `1px solid ${template.colors.primary}15` }}>
+                                <th className="text-left px-4 sm:px-5 py-3 sm:py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: headerColor }}>
+                                    Description
+                                </th>
+                                <th className="text-center px-4 sm:px-5 py-3 sm:py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: headerColor }}>
+                                    Qty
+                                </th>
+                                <th className="text-center px-4 sm:px-5 py-3 sm:py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: headerColor }}>
+                                    Unit
+                                </th>
+                                <th className="text-right px-4 sm:px-5 py-3 sm:py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: headerColor }}>
+                                    Rate
+                                </th>
+                                <th className="text-right px-4 sm:px-5 py-3 sm:py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: headerColor }}>
+                                    {getCurrencyTaxName(invoice.currency)}
+                                </th>
+                                <th className="text-right px-4 sm:px-5 py-3 sm:py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: headerColor }}>
+                                    Amount
+                                </th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {invoice.items.map((item: any, index: number) => (
+                                <tr
+                                    key={item.id}
+                                    style={{
+                                        borderBottom: index !== invoice.items.length - 1 ? `1px solid ${template.colors.primary}10` : 'none',
+                                        color: bodyTextColor
+                                    }}
+                                >
+                                    <td className="px-4 sm:px-5 py-3 sm:py-4 text-sm font-medium">{item.description}</td>
+                                    <td className="px-4 sm:px-5 py-3 sm:py-4 text-sm text-center tabular-nums opacity-80">{item.quantity}</td>
+                                    <td className="px-4 sm:px-5 py-3 sm:py-4 text-sm text-center opacity-80">{item.unit}</td>
+                                    <td className="px-4 sm:px-5 py-3 sm:py-4 text-sm text-right tabular-nums opacity-80">
+                                        {formatCurrency(item.unitPrice, invoice.currency)}
+                                    </td>
+                                    <td className="px-4 sm:px-5 py-3 sm:py-4 text-sm text-right tabular-nums opacity-80">{item.taxRate}%</td>
+                                    <td className="px-4 sm:px-5 py-3 sm:py-4 text-sm text-right font-semibold tabular-nums">
+                                        {formatCurrency(item.amount, invoice.currency)}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* Totals */}
             <div className="flex justify-end mb-10">
-                <div className="w-80">
+                <div className="w-full sm:w-80">
                     <div className="space-y-3 pb-4">
                         <div className="flex justify-between text-sm" style={{ color: subTextColor }}>
                             <span>Subtotal</span>
@@ -244,8 +246,8 @@ export default function InvoiceRenderer({ invoice, templateId = 'classic', busin
                         className="flex justify-between pt-4"
                         style={{ borderTop: `2px solid ${template.colors.primary}` }}
                     >
-                        <span className="text-lg font-semibold" style={{ color: headerColor }}>Total</span>
-                        <span className="text-2xl font-bold tabular-nums" style={{ color: headerColor }}>
+                        <span className="text-base sm:text-lg font-semibold" style={{ color: headerColor }}>Total</span>
+                        <span className="text-xl sm:text-2xl font-bold tabular-nums" style={{ color: headerColor }}>
                             {formatCurrency(invoice.totalAmount, invoice.currency)}
                         </span>
                     </div>
@@ -255,7 +257,7 @@ export default function InvoiceRenderer({ invoice, templateId = 'classic', busin
             {/* Notes & Terms */}
             {(invoice.notes || invoice.terms) && (
                 <div
-                    className="pt-8 grid grid-cols-2 gap-8"
+                    className="pt-8 grid grid-cols-1 sm:grid-cols-2 gap-8"
                     style={{ borderTop: `1px solid ${template.colors.primary}15` }}
                 >
                     {invoice.notes && (

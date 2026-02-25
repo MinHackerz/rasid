@@ -198,9 +198,9 @@ export default function PaymentReminders({
                         <div className="w-10 h-10 rounded-xl bg-neutral-100 flex items-center justify-center flex-shrink-0">
                             <Bell className="w-5 h-5 text-neutral-400" />
                         </div>
-                        <div>
-                            <h3 className="font-semibold text-neutral-900 mb-1">Smart Payment Reminders</h3>
-                            <p className="text-sm text-neutral-500 mb-3">
+                        <div className="flex-1">
+                            <h3 className="font-semibold text-neutral-900 leading-tight mb-1">Smart Payment Reminders</h3>
+                            <p className="text-sm text-neutral-500 leading-normal mb-3">
                                 Automatically remind customers about upcoming and overdue payments.
                             </p>
                             <Button
@@ -235,9 +235,9 @@ export default function PaymentReminders({
                                 reminders.length > 0 ? "text-blue-600" : "text-neutral-400"
                             )} />
                         </div>
-                        <div className="text-left">
-                            <h3 className="font-semibold text-neutral-900">Payment Reminders</h3>
-                            <p className="text-sm text-neutral-500">
+                        <div className="text-left flex flex-col justify-center">
+                            <h3 className="font-semibold text-neutral-900 leading-tight">Payment Reminders</h3>
+                            <p className="text-sm text-neutral-500 mt-0.5 leading-tight">
                                 {loading ? 'Loading...' :
                                     reminders.length === 0 ? 'No reminders scheduled' :
                                         `${pendingCount} pending, ${sentCount} sent`}
@@ -322,7 +322,7 @@ export default function PaymentReminders({
                                             <div
                                                 key={reminder.id}
                                                 className={cn(
-                                                    "flex items-center justify-between p-3 rounded-lg border",
+                                                    "flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-lg border gap-3",
                                                     reminder.status === 'PENDING' ? "bg-white border-neutral-200" :
                                                         reminder.status === 'SENT' ? "bg-emerald-50/50 border-emerald-100" :
                                                             reminder.status === 'FAILED' ? "bg-red-50/50 border-red-100" :
@@ -340,18 +340,18 @@ export default function PaymentReminders({
                                                             <MessageSquare className="w-4 h-4 text-green-600" />
                                                         )}
                                                     </div>
-                                                    <div>
-                                                        <div className="text-sm font-medium text-neutral-900">
+                                                    <div className="flex flex-col justify-center">
+                                                        <div className="text-sm font-medium text-neutral-900 leading-tight">
                                                             {getReminderLabel(reminder.type, reminder.daysOffset)}
                                                         </div>
-                                                        <div className="text-xs text-neutral-500 flex items-center gap-1">
+                                                        <div className="text-xs text-neutral-500 flex items-center gap-1 mt-0.5 leading-tight">
                                                             <Calendar className="w-3 h-3" />
                                                             {formatDateTime(reminder.scheduledFor)}
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
                                                     {getStatusBadge(reminder.status)}
 
                                                     {reminder.status === 'PENDING' && (

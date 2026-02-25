@@ -6,13 +6,35 @@
  * Supports multiple premium invoice templates
  */
 
-import puppeteer from 'puppeteer';
+import puppeteerCore from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
 import { promises as fs } from 'fs';
 import path from 'path';
 import QRCode from 'qrcode';
 import { prisma } from '@/lib/prisma';
 import { getTemplateById } from './templates';
 import type { InvoiceWithRelations } from '@/types';
+
+// ============================================
+// Browser Launch Helper (serverless-compatible)
+// ============================================
+async function launchBrowser() {
+  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+    // Production / Serverless: use @sparticuz/chromium
+    return puppeteerCore.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath(),
+      headless: true,
+    });
+  }
+
+  // Local development: use regular puppeteer (which bundles its own Chrome)
+  const puppeteer = (await import('puppeteer')).default;
+  return puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
+}
 
 
 
@@ -164,10 +186,7 @@ export async function generateInvoicePDF(invoiceId: string, templateOverride?: s
   const html = template.generateHTML(invoiceData, qrCodeDataUrl, logoBase64);
 
   // Launch Puppeteer and generate PDF
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  });
+  const browser = await launchBrowser();
 
   try {
     const page = await browser.newPage();

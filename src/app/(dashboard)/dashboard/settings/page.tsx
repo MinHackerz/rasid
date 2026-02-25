@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardBody, Input, Textarea, Button, ImageUpload, Select } from '@/components/ui';
-import { Save, Building2, FileText, CheckCircle2, Globe, Mail, MessageSquare, ExternalLink, Info, Palette } from 'lucide-react';
+import { Save, Building2, FileText, CheckCircle2, Globe, Mail, MessageSquare, ExternalLink, Info, Palette, X } from 'lucide-react';
 import { CURRENCIES } from '@/lib/currencies';
 import { INDIAN_STATES } from '@/lib/constants/indian-states';
 
@@ -59,6 +59,7 @@ export default function SettingsPage() {
     const [inviteEmail, setInviteEmail] = useState('');
     const [inviteLoading, setInviteLoading] = useState(false);
     const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+    const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
 
     const [profile, setProfile] = useState<SellerProfile>({
         businessName: '',
@@ -401,16 +402,16 @@ export default function SettingsPage() {
                                             <div className="space-y-2">
                                                 <div className="flex items-center gap-2 ml-1">
                                                     <label className="block text-sm font-medium text-neutral-700">Permanent Access Token</label>
-                                                    <div className="group relative">
-                                                        <div className="cursor-help text-neutral-400 hover:text-neutral-600 transition-colors">
+                                                    <div className="relative">
+                                                        <button
+                                                            type="button"
+                                                            className="cursor-help text-neutral-400 hover:text-neutral-600 transition-colors"
+                                                            aria-label="Info"
+                                                            onClick={() => setActiveTooltip(activeTooltip === 'whatsapp' ? null : 'whatsapp')}
+                                                            onMouseEnter={() => setActiveTooltip('whatsapp')}
+                                                        >
                                                             <Info className="w-4 h-4" />
-                                                        </div>
-                                                        <div className="absolute right-0 bottom-full mb-2 w-72 p-3 bg-neutral-900/95 backdrop-blur-sm text-white text-xs rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none md:pointer-events-auto">
-                                                            <p className="leading-relaxed">
-                                                                You need a System User Access Token with <strong>whatsapp_business_messaging</strong> permission.
-                                                            </p>
-                                                            <div className="absolute -bottom-1 right-1 w-2 h-2 bg-neutral-900 rotate-45"></div>
-                                                        </div>
+                                                        </button>
                                                     </div>
                                                 </div>
                                                 <Input
@@ -652,26 +653,16 @@ export default function SettingsPage() {
                                             <div className="space-y-2">
                                                 <div className="flex items-center gap-2 ml-1">
                                                     <label className="block text-sm font-medium text-neutral-700">SMTP Password</label>
-                                                    <div className="group relative">
-                                                        <div className="cursor-help text-neutral-400 hover:text-neutral-600 transition-colors">
+                                                    <div className="relative">
+                                                        <button
+                                                            type="button"
+                                                            className="cursor-help text-neutral-400 hover:text-neutral-600 transition-colors"
+                                                            aria-label="Info"
+                                                            onClick={() => setActiveTooltip(activeTooltip === 'smtp' ? null : 'smtp')}
+                                                            onMouseEnter={() => setActiveTooltip('smtp')}
+                                                        >
                                                             <Info className="w-4 h-4" />
-                                                        </div>
-                                                        <div className="absolute right-0 bottom-full mb-2 w-72 p-3 bg-neutral-900/95 backdrop-blur-sm text-white text-xs rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none md:pointer-events-auto">
-                                                            <p className="leading-relaxed">
-                                                                {profile.integrations.email?.smtpHost === 'smtp.gmail.com' ? (
-                                                                    <>
-                                                                        If you have 2FA enabled, you <strong>must</strong> use an App Password.
-                                                                        <br />
-                                                                        <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:text-blue-200 underline mt-1 block pointer-events-auto">
-                                                                            Create App Password &rarr;
-                                                                        </a>
-                                                                    </>
-                                                                ) : (
-                                                                    "Use your email account password or an app-specific password if 2FA is enabled."
-                                                                )}
-                                                            </p>
-                                                            <div className="absolute -bottom-1 right-1 w-2 h-2 bg-neutral-900 rotate-45"></div>
-                                                        </div>
+                                                        </button>
                                                     </div>
                                                 </div>
                                                 <Input
@@ -1052,6 +1043,61 @@ export default function SettingsPage() {
                     </div>
                 )}
             </div >
+
+            {/* Info Tooltip Overlay */}
+            {activeTooltip && (
+                <>
+                    {/* Blurred backdrop to dismiss */}
+                    <div className="fixed inset-0 z-[99] bg-black/40 backdrop-blur-sm" onClick={() => setActiveTooltip(null)} />
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 pointer-events-none">
+                        <div
+                            className="relative bg-neutral-900 text-white text-sm rounded-2xl shadow-2xl p-5 max-w-sm w-full pointer-events-auto animate-in zoom-in-95 fade-in duration-150"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button
+                                type="button"
+                                onClick={() => setActiveTooltip(null)}
+                                className="absolute top-3 right-3 text-neutral-400 hover:text-white transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+
+                            {activeTooltip === 'whatsapp' && (
+                                <div>
+                                    <p className="font-semibold text-sm mb-2">WhatsApp Access Token</p>
+                                    <p className="leading-relaxed text-neutral-300 text-xs">
+                                        You need a System User Access Token with <strong className="text-white">whatsapp_business_messaging</strong> permission.
+                                    </p>
+                                </div>
+                            )}
+
+                            {activeTooltip === 'smtp' && (
+                                <div>
+                                    <p className="font-semibold text-sm mb-2">SMTP Password</p>
+                                    <p className="leading-relaxed text-neutral-300 text-xs">
+                                        {profile.integrations.email?.smtpHost === 'smtp.gmail.com' ? (
+                                            <>
+                                                If you have 2FA enabled, you <strong className="text-white">must</strong> use an App Password.
+                                                <br />
+                                                <a
+                                                    href="https://myaccount.google.com/apppasswords"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-400 hover:text-blue-300 underline mt-2 inline-block"
+                                                >
+                                                    Create App Password &rarr;
+                                                </a>
+                                            </>
+                                        ) : (
+                                            "Use your email account password or an app-specific password if 2FA is enabled."
+                                        )}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </>
+            )}
         </div >
     );
 }

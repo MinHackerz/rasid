@@ -20,8 +20,18 @@ interface PlanAvatarRingProps {
  * LIFETIME → prismatic rainbow ring + shimmer
  */
 export default function PlanAvatarRing({ plan = 'FREE', size = 'md' }: PlanAvatarRingProps) {
+    const [mounted, setMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const sizeClasses = size === 'sm' ? 'w-8 h-8' : 'w-10 h-10';
     const innerSize = size === 'sm' ? 'w-[30px] h-[30px]' : 'w-[38px] h-[38px]';
+
+    if (!mounted) {
+        return <div className={`${sizeClasses} bg-neutral-100/50 rounded-full animate-pulse flex-shrink-0`} />;
+    }
 
     return (
         <div className={`plan-avatar-ring plan-ring-${plan.toLowerCase()} ${sizeClasses}`}>

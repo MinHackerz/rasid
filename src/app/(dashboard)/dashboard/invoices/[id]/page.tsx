@@ -10,6 +10,7 @@ import VerificationLink from '@/components/invoice/VerificationLink';
 import InvoiceRenderer from '@/components/invoice/InvoiceRenderer';
 import PaymentReminders from '@/components/invoice/PaymentReminders';
 import InvoiceTimeline from '@/components/invoice/InvoiceTimeline';
+import DownloadButton from '@/components/invoice/DownloadButton';
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -84,61 +85,56 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
     const logoUrl = showLogo ? (sellerSettings?.logo || null) : null;
 
     return (
-        <div className="max-w-6xl mx-auto space-y-6">
+        <div className="max-w-6xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
             {/* Header */}
-            <div className="flex items-start justify-between">
-                <div className="flex items-center gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center gap-3 sm:gap-4">
                     <Link
                         href="/dashboard/invoices"
-                        className="p-2.5 hover:bg-neutral-100 rounded-xl transition-colors text-neutral-500 hover:text-neutral-900"
+                        className="p-2 sm:p-2.5 hover:bg-neutral-100 rounded-xl transition-colors text-neutral-500 hover:text-neutral-900"
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </Link>
                     <div>
                         <div className="flex items-center gap-3">
-                            <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">
+                            <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
                                 {invoice.invoiceNumber}
                             </h1>
                         </div>
-                        <p className="text-neutral-500 text-sm mt-0.5">
+                        <p className="text-neutral-500 text-xs sm:text-sm mt-0.5">
                             Created on {formatDate(invoice.createdAt)}
                         </p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <InvoiceControls
-                        invoiceId={invoice.id}
-                        initialStatus={invoice.status}
-                        hasWhatsApp={hasWhatsApp}
-                        hasEmail={hasEmail}
-                        showSendButtons={showSendButtons}
-                        isFreePlan={isFreePlan}
-                    />
-                    <a
-                        href={`/api/invoices/${invoice.id}/pdf`}
-                        className="inline-flex items-center gap-2 px-3 py-2 h-9 text-sm font-medium border border-neutral-900 rounded-lg bg-white hover:bg-neutral-50 transition-colors"
-                    >
-                        <Download className="w-4 h-4 text-neutral-500" />
-                        Download
-                    </a>
-                </div>
+                <InvoiceControls
+                    invoiceId={invoice.id}
+                    initialStatus={invoice.status}
+                    hasWhatsApp={hasWhatsApp}
+                    hasEmail={hasEmail}
+                    showSendButtons={showSendButtons}
+                    isFreePlan={isFreePlan}
+                >
+                    <DownloadButton invoiceId={invoice.id} />
+                </InvoiceControls>
             </div>
 
             {/* Invoice Preview - PDF Style */}
-            <Card className="shadow-lg border-neutral-200">
-                <CardBody className="p-0">
-                    <InvoiceRenderer
-                        invoice={invoice}
-                        templateId={(sellerSettings?.invoiceDefaults as any)?.templateId}
-                        businessProfile={{
-                            name: sellerName,
-                            address: sellerAddress,
-                            phone: sellerPhone,
-                            email: sellerEmail,
-                            logo: logoUrl,
-                            taxId: sellerTaxId
-                        }}
-                    />
+            <Card className="shadow-lg border-neutral-200 overflow-hidden">
+                <CardBody className="p-0 overflow-x-auto">
+                    <div className="min-w-fit">
+                        <InvoiceRenderer
+                            invoice={invoice}
+                            templateId={(sellerSettings?.invoiceDefaults as any)?.templateId}
+                            businessProfile={{
+                                name: sellerName,
+                                address: sellerAddress,
+                                phone: sellerPhone,
+                                email: sellerEmail,
+                                logo: logoUrl,
+                                taxId: sellerTaxId
+                            }}
+                        />
+                    </div>
                 </CardBody>
             </Card>
 
@@ -163,14 +159,14 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
                     description="Share this link to let anyone verify this invoice's authenticity"
                 />
                 <CardBody>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
                         {/* QR Code Placeholder */}
                         <div className="w-24 h-24 bg-neutral-100 rounded-xl flex items-center justify-center flex-shrink-0">
                             <QrCode className="w-12 h-12 text-neutral-300" />
                         </div>
 
-                        <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
+                        <div className="flex-1 text-center sm:text-left w-full">
+                            <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
                                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                                 <span className="text-sm font-medium text-emerald-700">Cryptographically Signed</span>
                             </div>
