@@ -4,6 +4,7 @@ export type PlanType = 'FREE' | 'BASIC' | 'PRO' | 'PREMIUM' | 'LIFETIME';
 export interface PlanDetails {
     name: string;
     price: number; // Monthly price in USD (assuming $)
+    annualPrice?: number; // Monthly price when billed annually (discounted)
     period?: 'monthly' | 'lifetime';
     features: string[];
     limits: {
@@ -19,6 +20,7 @@ export interface PlanDetails {
         paymentReminders: boolean; // Smart payment reminders feature
     };
     dodoProductId?: string;
+    dodoProductIdAnnual?: string;
 }
 
 export const PLANS: Record<PlanType, PlanDetails> = {
@@ -49,6 +51,7 @@ export const PLANS: Record<PlanType, PlanDetails> = {
     BASIC: {
         name: 'Basic',
         price: 10,
+        annualPrice: 8,
         features: [
             '3 businesses',
             '2000 invoices/month',
@@ -75,11 +78,13 @@ export const PLANS: Record<PlanType, PlanDetails> = {
             businesses: 3,
             paymentReminders: true
         },
-        dodoProductId: process.env.DODO_PRODUCT_ID_BASIC
+        dodoProductId: process.env.DODO_PRODUCT_ID_BASIC,
+        dodoProductIdAnnual: process.env.DODO_PRODUCT_ID_BASIC_ANNUAL
     },
     PRO: {
         name: 'Pro',
         price: 20,
+        annualPrice: 16,
         features: [
             '10 businesses',
             '5000 invoices/month',
@@ -110,11 +115,13 @@ export const PLANS: Record<PlanType, PlanDetails> = {
             businesses: 10,
             paymentReminders: true
         },
-        dodoProductId: process.env.DODO_PRODUCT_ID_PRO
+        dodoProductId: process.env.DODO_PRODUCT_ID_PRO,
+        dodoProductIdAnnual: process.env.DODO_PRODUCT_ID_PRO_ANNUAL
     },
     PREMIUM: {
         name: 'Premium',
         price: 40,
+        annualPrice: 32,
         features: [
             'Unlimited businesses',
             '12000 invoices/month',
@@ -147,7 +154,8 @@ export const PLANS: Record<PlanType, PlanDetails> = {
             businesses: 999999, // Unlimited
             paymentReminders: true
         },
-        dodoProductId: process.env.DODO_PRODUCT_ID_PREMIUM
+        dodoProductId: process.env.DODO_PRODUCT_ID_PREMIUM,
+        dodoProductIdAnnual: process.env.DODO_PRODUCT_ID_PREMIUM_ANNUAL
     },
     LIFETIME: {
         name: 'Lifetime',

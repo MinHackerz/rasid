@@ -17,6 +17,7 @@ import {
   FileText,
   Lock,
   Package,
+  Sparkles,
 } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui';
@@ -27,6 +28,8 @@ import { PricingSection } from '@/components/landing/PricingSection';
 import { Footer } from '@/components/layout/Footer';
 import { PlanType } from '@/lib/constants/plans';
 import { getSubscriptionDetails } from '@/app/actions/subscription';
+import { getPublicSiteConfig, checkIsAdmin, type SiteConfigDTO } from '@/app/actions/admin';
+import FestiveTheme from '@/components/landing/FestiveTheme';
 
 /* ─────────── Animated Counter ─────────── */
 function AnimatedNumber({ target, suffix = '' }: { target: number; suffix?: string }) {
@@ -52,6 +55,8 @@ export default function LandingPage() {
     subscriptionEndsAt: string | null;
   } | null>(null);
 
+  const [siteConfig, setSiteConfig] = React.useState<SiteConfigDTO | null>(null);
+  const [isAdminRole, setIsAdminRole] = React.useState(false);
   React.useEffect(() => {
     if (isSignedIn) {
       getSubscriptionDetails().then(details => {
@@ -59,13 +64,88 @@ export default function LandingPage() {
           setSubscriptionDetails(details);
         }
       });
+      checkIsAdmin().then(setIsAdminRole);
     }
   }, [isSignedIn]);
 
+  React.useEffect(() => {
+    getPublicSiteConfig()
+      .then(config => setSiteConfig(config))
+      .catch(() => {
+        // Fail silently on header offer config – site should still work without it
+      });
+  }, []);
+
+  // Check if occasion theme should be active based on date range
+  const isThemeActive = React.useMemo(() => {
+    if (!siteConfig?.themeEnabled) return false;
+    const now = new Date();
+    if (siteConfig.themeStartDate && new Date(siteConfig.themeStartDate) > now) return false;
+    if (siteConfig.themeEndDate && new Date(siteConfig.themeEndDate) < now) return false;
+    return true;
+  }, [siteConfig]);
+
+  const hasOfferBar = siteConfig?.offerEnabled && !!siteConfig.offerText;
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+      {/* Occasion / Festive Theme (admin-configurable) */}
+      {isThemeActive && siteConfig && (
+        <FestiveTheme
+          themeName={siteConfig.themeName}
+          themeEmojis={siteConfig.themeEmojis}
+          themeColors={siteConfig.themeColors}
+          themeIntensity={siteConfig.themeIntensity}
+        />
+      )}
+      {/* Header Offer Bar (admin-configurable) */}
+      {hasOfferBar && (() => {
+        let classes = '';
+        if (siteConfig.offerStyle === 'violet') classes = 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-[0_8px_32px_-4px_rgba(139,92,246,0.3)] border-violet-500/50';
+        else if (siteConfig.offerStyle === 'emerald') classes = 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-[0_8px_32px_-4px_rgba(16,185,129,0.3)] border-emerald-400/50';
+        else if (siteConfig.offerStyle === 'rose') classes = 'bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-[0_8px_32px_-4px_rgba(244,63,94,0.3)] border-rose-400/50';
+        else if (siteConfig.offerStyle === 'dark') classes = 'bg-slate-900 text-white shadow-[0_8px_32px_-4px_rgba(15,23,42,0.4)] border-slate-700 hover:bg-slate-800';
+        else if (siteConfig.offerStyle === 'custom') classes = 'text-white border-black/10 dark:border-white/20 hover:brightness-110 shadow-lg';
+        else classes = 'bg-white/5 backdrop-blur-xl text-slate-700 dark:text-slate-200 shadow-[0_8px_32px_-4px_rgba(0,0,0,0.1)] border-white/10 hover:bg-white/10 hover:shadow-[0_8px_32px_-4px_rgba(0,0,0,0.15)] ring-1 ring-white/5 hover:ring-white/20';
+        let animClass = 'animate-in slide-in-from-top-4 fade-in duration-700';
+        if (siteConfig.offerAnimation === 'fade') animClass = 'animate-in fade-in zoom-in-95 duration-1000';
+        else if (siteConfig.offerAnimation === 'bounce') animClass = 'animate-bounce';
+        else if (siteConfig.offerAnimation === 'pulse') animClass = 'animate-pulse';
+
+        return (
+          <div className={`fixed top-0 inset-x-0 z-50 flex justify-center px-4 ${animClass}`}>
+            <div className="mt-3 group cursor-pointer">
+              <div
+                className={`relative inline-flex items-center gap-3 rounded-full text-xs sm:text-sm px-1 py-1 pr-6 overflow-hidden transition-all ${siteConfig.offerBorder ? 'border-[0.5px] shadow-sm' : 'border-transparent'} ${classes}`}
+                style={siteConfig.offerStyle === 'custom' ? { backgroundColor: siteConfig.offerBgColor || '#8b5cf6' } : undefined}
+              >
+                {siteConfig.offerStyle === 'glass' && <div className="absolute inset-0 bg-gradient-to-r from-violet-500/10 via-fuchsia-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />}
+
+                {siteConfig.offerBadge && (
+                  <span className={`relative z-10 flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-white shadow-sm ${siteConfig.offerStyle === 'glass' ? 'bg-gradient-to-r from-violet-600 to-indigo-600' : 'bg-black/20'}`}>
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    {siteConfig.offerBadge}
+                  </span>
+                )}
+
+                <div className="relative z-10 flex items-center font-medium">
+                  {siteConfig.offerHref ? (
+                    <Link href={siteConfig.offerHref} className="flex items-center gap-1.5 transition-colors">
+                      {siteConfig.offerText}
+                      <ArrowRight className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                    </Link>
+                  ) : (
+                    <span>{siteConfig.offerText}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Navigation */}
-      <nav className="fixed top-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-auto md:min-w-[700px] z-50 bg-white/90 backdrop-blur-md rounded-full border border-white/20 px-4">
+      <nav className={`fixed ${hasOfferBar ? 'top-12 sm:top-14 xl:top-[60px]' : 'top-4'} transition-all duration-300 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-auto md:min-w-[700px] z-40 bg-white/90 backdrop-blur-md rounded-full border border-white/20 px-4`}>
         <div className="h-14 flex items-center justify-between gap-8">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
@@ -90,6 +170,14 @@ export default function LandingPage() {
               <div className="w-24 h-9 bg-slate-100 rounded-lg animate-pulse" />
             ) : isSignedIn ? (
               <div className="flex items-center gap-4">
+                {isAdminRole && (
+                  <Link href="/admin">
+                    <Button size="sm" variant="outline" className="font-semibold gap-2 border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition-colors">
+                      <Zap className="w-4 h-4" />
+                      Admin
+                    </Button>
+                  </Link>
+                )}
                 <Link href="/dashboard">
                   <Button size="sm" className="font-semibold gap-2">
                     <LayoutDashboard className="w-4 h-4" />
@@ -160,6 +248,14 @@ export default function LandingPage() {
                     <div className="w-full h-10 bg-slate-200 rounded-xl animate-pulse" />
                   ) : isSignedIn ? (
                     <div className="flex flex-col gap-2">
+                      {isAdminRole && (
+                        <Link href="/admin" onClick={() => setMobileMenuOpen(false)}>
+                          <Button className="w-full h-12 rounded-xl font-bold text-base shadow-sm justify-center bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20">
+                            <Zap className="w-4 h-4 mr-2" />
+                            Admin Panel
+                          </Button>
+                        </Link>
+                      )}
                       <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
                         <Button className="w-full h-12 rounded-xl font-bold text-base shadow-sm justify-center">
                           <LayoutDashboard className="w-4 h-4 mr-2" />
@@ -208,6 +304,40 @@ export default function LandingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
+            {/* Occasion Theme Banner (now inside the hero section) */}
+            {isThemeActive && siteConfig?.themeName && (
+              <div className="flex justify-center mb-6 z-20 relative animate-in fade-in slide-in-from-bottom-2 duration-1000">
+                <div
+                  className="px-6 py-2.5 rounded-full flex items-center gap-3 backdrop-blur-xl border border-white/40 overflow-hidden relative shadow-sm"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 100%)',
+                    boxShadow: (() => {
+                      let glowColor = 'rgba(0,0,0,0.1)';
+                      try {
+                        const colors = siteConfig.themeColors ? JSON.parse(siteConfig.themeColors) : [];
+                        if (colors[0]) glowColor = `${colors[0]}50`;
+                      } catch { }
+                      return `0 8px 32px -4px ${glowColor}, inset 0 1px 0 0 rgba(255,255,255,0.5)`;
+                    })(),
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full animate-[shimmer_3s_infinite]" />
+                  {(() => {
+                    const emojis = siteConfig.themeEmojis?.split(',').map(e => e.trim()).filter(Boolean) || [];
+                    return (
+                      <>
+                        {emojis[0] && <span className="text-xl drop-shadow-md animate-pulse">{emojis[0]}</span>}
+                        <span className="font-bold tracking-wide text-foreground leading-none drop-shadow-sm mix-blend-hard-light whitespace-nowrap">
+                          Happy {siteConfig.themeName}!
+                        </span>
+                        {emojis[emojis.length - 1] && <span className="text-xl drop-shadow-md animate-pulse">{emojis[emojis.length - 1]}</span>}
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
+
             {/* Trust Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/60 text-xs font-semibold text-emerald-700 mb-8 backdrop-blur-sm">
               <span className="relative flex h-2 w-2">

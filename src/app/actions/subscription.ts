@@ -6,7 +6,7 @@ import { PLANS, PlanType } from '@/lib/constants/plans';
 import { dodo } from '@/lib/dodo';
 import { redirect } from 'next/navigation';
 
-export async function createSubscriptionCheckout(planKey: PlanType) {
+export async function createSubscriptionCheckout(planKey: PlanType, billingInterval: 'monthly' | 'annual' = 'monthly') {
     const user = await currentUser();
 
     if (!user || !user.emailAddresses?.[0]?.emailAddress) {
@@ -45,7 +45,12 @@ export async function createSubscriptionCheckout(planKey: PlanType) {
         return { url: '/dashboard' };
     }
 
-    if (!plan.dodoProductId) {
+    // Use annual product ID if billing interval is annual and available
+    const productId = billingInterval === 'annual' && plan.dodoProductIdAnnual
+        ? plan.dodoProductIdAnnual
+        : plan.dodoProductId;
+
+    if (!productId) {
         throw new Error('Plan not configured for payments');
     }
 
@@ -76,7 +81,7 @@ export async function createSubscriptionCheckout(planKey: PlanType) {
             billing,
             customer,
             product_cart: [{
-                product_id: plan.dodoProductId,
+                product_id: productId,
                 quantity: 1
             }],
             return_url: `${appUrl}/dashboard?checkout=success`,

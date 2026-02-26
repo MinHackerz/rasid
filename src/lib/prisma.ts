@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 // Prisma client with ApiKey model support
 
 const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
+  prisma_v2: PrismaClient | undefined;
 };
 
 // Next.js statically evaluates routes during build. 
@@ -12,12 +12,12 @@ const dummyUrl = "postgresql://dummy:dummy@localhost:5432/dummy";
 const databaseUrl = process.env.DATABASE_URL || dummyUrl;
 
 export const prisma =
-  globalForPrisma.prisma ??
+  globalForPrisma.prisma_v2 ??
   new PrismaClient({
     datasourceUrl: databaseUrl,
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
   });
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma_v2 = prisma;
 
 export default prisma;

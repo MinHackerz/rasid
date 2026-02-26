@@ -16,7 +16,12 @@ const isPublicRoute = createRouteMatcher([
     '/privacy',         // Public privacy policy
     '/terms',           // Public terms of service
     '/api/v1/invoices/generate(.*)', // Public invoice generation API (protected by API key)
-    '/api/webhooks(.*)' // Public webhooks
+    '/api/webhooks(.*)',// Public webhooks
+    '/sitemap',         // Next.js sitemap path
+    '/sitemap.xml',     // Public sitemap target
+    '/robots.txt',      // Public robots text file
+    '/manifest.json',   // Public app manifest
+    '/icon.png',        // App icon
 ]);
 
 export default clerkMiddleware(async (auth, request) => {

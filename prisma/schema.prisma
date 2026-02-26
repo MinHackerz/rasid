@@ -1,6 +1,3 @@
-// Rashid - Invoice Generation Platform
-// Database Schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,177 +7,117 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================
-// SELLER - The business owner using the platform
-// ============================================
 model Seller {
-  id                String    @id @default(cuid())
-  clerkUserId       String?
-  
-  // Relations
-  @@index([clerkUserId])
-  email             String
-  passwordHash      String?
-  businessName      String
-  businessAddress   String?
-  phone             String?
-  logo              String?   // URL to logo image (deprecated)
-  logoData          Bytes?    // Binary logo data
-  taxId             String?   // GST/VAT number
-  state             String?   // State for GST calculation
-  bankDetails       Json?     // Bank account details for invoices
-  invoiceDefaults   Json?     // Default invoice settings (currency, notes, etc.)
-  integrations      Json?     // Third-party integrations (WhatsApp, Email)
-  
-  // Magic link auth
-  magicLinkToken    String?   @unique
-  magicLinkExpiry   DateTime?
-  
-  // Verification
-  emailVerified     Boolean   @default(false)
-  isActive          Boolean   @default(true)
-  
-  // Timestamps
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
-  // Subscription & Limits
-  plan              PlanTier  @default(FREE)
-  subscriptionId    String?   // External subscription ID (Dodo)
-  customerId        String?   // External customer ID (Dodo)
-  cancelledAt       DateTime? // When cancellation was requested
-  subscriptionEndsAt DateTime? // When the subscription will actually end
-  
-  // Usage Tracking (Resets monthly)
-  invoicesCount     Int       @default(0)
-  pdfApiUsage       Int       @default(0)
-  ocrUsage          Int       @default(0)
-  lastResetDate     DateTime  @default(now())
+  id                 String             @id @default(cuid())
+  clerkUserId        String?
+  email              String
+  passwordHash       String?
+  businessName       String
+  businessAddress    String?
+  phone              String?
+  logo               String?
+  taxId              String?
+  bankDetails        Json?
+  invoiceDefaults    Json?
+  integrations       Json?
+  magicLinkToken     String?            @unique
+  magicLinkExpiry    DateTime?
+  emailVerified      Boolean            @default(false)
+  isActive           Boolean            @default(true)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  state              String?
+  logoData           Bytes?
+  cancelledAt        DateTime?
+  customerId         String?
+  invoicesCount      Int                @default(0)
+  lastResetDate      DateTime           @default(now())
+  ocrUsage           Int                @default(0)
+  pdfApiUsage        Int                @default(0)
+  plan               PlanTier           @default(FREE)
+  subscriptionEndsAt DateTime?
+  subscriptionId     String?
+  apiKeys            ApiKey[]
+  buyers             Buyer[]
+  invoices           Invoice[]
+  paymentMethods     PaymentMethod[]
+  paymentReminders   PaymentReminder[]
+  members            TeamMember[]
+  uploadedDocuments  UploadedDocument[]
+  inventoryItems     InventoryItem[]
 
-  // Relations
-  invoices          Invoice[]
-  buyers            Buyer[]
-  uploadedDocuments UploadedDocument[]
-  paymentMethods    PaymentMethod[]
-  inventoryItems    InventoryItem[]
-  members           TeamMember[]
-  apiKeys           ApiKey[]
-  paymentReminders  PaymentReminder[]
-  
+  @@index([clerkUserId])
   @@index([email])
 }
 
-enum PlanTier {
-  FREE
-  BASIC
-  PRO
-  PREMIUM
-  LIFETIME
-}
-
 model PaymentMethod {
-  id          String    @id @default(cuid())
-  sellerId    String
-  type        PaymentMethodType
-  details     Json      // Stores bank details, UPI ID, or QR code URL
-  isEnabled   Boolean   @default(false)
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  seller      Seller    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
-  
+  id        String            @id @default(cuid())
+  sellerId  String
+  type      PaymentMethodType
+  details   Json
+  isEnabled Boolean           @default(false)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  seller    Seller            @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
   @@index([sellerId])
 }
 
-enum PaymentMethodType {
-  BANK_TRANSFER
-  UPI
-  PAYPAL
-  QR_CODE
-}
-
-// ============================================
-// BUYER - Customer of the seller
-// ============================================
 model Buyer {
-  id              String    @id @default(cuid())
-  sellerId        String
-  name            String
-  email           String?
-  phone           String?
-  address         String?
-  state           String?   // Buyer's State for GST calculation
-  taxId           String?   // Buyer's GST/VAT if applicable
-  
-  // Timestamps
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  // Relations
-  seller          Seller    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
-  invoices        Invoice[]
-  
+  id        String    @id @default(cuid())
+  sellerId  String
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  taxId     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  state     String?
+  seller    Seller    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  invoices  Invoice[]
+
   @@unique([sellerId, email])
   @@index([sellerId])
   @@index([name])
 }
 
-// ============================================
-// INVOICE - The core entity
-// ============================================
 model Invoice {
-  id                  String        @id @default(cuid())
-  invoiceNumber       String        // Human-readable invoice number
-  sellerId            String
-  buyerId             String?
-  
-  // Invoice details
-  issueDate           DateTime      @default(now())
-  dueDate             DateTime?
-  status              InvoiceStatus @default(DRAFT) // Deprecated, use paymentStatus and deliveryStatus
-  paymentStatus       PaymentStatus @default(DRAFT)
-  deliveryStatus      InvoiceDeliveryStatus @default(DRAFT)
-  
-  // Financial
-  subtotal            Decimal       @db.Decimal(12, 2)
-  taxAmount           Decimal       @default(0) @db.Decimal(12, 2)
-  cgstAmount          Decimal       @default(0) @db.Decimal(12, 2)
-  sgstAmount          Decimal       @default(0) @db.Decimal(12, 2)
-  igstAmount          Decimal       @default(0) @db.Decimal(12, 2)
-  discountAmount      Decimal       @default(0) @db.Decimal(12, 2)
-  totalAmount         Decimal       @db.Decimal(12, 2)
-  currency            String        @default("INR")
-  
-  // Notes
-  notes               String?
-  terms               String?
-  
-  // Verification
-  verificationHash    String        @unique // For public verification
-  signature           String        // Cryptographic signature
-  
-  // PDF storage
-  pdfUrl              String?
-  pdfData             Bytes?    // Binary PDF data
+  id               String                @id @default(cuid())
+  invoiceNumber    String
+  sellerId         String
+  buyerId          String?
+  issueDate        DateTime              @default(now())
+  dueDate          DateTime?
+  status           InvoiceStatus         @default(DRAFT)
+  paymentStatus    PaymentStatus         @default(DRAFT)
+  deliveryStatus   InvoiceDeliveryStatus @default(DRAFT)
+  subtotal         Decimal               @db.Decimal(12, 2)
+  taxAmount        Decimal               @default(0) @db.Decimal(12, 2)
+  discountAmount   Decimal               @default(0) @db.Decimal(12, 2)
+  totalAmount      Decimal               @db.Decimal(12, 2)
+  currency         String                @default("INR")
+  notes            String?
+  terms            String?
+  verificationHash String                @unique
+  signature        String
+  pdfUrl           String?
+  sourceType       SourceType            @default(MANUAL)
+  sourceDocumentId String?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  cgstAmount       Decimal               @default(0) @db.Decimal(12, 2)
+  igstAmount       Decimal               @default(0) @db.Decimal(12, 2)
+  pdfData          Bytes?
+  sgstAmount       Decimal               @default(0) @db.Decimal(12, 2)
+  deliveryLogs     DeliveryLog[]
+  buyer            Buyer?                @relation(fields: [buyerId], references: [id])
+  seller           Seller                @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  sourceDocument   UploadedDocument?     @relation(fields: [sourceDocumentId], references: [id])
+  activities       InvoiceActivity[]
+  items            InvoiceItem[]
+  paymentReminders PaymentReminder[]
 
-  // Source tracking
-  sourceType          SourceType    @default(MANUAL)
-  sourceDocumentId    String?       // Link to uploaded document if OCR
-  
-  // Timestamps
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
-  
-  // Relations
-  seller              Seller        @relation(fields: [sellerId], references: [id], onDelete: Cascade)
-  buyer               Buyer?        @relation(fields: [buyerId], references: [id])
-  items               InvoiceItem[]
-  deliveryLogs        DeliveryLog[]
-  sourceDocument      UploadedDocument? @relation(fields: [sourceDocumentId], references: [id])
-  paymentReminders    PaymentReminder[]
-  activities          InvoiceActivity[]
-  
   @@unique([sellerId, invoiceNumber])
   @@index([sellerId])
   @@index([buyerId])
@@ -191,56 +128,236 @@ model Invoice {
   @@index([deliveryStatus])
 }
 
-// ============================================
-// INVOICE ACTIVITY - Audit trail / timeline
-// ============================================
 model InvoiceActivity {
-  id            String          @id @default(cuid())
-  invoiceId     String
-  
-  // Activity details
-  type          ActivityType
-  title         String          // Human-readable title (e.g. "Invoice Created")
-  description   String?         // Optional detail (e.g. "Sent to john@email.com via Email")
-  
-  // Actor info
-  actorType     ActorType       @default(SYSTEM)
-  actorId       String?         // Seller ID, or null for anonymous/system
-  actorName     String?         // Display name ("John Doe" or "Customer" or "System")
-  
-  // Extra data
-  metadata      Json?           // Flexible: { ip, userAgent, method, channel, oldStatus, newStatus, etc. }
-  
-  // Timestamps
-  createdAt     DateTime        @default(now())
-  
-  // Relations
-  invoice       Invoice         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  
+  id          String       @id @default(cuid())
+  invoiceId   String
+  type        ActivityType
+  title       String
+  description String?
+  actorType   ActorType    @default(SYSTEM)
+  actorId     String?
+  actorName   String?
+  metadata    Json?
+  createdAt   DateTime     @default(now())
+  invoice     Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
   @@index([invoiceId])
   @@index([type])
   @@index([createdAt])
 }
 
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  description String
+  quantity    Decimal  @db.Decimal(10, 3)
+  unit        String   @default("pcs")
+  unitPrice   Decimal  @db.Decimal(12, 2)
+  taxRate     Decimal  @default(0) @db.Decimal(5, 2)
+  discount    Decimal  @default(0) @db.Decimal(12, 2)
+  amount      Decimal  @db.Decimal(12, 2)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  cgstAmount  Decimal  @default(0) @db.Decimal(12, 2)
+  cgstRate    Decimal  @default(0) @db.Decimal(5, 2)
+  igstAmount  Decimal  @default(0) @db.Decimal(12, 2)
+  igstRate    Decimal  @default(0) @db.Decimal(5, 2)
+  sgstAmount  Decimal  @default(0) @db.Decimal(12, 2)
+  sgstRate    Decimal  @default(0) @db.Decimal(5, 2)
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+model UploadedDocument {
+  id               String           @id @default(cuid())
+  sellerId         String
+  originalName     String
+  storagePath      String?
+  mimeType         String
+  fileSize         Int
+  pageCount        Int              @default(1)
+  processingStatus ProcessingStatus @default(PENDING)
+  ocrResult        Json?
+  extractedData    Json?
+  confidence       Decimal?         @db.Decimal(5, 2)
+  errorMessage     String?
+  createdAt        DateTime         @default(now())
+  processedAt      DateTime?
+  fileData         Bytes?
+  invoices         Invoice[]
+  seller           Seller           @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  @@index([sellerId])
+  @@index([processingStatus])
+}
+
+model DeliveryLog {
+  id           String         @id @default(cuid())
+  invoiceId    String
+  method       DeliveryMethod
+  recipient    String
+  status       DeliveryStatus @default(PENDING)
+  messageId    String?
+  errorMessage String?
+  createdAt    DateTime       @default(now())
+  sentAt       DateTime?
+  deliveredAt  DateTime?
+  invoice      Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([status])
+}
+
+model PaymentReminder {
+  id           String         @id @default(cuid())
+  invoiceId    String
+  sellerId     String
+  type         ReminderType   @default(BEFORE_DUE)
+  daysOffset   Int            @default(0)
+  channel      DeliveryMethod @default(EMAIL)
+  scheduledFor DateTime
+  status       ReminderStatus @default(PENDING)
+  sentAt       DateTime?
+  errorMessage String?
+  messageId    String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  invoice      Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  seller       Seller         @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([sellerId])
+  @@index([scheduledFor])
+  @@index([status])
+}
+
+model VerificationLog {
+  id        String   @id @default(cuid())
+  hash      String
+  ipAddress String?
+  userAgent String?
+  result    Boolean
+  createdAt DateTime @default(now())
+
+  @@index([hash])
+  @@index([createdAt])
+}
+
+model InventoryItem {
+  id          String   @id @default(cuid())
+  sellerId    String
+  description String
+  note        String?
+  sku         String?
+  hsnCode     String?
+  quantity    Int      @default(0)
+  unit        String   @default("pcs")
+  price       Decimal  @db.Decimal(12, 2)
+  taxRate     Decimal  @default(0) @db.Decimal(5, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  barcode     String?
+  seller      Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  @@index([sellerId])
+  @@index([barcode])
+  @@map("inventory_management")
+}
+
+model TeamMember {
+  id        String       @id @default(cuid())
+  sellerId  String
+  email     String
+  role      MemberRole   @default(VIEWER)
+  status    MemberStatus @default(PENDING)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  seller    Seller       @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  @@unique([sellerId, email])
+  @@index([sellerId])
+  @@index([email])
+}
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  sellerId   String
+  name       String
+  key        String    @unique
+  templateId String    @default("classic")
+  usage      Int       @default(0)
+  limit      Int       @default(100000)
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  seller     Seller    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  @@index([sellerId])
+  @@index([key])
+}
+
+model SiteConfig {
+  id             String    @id @default(cuid())
+  offerEnabled   Boolean   @default(false)
+  offerText      String?
+  offerHref      String?
+  offerBadge     String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  themeColors    String?
+  themeEmojis    String?
+  themeEnabled   Boolean   @default(false)
+  themeEndDate   DateTime?
+  themeIntensity String    @default("medium")
+  themeName      String?
+  themeStartDate DateTime?
+  fromEmail      String?
+  smtpHost       String?
+  smtpPass       String?
+  smtpPort       String?   @default("587")
+  smtpUser       String?
+  offerBgColor   String?
+  offerBorder    Boolean   @default(true)
+  offerStyle     String?   @default("modern")
+  offerAnimation String?   @default("slide")
+}
+
+enum PlanTier {
+  FREE
+  BASIC
+  PRO
+  PREMIUM
+  LIFETIME
+}
+
+enum PaymentMethodType {
+  BANK_TRANSFER
+  UPI
+  PAYPAL
+  QR_CODE
+}
+
 enum ActivityType {
-  CREATED           // Invoice was created
-  UPDATED           // Invoice was edited
-  STATUS_CHANGED    // Payment/delivery status changed
-  SENT              // Sent via email/whatsapp/sms
-  VIEWED            // Verification page was viewed by someone
-  VERIFIED          // QR verification completed
-  DOWNLOADED        // PDF was downloaded
-  REMINDER_SENT     // Payment reminder was sent
-  REMINDER_CREATED  // Payment reminder was scheduled
-  PAYMENT_RECORDED  // Payment was recorded
-  DELETED           // Invoice was deleted
+  CREATED
+  UPDATED
+  STATUS_CHANGED
+  SENT
+  VIEWED
+  VERIFIED
+  DOWNLOADED
+  REMINDER_SENT
+  REMINDER_CREATED
+  PAYMENT_RECORDED
+  DELETED
 }
 
 enum ActorType {
-  SELLER    // The business owner / team member
-  BUYER     // The customer (e.g. viewing verification page)
-  SYSTEM    // Automated action (cron, auto-reminder)
-  ANONYMOUS // Unknown / public (e.g. someone scanning QR)
+  SELLER
+  BUYER
+  SYSTEM
+  ANONYMOUS
 }
 
 enum InvoiceStatus {
@@ -268,81 +385,9 @@ enum InvoiceDeliveryStatus {
 }
 
 enum SourceType {
-  MANUAL    // Created from scratch
-  OCR       // Extracted from uploaded image
-  IMPORTED  // Imported from external source
-}
-
-// ============================================
-// INVOICE ITEM - Line items in an invoice
-// ============================================
-model InvoiceItem {
-  id            String    @id @default(cuid())
-  invoiceId     String
-  
-  // Item details
-  description   String
-  quantity      Decimal   @db.Decimal(10, 3)
-  unit          String    @default("pcs") // pieces, kg, hours, etc.
-  unitPrice     Decimal   @db.Decimal(12, 2)
-  taxRate       Decimal   @default(0) @db.Decimal(5, 2) // Percentage
-  discount      Decimal   @default(0) @db.Decimal(12, 2)
-  amount        Decimal   @db.Decimal(12, 2) // Calculated total
-  
-  // GST Breakdown (for India)
-  cgstRate      Decimal   @default(0) @db.Decimal(5, 2)
-  sgstRate      Decimal   @default(0) @db.Decimal(5, 2)
-  igstRate      Decimal   @default(0) @db.Decimal(5, 2)
-  
-  cgstAmount    Decimal   @default(0) @db.Decimal(12, 2)
-  sgstAmount    Decimal   @default(0) @db.Decimal(12, 2)
-  igstAmount    Decimal   @default(0) @db.Decimal(12, 2)
-  
-  // Ordering
-  sortOrder     Int       @default(0)
-  
-  // Timestamps
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  
-  // Relations
-  invoice       Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  
-  @@index([invoiceId])
-}
-
-// ============================================
-// UPLOADED DOCUMENT - Original files for OCR
-// ============================================
-model UploadedDocument {
-  id              String          @id @default(cuid())
-  sellerId        String
-  
-  // File info
-  originalName    String
-  storagePath     String?         // Path in storage (deprecated)
-  fileData        Bytes?          // Binary file data
-  mimeType        String
-  fileSize        Int             // Size in bytes
-  pageCount       Int             @default(1)
-  
-  // OCR status
-  processingStatus ProcessingStatus @default(PENDING)
-  ocrResult       Json?           // Raw OCR output
-  extractedData   Json?           // Structured extracted data
-  confidence      Decimal?        @db.Decimal(5, 2) // OCR confidence score
-  errorMessage    String?
-  
-  // Timestamps  
-  createdAt       DateTime        @default(now())
-  processedAt     DateTime?
-  
-  // Relations
-  seller          Seller          @relation(fields: [sellerId], references: [id], onDelete: Cascade)
-  invoices        Invoice[]       // Invoices created from this document
-  
-  @@index([sellerId])
-  @@index([processingStatus])
+  MANUAL
+  OCR
+  IMPORTED
 }
 
 enum ProcessingStatus {
@@ -351,34 +396,6 @@ enum ProcessingStatus {
   COMPLETED
   FAILED
   REVIEW_NEEDED
-}
-
-// ============================================
-// DELIVERY LOG - Track invoice delivery
-// ============================================
-model DeliveryLog {
-  id            String          @id @default(cuid())
-  invoiceId     String
-  
-  // Delivery details
-  method        DeliveryMethod
-  recipient     String          // Email/phone number
-  status        DeliveryStatus  @default(PENDING)
-  
-  // Response tracking
-  messageId     String?         // External service message ID
-  errorMessage  String?
-  
-  // Timestamps
-  createdAt     DateTime        @default(now())
-  sentAt        DateTime?
-  deliveredAt   DateTime?
-  
-  // Relations
-  invoice       Invoice         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  
-  @@index([invoiceId])
-  @@index([status])
 }
 
 enum DeliveryMethod {
@@ -395,118 +412,19 @@ enum DeliveryStatus {
   BOUNCED
 }
 
-// ============================================
-// PAYMENT REMINDER - Automated payment reminders
-// ============================================
-model PaymentReminder {
-  id            String          @id @default(cuid())
-  invoiceId     String
-  sellerId      String
-  
-  // Reminder configuration
-  type          ReminderType    @default(BEFORE_DUE)
-  daysOffset    Int             @default(0) // Days before(-) or after(+) due date
-  channel       DeliveryMethod  @default(EMAIL)
-  
-  // Scheduling
-  scheduledFor  DateTime
-  status        ReminderStatus  @default(PENDING)
-  
-  // Tracking
-  sentAt        DateTime?
-  errorMessage  String?
-  messageId     String?         // External service message ID
-  
-  // Timestamps
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  
-  // Relations
-  invoice       Invoice         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  seller        Seller          @relation(fields: [sellerId], references: [id], onDelete: Cascade)
-  
-  @@index([invoiceId])
-  @@index([sellerId])
-  @@index([scheduledFor])
-  @@index([status])
-}
-
 enum ReminderType {
-  BEFORE_DUE    // Reminder before due date
-  ON_DUE        // Reminder on due date
-  AFTER_DUE     // Reminder after due date (overdue)
-  CUSTOM        // Custom scheduled reminder
+  BEFORE_DUE
+  ON_DUE
+  AFTER_DUE
+  CUSTOM
 }
 
 enum ReminderStatus {
-  PENDING       // Waiting to be sent
-  SENT          // Successfully sent
-  FAILED        // Failed to send
-  CANCELLED     // Cancelled by user
-  SKIPPED       // Skipped (e.g., invoice already paid)
-}
-
-// ============================================
-// VERIFICATION HASH - For invoice authenticity
-// ============================================
-model VerificationLog {
-  id            String    @id @default(cuid())
-  hash          String    // The hash that was verified
-  ipAddress     String?
-  userAgent     String?
-  result        Boolean   // Was verification successful
-  
-  createdAt     DateTime  @default(now())
-  
-  @@index([hash])
-  @@index([createdAt])
-}
-
-// ============================================
-// INVENTORY - Product management
-// ============================================
-model InventoryItem {
-  id          String   @id @default(cuid())
-  sellerId    String
-  
-  description String   // Was name, mapped to InvoiceItem.description
-  note        String?  // Was description, internal or extra notes
-  sku         String?
-  hsnCode     String?
-  barcode     String?  // Scanned barcode (EAN/UPC) for quick lookup
-  quantity    Int      @default(0)
-  unit        String   @default("pcs")
-  price       Decimal  @db.Decimal(12, 2)
-  taxRate     Decimal  @default(0) @db.Decimal(5, 2)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  seller      Seller   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
-
-  @@map("inventory_management")
-  @@index([sellerId])
-  @@index([barcode])
-}
-
-// ============================================
-// TEAM MEMBERS - Access control for businesses
-// ============================================
-model TeamMember {
-  id        String       @id @default(cuid())
-  sellerId  String
-  email     String
-  role      MemberRole   @default(VIEWER)
-  status    MemberStatus @default(PENDING)
-  
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-  
-  seller    Seller       @relation(fields: [sellerId], references: [id], onDelete: Cascade)
-  
-  @@unique([sellerId, email])
-  @@index([sellerId])
-  @@index([email])
+  PENDING
+  SENT
+  FAILED
+  CANCELLED
+  SKIPPED
 }
 
 enum MemberRole {
@@ -518,27 +436,3 @@ enum MemberStatus {
   PENDING
   ACCEPTED
 }
-
-// ============================================
-// API KEYS - For external integrations
-// ============================================
-model ApiKey {
-  id          String    @id @default(cuid())
-  sellerId    String
-  name        String
-  key         String    @unique // The API key itself starts with rsd_
-  templateId  String    @default("classic") // Invoice template to use
-  
-  usage       Int       @default(0)
-  limit       Int       @default(100000)
-  
-  lastUsedAt  DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  seller      Seller    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
-  
-  @@index([sellerId])
-  @@index([key])
-}
-
