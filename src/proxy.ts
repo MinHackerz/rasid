@@ -22,6 +22,7 @@ const isPublicRoute = createRouteMatcher([
     '/robots.txt',      // Public robots text file
     '/manifest.json',   // Public app manifest
     '/icon.png',        // App icon
+    '/llms.txt',        // Public llms text file
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
