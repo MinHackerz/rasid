@@ -2,11 +2,12 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Bell, Plus, Search, Menu } from 'lucide-react';
+import { Bell, Plus, Search, Menu, Home, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { Button } from '@/components/ui';
 import PlanAvatarRing from '@/components/layout/PlanAvatarRing';
 import { MobileSidebar } from './MobileSidebar';
 import { PlanType } from '@/lib/constants/plans';
+import { useSidebar } from './SidebarContext';
 
 interface HeaderProps {
     title?: string;
@@ -20,6 +21,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, businessName, businesses, role, plan }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const { collapsed, toggle } = useSidebar();
 
     return (
         <>
@@ -36,6 +38,16 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, busi
                             onClick={() => setMobileMenuOpen(true)}
                         >
                             <Menu className="w-6 h-6" />
+                        </button>
+
+                        {/* Desktop Sidebar Toggle */}
+                        <button
+                            type="button"
+                            className="hidden lg:flex p-2 -ml-6 lg:-ml-10 mr-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
+                            onClick={toggle}
+                            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                        >
+                            {collapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
                         </button>
 
                         {title && (
@@ -61,6 +73,13 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, busi
 
                     {/* Right */}
                     <div className="flex items-center gap-3">
+                        <Link
+                            href="/"
+                            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
+                        >
+                            <Home className="w-4 h-4" />
+                            <span className="hidden md:inline">Home</span>
+                        </Link>
                         <Link
                             href="/help"
                             className="hidden md:flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"

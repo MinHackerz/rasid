@@ -13,6 +13,7 @@ import {
     X,
     Shield,
     Activity,
+    Home,
 } from 'lucide-react';
 
 const navItems = [
@@ -152,9 +153,16 @@ export default function AdminLayoutShell({ children }: { children: ReactNode }) 
                     </div>
 
                     <div className="ml-auto flex items-center gap-3">
-                        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/60">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-[11px] font-medium text-emerald-600">System Online</span>
+                        <Link
+                            href="/"
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        >
+                            <Home className="w-4 h-4" />
+                            <span className="hidden sm:inline">Home</span>
+                        </Link>
+                        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500 border border-emerald-600">
+                            <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                            <span className="text-[11px] font-medium text-white">System Online</span>
                         </div>
                     </div>
                 </header>

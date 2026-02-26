@@ -145,8 +145,8 @@ export default function LandingPage() {
       })()}
 
       {/* Navigation */}
-      <nav className={`fixed ${hasOfferBar ? 'top-12 sm:top-14 xl:top-[60px]' : 'top-4'} transition-all duration-300 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-auto md:min-w-[700px] z-40 bg-white/90 backdrop-blur-md rounded-full border border-white/20 px-4`}>
-        <div className="h-14 flex items-center justify-between gap-8">
+      <nav className={`fixed ${hasOfferBar ? 'top-12 sm:top-14 xl:top-[60px]' : 'top-4'} transition-all duration-300 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-auto ${isAdminRole ? 'md:min-w-[820px]' : 'md:min-w-[700px]'} z-40 bg-white/90 backdrop-blur-md rounded-full border border-white/20 px-4`}>
+        <div className="h-14 flex items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
               <Image

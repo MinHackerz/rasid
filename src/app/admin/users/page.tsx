@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useTransition, useCallback } from 'react';
+import { useEffect, useState, useTransition, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { getAdminUsers, toggleUserStatus, changeUserPlan, type AdminUserRow, type AdminUsersResponse } from '@/app/actions/admin';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -20,6 +21,8 @@ export default function AdminUsersPage() {
     const [statusFilter, setStatusFilter] = useState('');
     const [isPending, startTransition] = useTransition();
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+    const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number } | null>(null);
+    const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
     const fetchUsers = useCallback(() => {
         setLoading(true);
@@ -39,6 +42,23 @@ export default function AdminUsersPage() {
 
     const totalPages = data ? Math.ceil(data.total / data.pageSize) : 0;
 
+    const handleToggleDropdown = (userId: string) => {
+        if (activeDropdown === userId) {
+            setActiveDropdown(null);
+            setDropdownPos(null);
+            return;
+        }
+        const btn = buttonRefs.current[userId];
+        if (btn) {
+            const rect = btn.getBoundingClientRect();
+            setDropdownPos({
+                top: rect.bottom + 4,
+                right: window.innerWidth - rect.right,
+            });
+        }
+        setActiveDropdown(userId);
+    };
+
     const handleToggleStatus = (userId: string) => {
         startTransition(async () => {
             try {
@@ -49,6 +69,7 @@ export default function AdminUsersPage() {
                 toast.error('Failed to toggle status');
             }
             setActiveDropdown(null);
+            setDropdownPos(null);
         });
     };
 
@@ -62,14 +83,17 @@ export default function AdminUsersPage() {
                 toast.error('Failed to change plan');
             }
             setActiveDropdown(null);
+            setDropdownPos(null);
         });
     };
+
+    const activeUser = data?.users.find(u => u.id === activeDropdown);
 
     return (
         <div className="space-y-4 sm:space-y-6">
             {/* Header */}
             <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight font-display">Users & Businesses</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight font-display">Users &amp; Businesses</h1>
                 <p className="text-sm text-muted-foreground mt-1">
                     Manage all registered businesses on the platform.
                     {data && <span className="text-muted-foreground/50"> · {data.total} total</span>}
@@ -187,51 +211,14 @@ export default function AdminUsersPage() {
                                         <td className="px-5 py-3 text-muted-foreground text-xs hidden sm:table-cell">
                                             {format(new Date(user.createdAt), 'dd MMM yyyy')}
                                         </td>
-                                        <td className="px-3 sm:px-5 py-3 text-right relative">
+                                        <td className="px-3 sm:px-5 py-3 text-right">
                                             <button
-                                                onClick={() => setActiveDropdown(activeDropdown === user.id ? null : user.id)}
+                                                ref={(el) => { buttonRefs.current[user.id] = el; }}
+                                                onClick={() => handleToggleDropdown(user.id)}
                                                 className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                                             >
                                                 <MoreHorizontal className="w-4 h-4" />
                                             </button>
-
-                                            {activeDropdown === user.id && (
-                                                <>
-                                                    <div className="fixed inset-0 z-40" onClick={() => setActiveDropdown(null)} />
-                                                    <div className="fixed sm:absolute left-4 right-4 bottom-4 sm:left-auto sm:bottom-auto sm:right-4 sm:top-full sm:mt-1 z-50 sm:w-48 bg-white border border-border rounded-2xl sm:rounded-xl shadow-xl sm:shadow-lg overflow-hidden">
-                                                        <div className="px-3 py-2 border-b border-border bg-muted/30">
-                                                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Actions</p>
-                                                        </div>
-                                                        <button
-                                                            onClick={() => handleToggleStatus(user.id)}
-                                                            className="w-full text-left px-3 py-2 text-xs text-foreground/70 hover:bg-muted/50 hover:text-foreground flex items-center gap-2 transition-colors"
-                                                        >
-                                                            {user.isActive ? <ShieldOff className="w-3.5 h-3.5" /> : <Shield className="w-3.5 h-3.5" />}
-                                                            {user.isActive ? 'Deactivate' : 'Activate'}
-                                                        </button>
-                                                        <div className="px-3 py-2 border-t border-border">
-                                                            <p className="text-[10px] text-muted-foreground/70 uppercase tracking-wider font-semibold mb-1">Change Plan</p>
-                                                            <div className="space-y-0.5">
-                                                                {['FREE', 'BASIC', 'PRO', 'PREMIUM', 'LIFETIME'].map((plan) => (
-                                                                    <button
-                                                                        key={plan}
-                                                                        onClick={() => handleChangePlan(user.id, plan)}
-                                                                        disabled={user.plan === plan}
-                                                                        className={`w-full text-left px-2 py-1 text-[11px] rounded-md transition-colors flex items-center gap-2 ${user.plan === plan
-                                                                            ? 'text-muted-foreground/40 cursor-not-allowed'
-                                                                            : 'text-foreground/60 hover:bg-muted/50 hover:text-foreground'
-                                                                            }`}
-                                                                    >
-                                                                        <Crown className="w-3 h-3" />
-                                                                        {plan}
-                                                                        {user.plan === plan && <span className="ml-auto text-[9px] text-muted-foreground/40">Current</span>}
-                                                                    </button>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </>
-                                            )}
                                         </td>
                                     </tr>
                                 ))
@@ -265,6 +252,49 @@ export default function AdminUsersPage() {
                     </div>
                 )}
             </div>
+
+            {/* Dropdown Portal — rendered outside overflow containers */}
+            {activeDropdown && activeUser && dropdownPos && typeof document !== 'undefined' && createPortal(
+                <>
+                    <div className="fixed inset-0 z-[9998]" onClick={() => { setActiveDropdown(null); setDropdownPos(null); }} />
+                    <div
+                        className="fixed z-[9999] w-48 bg-white/80 backdrop-blur-xl border border-border rounded-xl shadow-xl overflow-hidden"
+                        style={{ top: dropdownPos.top, right: dropdownPos.right }}
+                    >
+                        <div className="px-3 py-2 border-b border-border bg-muted/30">
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Actions</p>
+                        </div>
+                        <button
+                            onClick={() => handleToggleStatus(activeUser.id)}
+                            className="w-full text-left px-3 py-2 text-xs text-foreground/70 hover:bg-muted/50 hover:text-foreground flex items-center gap-2 transition-colors"
+                        >
+                            {activeUser.isActive ? <ShieldOff className="w-3.5 h-3.5" /> : <Shield className="w-3.5 h-3.5" />}
+                            {activeUser.isActive ? 'Deactivate' : 'Activate'}
+                        </button>
+                        <div className="px-3 py-2 border-t border-border">
+                            <p className="text-[10px] text-muted-foreground/70 uppercase tracking-wider font-semibold mb-1">Change Plan</p>
+                            <div className="space-y-0.5">
+                                {['FREE', 'BASIC', 'PRO', 'PREMIUM', 'LIFETIME'].map((plan) => (
+                                    <button
+                                        key={plan}
+                                        onClick={() => handleChangePlan(activeUser.id, plan)}
+                                        disabled={activeUser.plan === plan}
+                                        className={`w-full text-left px-2 py-1 text-[11px] rounded-md transition-colors flex items-center gap-2 ${activeUser.plan === plan
+                                            ? 'text-muted-foreground/40 cursor-not-allowed'
+                                            : 'text-foreground/60 hover:bg-muted/50 hover:text-foreground'
+                                            }`}
+                                    >
+                                        <Crown className="w-3 h-3" />
+                                        {plan}
+                                        {activeUser.plan === plan && <span className="ml-auto text-[9px] text-muted-foreground/40">Current</span>}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </>,
+                document.body
+            )}
         </div>
     );
 }
