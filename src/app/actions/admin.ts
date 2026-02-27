@@ -636,11 +636,13 @@ export interface EmailableSeller {
     email: string;
     plan: string;
     isActive: boolean;
+    subscriptionEndsAt: string | null;
 }
 
 export async function getEmailableSellers(
     search: string = '',
-    planFilter: string = ''
+    planFilter: string = '',
+    expiryFilter: string = ''
 ): Promise<EmailableSeller[]> {
     await requireAdminUser();
 
@@ -656,12 +658,31 @@ export async function getEmailableSellers(
         where.plan = planFilter;
     }
 
+    // Expiry-based filters
+    if (expiryFilter === '7days') {
+        const now = new Date();
+        const in7Days = new Date();
+        in7Days.setDate(now.getDate() + 7);
+        where.subscriptionEndsAt = { gte: now, lte: in7Days };
+    } else if (expiryFilter === 'lastday') {
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date();
+        todayEnd.setHours(23, 59, 59, 999);
+        where.subscriptionEndsAt = { gte: todayStart, lte: todayEnd };
+    } else if (expiryFilter === 'expired') {
+        where.subscriptionEndsAt = { lt: new Date() };
+    }
+
     const sellers = await prisma.seller.findMany({
         where,
-        select: { id: true, businessName: true, email: true, plan: true, isActive: true },
+        select: { id: true, businessName: true, email: true, plan: true, isActive: true, subscriptionEndsAt: true },
         orderBy: { businessName: 'asc' },
         take: 100,
     });
 
-    return sellers;
+    return sellers.map((s) => ({
+        ...s,
+        subscriptionEndsAt: s.subscriptionEndsAt ? s.subscriptionEndsAt.toISOString() : null,
+    }));
 }

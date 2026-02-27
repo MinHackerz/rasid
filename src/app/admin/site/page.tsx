@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import {
     Save, Megaphone, Link2, Tag, Sparkles, Palette, Calendar, Mail,
     Send, Search, Check, Crown, Users, X, ChevronDown, ChevronUp,
-    Eye, Zap, PartyPopper, Server, Info, CheckCircle2, ExternalLink, ArrowRight
+    Eye, Zap, PartyPopper, Server, Info, CheckCircle2, ExternalLink, ArrowRight, Clock, AlertTriangle
 } from 'lucide-react';
 import FestiveTheme from '@/components/landing/FestiveTheme';
 
@@ -96,10 +96,10 @@ export default function AdminSiteSettingsPage() {
     const [isPending, startTransition] = useTransition();
 
     // Email state
-    const [emailSection, setEmailSection] = useState(false);
     const [sellers, setSellers] = useState<EmailableSeller[]>([]);
     const [sellerSearch, setSellerSearch] = useState('');
     const [sellerPlanFilter, setSellerPlanFilter] = useState('');
+    const [sellerExpiryFilter, setSellerExpiryFilter] = useState('');
     const [selectedSellers, setSelectedSellers] = useState<Set<string>>(new Set());
     const [emailSubject, setEmailSubject] = useState('');
     const [emailBody, setEmailBody] = useState('<p>Hi there,</p>\n<p></p>');
@@ -118,14 +118,39 @@ export default function AdminSiteSettingsPage() {
     }, []);
 
     const fetchSellers = useCallback(() => {
-        getEmailableSellers(sellerSearch, sellerPlanFilter)
+        getEmailableSellers(sellerSearch, sellerPlanFilter, sellerExpiryFilter)
             .then(setSellers)
             .catch(console.error);
-    }, [sellerSearch, sellerPlanFilter]);
+    }, [sellerSearch, sellerPlanFilter, sellerExpiryFilter]);
+
+    // Compute days remaining from subscriptionEndsAt
+    const getDaysRemaining = (endsAt: string | null): number | null => {
+        if (!endsAt) return null;
+        const end = new Date(endsAt);
+        const now = new Date();
+        const diff = end.getTime() - now.getTime();
+        return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    };
+
+    const getExpiryBadge = (seller: EmailableSeller) => {
+        if (seller.plan === 'LIFETIME') {
+            return { text: '∞ Lifetime', className: 'bg-teal-50 text-teal-600 border-teal-200' };
+        }
+        if (seller.plan === 'FREE') {
+            return { text: 'Free', className: 'bg-gray-50 text-gray-500 border-gray-200' };
+        }
+        const days = getDaysRemaining(seller.subscriptionEndsAt);
+        if (days === null) return { text: 'No expiry', className: 'bg-gray-50 text-gray-400 border-gray-200' };
+        if (days < 0) return { text: `Expired ${Math.abs(days)}d ago`, className: 'bg-red-50 text-red-600 border-red-200' };
+        if (days === 0) return { text: 'Expires today!', className: 'bg-red-50 text-red-600 border-red-200 animate-pulse' };
+        if (days <= 7) return { text: `${days}d left`, className: 'bg-orange-50 text-orange-600 border-orange-200' };
+        if (days <= 30) return { text: `${days}d left`, className: 'bg-amber-50 text-amber-600 border-amber-200' };
+        return { text: `${days}d left`, className: 'bg-emerald-50 text-emerald-600 border-emerald-200' };
+    };
 
     useEffect(() => {
-        if (emailSection) fetchSellers();
-    }, [emailSection, fetchSellers]);
+        if (openSection === 'email') fetchSellers();
+    }, [openSection, fetchSellers]);
 
     const handleChange = (field: keyof SiteConfigDTO, value: string | boolean) => {
         setConfig((prev) => ({ ...prev, [field]: value }));
@@ -1101,7 +1126,7 @@ export default function AdminSiteSettingsPage() {
                             </div>
 
                             {/* Search + filter */}
-                            <div className="flex gap-2 mb-3">
+                            <div className="flex gap-2 mb-2">
                                 <div className="relative flex-1">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/40" />
                                     <input
@@ -1124,6 +1149,38 @@ export default function AdminSiteSettingsPage() {
                                     <option value="PREMIUM">PREMIUM</option>
                                     <option value="LIFETIME">LIFETIME</option>
                                 </select>
+                            </div>
+
+                            {/* Expiry filter */}
+                            <div className="flex flex-wrap gap-1.5 mb-3">
+                                <span className="text-[10px] text-muted-foreground font-medium self-center mr-1 flex items-center gap-1">
+                                    <Clock className="w-3 h-3" /> Expiry:
+                                </span>
+                                {[
+                                    { id: '', label: 'All', icon: null },
+                                    { id: '7days', label: '≤ 7 days', icon: <AlertTriangle className="w-3 h-3" /> },
+                                    { id: 'lastday', label: 'Last day', icon: <AlertTriangle className="w-3 h-3" /> },
+                                    { id: 'expired', label: 'Expired', icon: <X className="w-3 h-3" /> },
+                                ].map((f) => (
+                                    <button
+                                        key={f.id}
+                                        type="button"
+                                        onClick={() => setSellerExpiryFilter(f.id)}
+                                        className={`inline-flex items-center gap-1 text-[10px] font-medium px-2.5 py-1 rounded-lg border transition-all ${sellerExpiryFilter === f.id
+                                                ? f.id === 'expired'
+                                                    ? 'bg-red-50 border-red-300 text-red-700'
+                                                    : f.id === 'lastday'
+                                                        ? 'bg-orange-50 border-orange-300 text-orange-700'
+                                                        : f.id === '7days'
+                                                            ? 'bg-amber-50 border-amber-300 text-amber-700'
+                                                            : 'bg-violet-50 border-violet-300 text-violet-700'
+                                                : 'bg-white border-border text-muted-foreground hover:bg-muted/40 hover:text-foreground'
+                                            }`}
+                                    >
+                                        {f.icon}
+                                        {f.label}
+                                    </button>
+                                ))}
                             </div>
 
                             {/* Seller list */}
@@ -1150,6 +1207,14 @@ export default function AdminSiteSettingsPage() {
                                                     <p className="text-xs font-medium text-foreground truncate">{seller.businessName}</p>
                                                     <p className="text-[10px] text-muted-foreground truncate">{seller.email}</p>
                                                 </div>
+                                                {(() => {
+                                                    const badge = getExpiryBadge(seller);
+                                                    return (
+                                                        <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full border ${badge.className}`}>
+                                                            {badge.text}
+                                                        </span>
+                                                    );
+                                                })()}
                                                 <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${getPlanBadge(seller.plan)}`}>
                                                     {seller.plan}
                                                 </span>
