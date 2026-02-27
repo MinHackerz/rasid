@@ -26,6 +26,7 @@ export interface SiteConfigDTO {
     // Theme / occasion fields
     themeEnabled: boolean;
     themeName: string | null;
+    themeGreeting: string | null;
     themeEmojis: string | null;
     themeColors: string | null;
     themeIntensity: string;
@@ -52,6 +53,7 @@ function mapToDTO(config: any | null, includeSmtp = false): SiteConfigDTO {
             offerAnimation: 'slide',
             themeEnabled: false,
             themeName: null,
+            themeGreeting: null,
             themeEmojis: null,
             themeColors: null,
             themeIntensity: 'medium',
@@ -71,6 +73,7 @@ function mapToDTO(config: any | null, includeSmtp = false): SiteConfigDTO {
         offerAnimation: config.offerAnimation ?? 'slide',
         themeEnabled: config.themeEnabled ?? false,
         themeName: config.themeName ?? null,
+        themeGreeting: config.themeGreeting ?? null,
         themeEmojis: config.themeEmojis ?? null,
         themeColors: config.themeColors ?? null,
         themeIntensity: config.themeIntensity ?? 'medium',
@@ -116,6 +119,7 @@ export async function updateSiteConfig(input: SiteConfigDTO): Promise<SiteConfig
         offerAnimation: input.offerAnimation?.trim() || 'slide',
         themeEnabled: !!input.themeEnabled,
         themeName: input.themeName?.trim() || null,
+        themeGreeting: input.themeGreeting?.trim() || null,
         themeEmojis: input.themeEmojis?.trim() || null,
         themeColors: input.themeColors?.trim() || null,
         themeIntensity: input.themeIntensity || 'medium',

@@ -24,6 +24,7 @@ const DEFAULT_CONFIG: SiteConfigDTO = {
     offerAnimation: 'slide',
     themeEnabled: false,
     themeName: null,
+    themeGreeting: null,
     themeEmojis: null,
     themeColors: null,
     themeIntensity: 'medium',
@@ -33,16 +34,16 @@ const DEFAULT_CONFIG: SiteConfigDTO = {
 
 // Presets for quick occasion setup
 const OCCASION_PRESETS = [
-    { name: 'Eid', emojis: '🌙,⭐,🕌,✨', colors: '["#1e8449","#f4d03f","#2e86c1"]' },
-    { name: 'Diwali', emojis: '🪔,🎆,✨,🎇,🕯️', colors: '["#ff6f00","#ffd600","#e65100"]' },
-    { name: 'Christmas', emojis: '🎄,🎅,❄️,⭐,🎁', colors: '["#c62828","#2e7d32","#fdd835"]' },
-    { name: 'New Year', emojis: '🎉,🥂,🎊,✨,🎆', colors: '["#6200ea","#ffd600","#00bcd4"]' },
-    { name: 'Valentine', emojis: '❤️,💕,🌹,💝,💘', colors: '["#e91e63","#f48fb1","#880e4f"]' },
-    { name: 'Holi', emojis: '🎨,💧,🌈,🎉,💜', colors: '["#e91e63","#2196f3","#ffc107","#4caf50"]' },
-    { name: 'Independence', emojis: '🇮🇳,🏳️,✨,🎆', colors: '["#ff9933","#ffffff","#138808"]' },
-    { name: 'Ramadan', emojis: '🌙,⭐,🕌,📿,✨', colors: '["#1a237e","#ffd54f","#4a148c"]' },
-    { name: 'Halloween', emojis: '🎃,👻,🦇,🕸️,💀', colors: '["#ff6f00","#4a148c","#1b5e20"]' },
-    { name: 'Spring Sale', emojis: '🌸,🌷,🌼,☀️,🦋', colors: '["#e91e63","#4caf50","#ffeb3b"]' },
+    { name: 'Eid', greeting: 'Eid Mubarak', emojis: '🌙,⭐,🕌,✨', colors: '["#1e8449","#f4d03f","#2e86c1"]' },
+    { name: 'Diwali', greeting: 'Shubh', emojis: '🪔,🎆,✨,🎇,🕯️', colors: '["#ff6f00","#ffd600","#e65100"]' },
+    { name: 'Christmas', greeting: 'Merry', emojis: '🎄,🎅,❄️,⭐,🎁', colors: '["#c62828","#2e7d32","#fdd835"]' },
+    { name: 'New Year', greeting: 'Happy', emojis: '🎉,🥂,🎊,✨,🎆', colors: '["#6200ea","#ffd600","#00bcd4"]' },
+    { name: 'Valentine', greeting: 'Happy', emojis: '❤️,💕,🌹,💝,💘', colors: '["#e91e63","#f48fb1","#880e4f"]' },
+    { name: 'Holi', greeting: 'Happy', emojis: '🎨,💧,🌈,🎉,💜', colors: '["#e91e63","#2196f3","#ffc107","#4caf50"]' },
+    { name: 'Independence', greeting: 'Happy', emojis: '🇮🇳,🏳️,✨,🎆', colors: '["#ff9933","#ffffff","#138808"]' },
+    { name: 'Ramadan', greeting: 'Ramadan Mubarak', emojis: '🌙,⭐,🕌,📿,✨', colors: '["#1a237e","#ffd54f","#4a148c"]' },
+    { name: 'Halloween', greeting: 'Happy', emojis: '🎃,👻,🦇,🕸️,💀', colors: '["#ff6f00","#4a148c","#1b5e20"]' },
+    { name: 'Spring Sale', greeting: '🌸', emojis: '🌸,🌷,🌼,☀️,🦋', colors: '["#e91e63","#4caf50","#ffeb3b"]' },
 ];
 
 // Email templates
@@ -147,6 +148,7 @@ export default function AdminSiteSettingsPage() {
         setConfig(prev => ({
             ...prev,
             themeName: preset.name,
+            themeGreeting: preset.greeting,
             themeEmojis: preset.emojis,
             themeColors: preset.colors,
         }));
@@ -227,12 +229,72 @@ export default function AdminSiteSettingsPage() {
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight font-display">Site & Marketing</h1>
-                <p className="text-sm text-muted-foreground mt-1">
-                    Manage announcements, occasion themes, and communicate with sellers.
-                </p>
+            {/* Advanced Gradient Background Animation */}
+            <div className="relative overflow-hidden rounded-3xl p-8 sm:p-10">
+                {/* Multi-layered animated gradient */}
+                <div className="absolute inset-0 z-0">
+                    <div className="absolute inset-0 bg-gradient-to-br from-violet-600/90 via-indigo-500/80 to-fuchsia-500/90 animate-[gradientShift_8s_ease-in-out_infinite]" />
+                    <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/40 via-transparent to-pink-500/40 animate-[gradientShift2_12s_ease-in-out_infinite]" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 via-transparent to-amber-400/20 animate-[gradientShift3_10s_ease-in-out_infinite]" />
+                    {/* Floating orbs */}
+                    <div className="absolute top-[-20%] left-[-10%] w-72 h-72 rounded-full bg-white/10 blur-3xl animate-[floatOrb1_15s_ease-in-out_infinite]" />
+                    <div className="absolute bottom-[-20%] right-[-10%] w-96 h-96 rounded-full bg-white/8 blur-3xl animate-[floatOrb2_18s_ease-in-out_infinite]" />
+                    <div className="absolute top-[30%] right-[20%] w-48 h-48 rounded-full bg-white/10 blur-2xl animate-[floatOrb3_12s_ease-in-out_infinite]" />
+                    {/* Subtle grid overlay */}
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:32px_32px]" />
+                    {/* Shimmer effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[headerShimmer_6s_ease-in-out_infinite]" />
+                </div>
+                <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2.5 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20">
+                            <Sparkles className="w-6 h-6 text-white" />
+                        </div>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-display drop-shadow-lg">Site & Marketing</h1>
+                    </div>
+                    <p className="text-sm text-white/70 ml-[52px]">
+                        Manage announcements, occasion themes, and communicate with sellers.
+                    </p>
+                </div>
             </div>
+
+            {/* CSS Keyframes for gradient animations */}
+            <style jsx>{`
+                @keyframes gradientShift {
+                    0%, 100% { opacity: 1; filter: hue-rotate(0deg); }
+                    25% { opacity: 0.9; filter: hue-rotate(15deg); }
+                    50% { opacity: 1; filter: hue-rotate(-10deg); }
+                    75% { opacity: 0.95; filter: hue-rotate(20deg); }
+                }
+                @keyframes gradientShift2 {
+                    0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.4; }
+                    33% { transform: scale(1.1) rotate(2deg); opacity: 0.5; }
+                    66% { transform: scale(0.95) rotate(-2deg); opacity: 0.35; }
+                }
+                @keyframes gradientShift3 {
+                    0%, 100% { transform: translateX(0) translateY(0); opacity: 0.2; }
+                    50% { transform: translateX(5%) translateY(-3%); opacity: 0.3; }
+                }
+                @keyframes floatOrb1 {
+                    0%, 100% { transform: translate(0, 0) scale(1); }
+                    25% { transform: translate(30px, 20px) scale(1.05); }
+                    50% { transform: translate(-10px, 40px) scale(0.95); }
+                    75% { transform: translate(20px, -10px) scale(1.02); }
+                }
+                @keyframes floatOrb2 {
+                    0%, 100% { transform: translate(0, 0) scale(1); }
+                    33% { transform: translate(-40px, -20px) scale(1.08); }
+                    66% { transform: translate(20px, 30px) scale(0.92); }
+                }
+                @keyframes floatOrb3 {
+                    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.1; }
+                    50% { transform: translate(-25px, 15px) scale(1.15); opacity: 0.15; }
+                }
+                @keyframes headerShimmer {
+                    0% { transform: translateX(-100%); }
+                    50%, 100% { transform: translateX(100%); }
+                }
+            `}</style>
 
             <div>
                 {/* ─── OFFER BAR ─── */}
@@ -499,13 +561,30 @@ export default function AdminSiteSettingsPage() {
                                         <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40" />
                                         <input
                                             type="text"
-                                            placeholder="e.g. Eid Mubarak"
+                                            placeholder="e.g. Eid, Diwali, Christmas"
                                             value={config.themeName ?? ''}
                                             onChange={(e) => handleChange('themeName', e.target.value)}
                                             className="w-full bg-white border border-border rounded-xl pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all"
                                         />
                                     </div>
                                 </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-muted-foreground mb-1.5">Greeting Title</label>
+                                    <div className="relative">
+                                        <PartyPopper className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40" />
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. Happy, Merry, Shubh, Eid Mubarak"
+                                            value={config.themeGreeting ?? ''}
+                                            onChange={(e) => handleChange('themeGreeting', e.target.value)}
+                                            className="w-full bg-white border border-border rounded-xl pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all"
+                                        />
+                                    </div>
+                                    <p className="text-[10px] text-muted-foreground mt-1">Custom greeting prefix shown before the occasion name (e.g. "Happy Holi!", "Eid Mubarak!")</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-medium text-muted-foreground mb-1.5">Floating Emojis (comma-separated)</label>
                                     <input
@@ -668,7 +747,9 @@ export default function AdminSiteSettingsPage() {
                                         />
                                         <div className="absolute inset-0 flex items-center justify-center z-10">
                                             <p className="text-sm font-medium text-muted-foreground bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-border">
-                                                {config.themeName ? `Happy ${config.themeName}!` : 'Theme preview'}
+                                                {config.themeName
+                                                    ? `${config.themeGreeting ? config.themeGreeting + ' ' : ''}${config.themeName}!`
+                                                    : 'Theme preview'}
                                             </p>
                                         </div>
                                     </div>

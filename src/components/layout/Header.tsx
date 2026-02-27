@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Bell, Plus, Search, Menu, Home, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Bell, Plus, Search, Menu, Home, HelpCircle, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { Button } from '@/components/ui';
 import PlanAvatarRing from '@/components/layout/PlanAvatarRing';
 import { MobileSidebar } from './MobileSidebar';
@@ -75,15 +75,16 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, busi
                     <div className="flex items-center gap-3">
                         <Link
                             href="/"
-                            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
+                            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-full border border-border hover:bg-muted transition-colors"
                         >
                             <Home className="w-4 h-4" />
                             <span className="hidden md:inline">Home</span>
                         </Link>
                         <Link
                             href="/help"
-                            className="hidden md:flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
+                            className="hidden md:flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-full border border-border hover:bg-muted transition-colors"
                         >
+                            <HelpCircle className="w-4 h-4" />
                             <span>Help</span>
                         </Link>
                         {action || (

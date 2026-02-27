@@ -151,7 +151,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
                         <Link
                             href="/"
                             className={cn(
-                                'flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl group relative overflow-hidden',
+                                'flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-full border border-border group relative overflow-hidden',
                                 'transition-all duration-200',
                                 'text-muted-foreground hover:bg-accent/10 hover:text-foreground'
                             )}

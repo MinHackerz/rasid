@@ -155,7 +155,7 @@ export default function AdminLayoutShell({ children }: { children: ReactNode }) 
                     <div className="ml-auto flex items-center gap-3">
                         <Link
                             href="/"
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                         >
                             <Home className="w-4 h-4" />
                             <span className="hidden sm:inline">Home</span>

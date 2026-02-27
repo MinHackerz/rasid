@@ -311,6 +311,7 @@ model SiteConfig {
   themeEnabled   Boolean   @default(false)
   themeEndDate   DateTime?
   themeIntensity String    @default("medium")
+  themeGreeting  String?
   themeName      String?
   themeStartDate DateTime?
   fromEmail      String?
