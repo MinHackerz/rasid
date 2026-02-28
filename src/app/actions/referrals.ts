@@ -5,6 +5,7 @@ import { requireAdminUser } from '@/lib/admin';
 import { revalidatePath } from 'next/cache';
 import crypto from 'crypto';
 import { PLAN_REFERRAL_REWARDS } from '@/lib/constants/referral-rewards';
+import { currentUser, clerkClient } from '@clerk/nextjs/server';
 
 // ────────────────────────────────────────────────────────
 // TYPES
@@ -719,4 +720,51 @@ export async function rejectReferralApplication(
 
     revalidatePath('/admin/referrals');
     return { success: true };
+}
+
+// ────────────────────────────────────────────────────────
+// PUBLIC/USER: Sync Referral Code to Clerk Metadata
+// ────────────────────────────────────────────────────────
+
+export async function syncReferralToClerk(code: string): Promise<{ success: boolean; error?: string }> {
+    const user = await currentUser();
+    if (!user) return { success: false, error: 'Unauthorized' };
+
+    // If user already has a referral code in Clerk, skip
+    if (user.unsafeMetadata?.referralCode) {
+        return { success: true };
+    }
+
+    try {
+        const referral = await (prisma as any).referral.findUnique({
+            where: { code: code.toUpperCase() }
+        });
+
+        if (!referral || !referral.isActive) {
+            return { success: false, error: 'Invalid or inactive referral code' };
+        }
+
+        // 1. Update Clerk Metadata
+        const clerk = await clerkClient();
+        await clerk.users.updateUserMetadata(user.id, {
+            unsafeMetadata: { referralCode: code.toUpperCase() }
+        });
+
+        // 2. Increment signup count
+        await (prisma as any).referral.update({
+            where: { id: referral.id },
+            data: { signups: { increment: 1 } }
+        });
+
+        // 3. Update Seller if already created without the code
+        await (prisma as any).seller.updateMany({
+            where: { clerkUserId: user.id },
+            data: { referredByCode: code.toUpperCase() }
+        });
+
+        return { success: true };
+    } catch (err) {
+        console.error('Failed syncing referral to clerk:', err);
+        return { success: false, error: 'Internal error' };
+    }
 }

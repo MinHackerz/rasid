@@ -119,7 +119,7 @@ export default async function ReferralPage({ params }: { params: { code: string 
                         {/* CTA */}
                         <div className="space-y-3 pt-2">
                             <Link
-                                href={`/sign-up?ref=${referral.code}`}
+                                href={`/sign-up?ref=${referral.code}&redirect_url=${encodeURIComponent('/refer/' + referral.code)}`}
                                 className="flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-xl shadow-lg shadow-violet-500/25 transition-all hover:shadow-xl hover:shadow-violet-500/30 hover:-translate-y-0.5"
                             >
                                 Get Started Free

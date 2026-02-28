@@ -4,9 +4,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useUser, UserButton } from '@clerk/nextjs';
 import { LayoutDashboard } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
 export function ApiDocsHeader() {
     const { isSignedIn, isLoaded } = useUser();
+    const pathname = usePathname();
 
     return (
         <header className="border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
@@ -41,10 +43,10 @@ export function ApiDocsHeader() {
                         </div>
                     ) : (
                         <>
-                            <Link href="/sign-in" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                            <Link href={`/sign-in?redirect_url=${encodeURIComponent(pathname)}`} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                                 Sign In
                             </Link>
-                            <Link href="/sign-up" className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
+                            <Link href={`/sign-up?redirect_url=${encodeURIComponent(pathname)}`} className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
                                 Get Started
                             </Link>
                         </>

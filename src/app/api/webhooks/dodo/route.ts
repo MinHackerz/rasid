@@ -184,6 +184,11 @@ export async function POST(req: Request) {
                                         earned = (earned / 100) * planPrice;
                                     }
                                 }
+                            } else if (referral.rewardType === 'credit' && referral.rewardValue) {
+                                const valStr = referral.rewardValue.replace(/[^0-9.]/g, '');
+                                if (valStr) {
+                                    earned = parseFloat(valStr);
+                                }
                             }
 
                             await prisma.referral.update({
@@ -268,6 +273,11 @@ export async function POST(req: Request) {
             console.log(`[Webhook] Matched Plan (Payment): ${matchedPlan}`);
 
             if (matchedPlan === 'LIFETIME') {
+                const seller = await (prisma.seller as any).findFirst({
+                    where: { email: customerEmail },
+                    select: { plan: true, referredByCode: true }
+                });
+
                 const updateData: any = {
                     plan: 'LIFETIME',
                     subscriptionId: null, // No sub ID for lifetime
@@ -283,6 +293,45 @@ export async function POST(req: Request) {
                     data: updateData
                 });
                 console.log(`[Webhook] DB Update Result (Lifetime):`, result);
+
+                // Handle referral conversions
+                if (seller?.referredByCode && (!seller.plan || seller.plan === 'FREE')) {
+                    try {
+                        const referral = await prisma.referral.findUnique({
+                            where: { code: seller.referredByCode }
+                        });
+
+                        if (referral) {
+                            let earned = 0;
+                            if (referral.rewardType === 'commission' && referral.rewardValue) {
+                                const valStr = referral.rewardValue.replace(/[^0-9.]/g, '');
+                                if (valStr) {
+                                    earned = parseFloat(valStr);
+                                    if (referral.rewardValue.includes('%')) {
+                                        const planPrice = 499; // estimation for lifetime
+                                        earned = (earned / 100) * planPrice;
+                                    }
+                                }
+                            } else if (referral.rewardType === 'credit' && referral.rewardValue) {
+                                const valStr = referral.rewardValue.replace(/[^0-9.]/g, '');
+                                if (valStr) {
+                                    earned = parseFloat(valStr);
+                                }
+                            }
+
+                            await prisma.referral.update({
+                                where: { code: seller.referredByCode },
+                                data: {
+                                    conversions: { increment: 1 },
+                                    totalEarned: { increment: earned }
+                                }
+                            });
+                            console.log(`[Webhook] Referral updated for ${seller.referredByCode} (LIFETIME), earned: $${earned}`);
+                        }
+                    } catch (err) {
+                        console.error('[Webhook] Failed to update referral conversion (LIFETIME):', err);
+                    }
+                }
             }
         }
     }

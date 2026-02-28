@@ -82,16 +82,7 @@ export async function POST(req: Request) {
             } as any,
         });
 
-        if (referralCode) {
-            try {
-                await prisma.referral.update({
-                    where: { code: referralCode },
-                    data: { signups: { increment: 1 } }
-                });
-            } catch (error) {
-                console.error('Failed to increment referral signups:', error);
-            }
-        }
+        // The signup count and clerk metadata syncing is now handled by the generic syncReferralToClerk action
 
         return NextResponse.json({ success: true, data: newSeller });
     } catch (error) {

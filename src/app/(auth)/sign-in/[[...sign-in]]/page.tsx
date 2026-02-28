@@ -1,7 +1,7 @@
 'use client';
 
 import { useSignIn } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { Button, Input } from '@/components/ui';
 import { AlertCircle, ArrowRight, Shield, Zap, LockKeyhole } from 'lucide-react';
@@ -16,6 +16,8 @@ export default function SignInPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const redirectUrl = searchParams.get('redirect_url') || '/dashboard';
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -32,7 +34,7 @@ export default function SignInPage() {
 
             if (result.status === 'complete') {
                 await setActive({ session: result.createdSessionId });
-                router.push('/dashboard');
+                router.push(redirectUrl);
             } else {
                 setError('Authentication failed. Please check your credentials.');
             }
@@ -49,7 +51,7 @@ export default function SignInPage() {
         signIn.authenticateWithRedirect({
             strategy: 'oauth_google',
             redirectUrl: '/sso-callback',
-            redirectUrlComplete: '/dashboard',
+            redirectUrlComplete: redirectUrl,
         });
     };
 
@@ -202,7 +204,7 @@ export default function SignInPage() {
                         <h2 className="text-3xl font-bold font-display text-slate-900 tracking-tight">Sign in to your account</h2>
                         <p className="text-slate-500 mt-2">
                             Don't have an account?{' '}
-                            <Link href="/sign-up" className="font-semibold text-blue-600 hover:text-blue-500 transition-colors">
+                            <Link href={`/sign-up${searchParams.get('redirect_url') ? `?redirect_url=${encodeURIComponent(searchParams.get('redirect_url') as string)}` : ''}`} className="font-semibold text-blue-600 hover:text-blue-500 transition-colors">
                                 Create one free
                             </Link>
                         </p>

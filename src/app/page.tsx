@@ -156,7 +156,7 @@ export default function LandingPage() {
       })()}
 
       {/* Navigation */}
-      <nav className={`fixed ${hasOfferBar ? 'top-12 sm:top-14 xl:top-[60px]' : 'top-4'} transition-all duration-300 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-auto ${isAdminRole ? 'md:min-w-[820px]' : 'md:min-w-[700px]'} z-40 bg-white/60 backdrop-blur-3xl rounded-full border border-white/30 shadow-lg shadow-black/[0.03] px-4`}>
+      <nav className={`fixed ${hasOfferBar ? 'top-12 sm:top-14 xl:top-[60px]' : 'top-4'} transition-all duration-300 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-auto ${isAdminRole ? 'md:w-max xl:min-w-[850px]' : 'md:w-max xl:min-w-[750px]'} z-40 bg-white/60 backdrop-blur-3xl rounded-full border border-white/30 shadow-lg shadow-black/[0.03] px-4`}>
         <div className="h-14 flex items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
@@ -211,10 +211,10 @@ export default function LandingPage() {
               </div>
             ) : (
               <>
-                <Link href="/sign-in">
+                <Link href="/sign-in?redirect_url=/">
                   <Button variant="outline" size="sm" className="font-semibold rounded-full border border-neutral-900 shadow-none">Sign In</Button>
                 </Link>
-                <Link href="/sign-up">
+                <Link href="/sign-up?redirect_url=/">
                   <Button size="sm" className="px-6 font-bold rounded-full border border-neutral-900 shadow-none">Get Started</Button>
                 </Link>
               </>
@@ -307,10 +307,10 @@ export default function LandingPage() {
                     </div>
                   ) : (
                     <div className="flex flex-col gap-2">
-                      <Link href="/sign-in" onClick={() => setMobileMenuOpen(false)}>
+                      <Link href="/sign-in?redirect_url=/" onClick={() => setMobileMenuOpen(false)}>
                         <Button variant="outline" className="w-full h-12 rounded-full font-semibold border-neutral-200 bg-white hover:bg-neutral-50 shadow-sm justify-center text-neutral-900">Sign In</Button>
                       </Link>
-                      <Link href="/sign-up" onClick={() => setMobileMenuOpen(false)}>
+                      <Link href="/sign-up?redirect_url=/" onClick={() => setMobileMenuOpen(false)}>
                         <Button className="w-full h-12 rounded-full font-bold shadow-md shadow-neutral-900/10 justify-center">Get Started</Button>
                       </Link>
                     </div>
@@ -423,7 +423,7 @@ export default function LandingPage() {
                   </Button>
                 </Link>
               ) : (
-                <Link href="/sign-up">
+                <Link href="/sign-up?redirect_url=/">
                   <Button size="lg" className="h-14 px-8 text-base font-semibold rounded-full transition-all hover:scale-105 bg-primary hover:bg-primary/90 text-white border border-primary/80 shadow-xl shadow-slate-900/10">
                     Start Free — No Card Needed <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
@@ -786,7 +786,7 @@ export default function LandingPage() {
                     </Button>
                   </Link>
                 ) : (
-                  <Link href="/sign-up">
+                  <Link href="/sign-up?redirect_url=/">
                     <Button size="lg" className="h-14 px-10 text-base font-bold rounded-full bg-white text-slate-900 hover:bg-slate-100 border border-white/80 shadow-xl">
                       Start Your Free Trial <ArrowRight className="ml-2 w-5 h-5" />
                     </Button>

@@ -5,6 +5,7 @@ import { SidebarProvider, useSidebar } from '@/components/layout/SidebarContext'
 import { Sidebar, Header } from '@/components/layout';
 import { PlanType } from '@/lib/constants/plans';
 import { NoBusinessAlert } from '@/components/dashboard/NoBusinessAlert';
+import { ReferralSync } from '@/components/dashboard/ReferralSync';
 
 interface DashboardShellProps {
     children: React.ReactNode;
@@ -22,6 +23,7 @@ function DashboardShellInner({ children, businessName, businesses, role, plan, h
 
     return (
         <div className="min-h-screen bg-background-subtle">
+            <ReferralSync />
             <Sidebar businessName={businessName} businesses={businesses as { id: string; businessName: string }[]} role={role} plan={plan} />
 
             <main className={`${collapsed ? 'lg:ml-[72px]' : 'lg:ml-64'} ml-0 min-h-screen flex flex-col transition-all duration-300`}>

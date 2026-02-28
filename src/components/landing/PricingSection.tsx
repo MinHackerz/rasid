@@ -8,7 +8,7 @@ import { PlanType, PLANS } from '@/lib/constants/plans';
 import { Button } from '@/components/ui';
 import { triggerBillingToggleConfetti } from '@/lib/confetti';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { createSubscriptionCheckout } from '@/app/actions/subscription';
 import { toast } from 'sonner';
 
@@ -26,6 +26,7 @@ export function PricingSection({
     isLoggedIn = false
 }: PricingSectionProps) {
     const router = useRouter();
+    const pathname = usePathname();
     const [loadingPlan, setLoadingPlan] = useState<PlanType | null>(null);
     const [isAnnual, setIsAnnual] = useState(true);
 
@@ -47,7 +48,7 @@ export function PricingSection({
 
     const handleSelectPlan = async (planKey: PlanType) => {
         if (!isLoggedIn) {
-            router.push('/sign-up');
+            router.push(`/sign-up?redirect_url=${encodeURIComponent(pathname)}`);
             return;
         }
 
@@ -129,7 +130,7 @@ export function PricingSection({
                                     Active Plan
                                 </Button>
                             ) : (
-                                <Link href="/sign-up">
+                                <Link href={`/sign-up?redirect_url=${encodeURIComponent(pathname)}`}>
                                     <Button className="w-full md:w-auto bg-neutral-900 text-white hover:bg-neutral-800 h-10 px-8 rounded-lg font-semibold shadow-lg shadow-neutral-900/10">
                                         Start for Free
                                     </Button>

@@ -23,6 +23,7 @@ export default function SignUpPage() {
     const [error, setError] = useState('');
     const router = useRouter();
     const searchParams = useSearchParams();
+    const redirectUrl = searchParams.get('redirect_url') || '/dashboard';
 
     useEffect(() => {
         const ref = searchParams.get('ref');
@@ -68,7 +69,7 @@ export default function SignUpPage() {
                 if (signUp.createdSessionId) {
                     await setActive({ session: signUp.createdSessionId });
                 }
-                router.push('/dashboard');
+                router.push(redirectUrl);
                 return;
             }
 
@@ -78,7 +79,7 @@ export default function SignUpPage() {
 
             if (completeSignUp.status === 'complete') {
                 await setActive({ session: completeSignUp.createdSessionId });
-                router.push('/dashboard');
+                router.push(redirectUrl);
             } else {
                 setError('Verification failed. Use a new code?');
             }
@@ -91,11 +92,11 @@ export default function SignUpPage() {
                 errorMessage.toLowerCase().includes('already verified')) {
                 if (signUp.createdSessionId) {
                     await setActive({ session: signUp.createdSessionId });
-                    router.push('/dashboard');
+                    router.push(redirectUrl);
                     return;
                 }
                 // If no session yet, redirect to sign-in
-                router.push('/sign-in');
+                router.push(`/sign-in${searchParams.get('redirect_url') ? `?redirect_url=${encodeURIComponent(searchParams.get('redirect_url') as string)}` : ''}`);
                 return;
             }
 
@@ -110,7 +111,7 @@ export default function SignUpPage() {
         signUp.authenticateWithRedirect({
             strategy: 'oauth_google',
             redirectUrl: '/sso-callback',
-            redirectUrlComplete: '/dashboard',
+            redirectUrlComplete: redirectUrl,
         });
     };
 
@@ -344,7 +345,7 @@ export default function SignUpPage() {
                         <h2 className="text-3xl font-bold font-display text-slate-900 tracking-tight">Create your free account</h2>
                         <p className="text-slate-500 mt-2">
                             Already have an account?{' '}
-                            <Link href="/sign-in" className="font-semibold text-blue-600 hover:text-blue-500 transition-colors">
+                            <Link href={`/sign-in${searchParams.get('redirect_url') ? `?redirect_url=${encodeURIComponent(searchParams.get('redirect_url') as string)}` : ''}`} className="font-semibold text-blue-600 hover:text-blue-500 transition-colors">
                                 Sign in
                             </Link>
                         </p>

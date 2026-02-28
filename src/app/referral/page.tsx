@@ -65,7 +65,7 @@ export default async function ReferralProgramPage() {
                         </Link>
                     ) : (
                         <Link
-                            href="/sign-up"
+                            href="/sign-up?redirect_url=/referral"
                             className="flex items-center gap-2 px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-full transition-all shadow-md shadow-violet-500/20 hover:shadow-lg"
                         >
                             Get Started
@@ -228,7 +228,7 @@ export default async function ReferralProgramPage() {
                                 Sign up for Rasid and apply to become a referrer. Start sharing and earn rewards with every successful referral.
                             </p>
                             <Link
-                                href="/sign-up"
+                                href="/sign-up?redirect_url=/referral"
                                 className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-violet-700 text-sm font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
                             >
                                 Create Your Account

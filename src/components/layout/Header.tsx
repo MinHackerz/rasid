@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Bell, Plus, Search, Menu, Home, HelpCircle, PanelLeftClose, PanelLeftOpen, Shield } from 'lucide-react';
+import { Bell, Plus, Search, Menu, Home, HelpCircle, PanelLeftClose, PanelLeftOpen, Shield, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui';
 import PlanAvatarRing from '@/components/layout/PlanAvatarRing';
 import { MobileSidebar } from './MobileSidebar';
@@ -95,6 +95,11 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, busi
                                 <Button size="sm" variant="outline" className="hidden md:flex gap-2 shadow-sm font-semibold rounded-lg border-violet-200 text-violet-700 hover:bg-violet-50 hover:text-violet-800">
                                     <span className="hidden sm:inline">Referral Dashboard</span>
                                 </Button>
+                            </Link>
+                        )}
+                        {referrerToken && (
+                            <Link href={`/referrer/${referrerToken}`} className="md:hidden flex items-center justify-center p-2 text-violet-600 hover:bg-violet-50 rounded-lg transition-colors">
+                                <Sparkles className="w-5 h-5" />
                             </Link>
                         )}
 
