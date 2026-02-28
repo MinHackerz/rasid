@@ -33,6 +33,8 @@ import {
     Shield,
     BadgeIndianRupee,
     ExternalLink,
+    LayoutDashboard,
+    Home,
 } from 'lucide-react';
 
 export default function ReferrerPortalPage() {
@@ -127,7 +129,7 @@ export default function ReferrerPortalPage() {
             </div>
 
             {/* Header */}
-            <header className="relative z-10 bg-white/70 backdrop-blur-lg border-b border-border/40 sticky top-0">
+            <header className="relative z-10 bg-white/70 backdrop-blur-xl border-b border-border/40 sticky top-0 shadow-sm">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2.5 group">
                         <div className="w-8 h-8 rounded-lg overflow-hidden shadow-md shadow-violet-500/10 group-hover:scale-105 transition-transform">
@@ -144,8 +146,16 @@ export default function ReferrerPortalPage() {
                             <span className="block text-[10px] text-muted-foreground -mt-0.5 font-medium">Referrer Portal</span>
                         </div>
                     </Link>
-                    <div className="flex items-center gap-3">
-                        <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border ${data.isActive
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <Link href="/" className="flex items-center justify-center p-2 sm:px-3 sm:py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground bg-white/50 hover:bg-white rounded-lg transition-colors border border-border/50 shadow-sm">
+                            <Home className="w-4 h-4 sm:mr-1.5" />
+                            <span className="hidden sm:inline">Home</span>
+                        </Link>
+                        <Link href="/dashboard" className="flex items-center justify-center p-2 sm:px-3 sm:py-1.5 text-xs font-semibold text-violet-600 bg-violet-50 hover:bg-violet-100 rounded-lg border border-violet-200/60 transition-colors shadow-sm">
+                            <LayoutDashboard className="w-4 h-4 sm:mr-1.5" />
+                            <span className="hidden sm:inline">Dashboard</span>
+                        </Link>
+                        <span className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border ${data.isActive
                             ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
                             : 'bg-gray-100 text-gray-500 border-gray-200'
                             }`}>
