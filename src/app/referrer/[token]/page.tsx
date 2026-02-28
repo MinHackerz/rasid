@@ -129,7 +129,7 @@ export default function ReferrerPortalPage() {
             </div>
 
             {/* Header */}
-            <header className="relative z-10 bg-white/70 backdrop-blur-xl border-b border-border/40 sticky top-0 shadow-sm">
+            <header className="sticky top-0 z-50 bg-white/60 backdrop-blur-2xl border-b border-border/40 shadow-sm supports-[backdrop-filter]:bg-white/60">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2.5 group">
                         <div className="w-8 h-8 rounded-lg overflow-hidden shadow-md shadow-violet-500/10 group-hover:scale-105 transition-transform">

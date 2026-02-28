@@ -36,20 +36,20 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, busi
                         {/* Mobile Menu Trigger */}
                         <button
                             type="button"
-                            className="lg:hidden p-2 -ml-2 text-muted-foreground hover:text-foreground rounded-lg"
+                            className="lg:hidden flex items-center justify-center w-8 h-8 -ml-2 text-muted-foreground hover:text-foreground rounded-lg"
                             onClick={() => setMobileMenuOpen(true)}
                         >
-                            <Menu className="w-6 h-6" />
+                            <Menu className="w-5 h-5" />
                         </button>
 
                         {/* Desktop Sidebar Toggle */}
                         <button
                             type="button"
-                            className="hidden lg:flex p-2 -ml-6 lg:-ml-10 mr-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
+                            className="hidden lg:flex items-center justify-center w-8 h-8 -ml-6 lg:-ml-10 mr-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
                             onClick={toggle}
                             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                         >
-                            {collapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+                            {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
                         </button>
 
                         {title && (
@@ -64,7 +64,7 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, busi
                                 <input
                                     type="search"
                                     placeholder="Search invoices, clients..."
-                                    className="w-80 pl-10 pr-4 py-2.5 text-sm bg-background border border-border/50 rounded-xl placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 focus:bg-background transition-all duration-200"
+                                    className="w-80 h-8 pl-10 pr-4 text-sm bg-background border border-border/50 rounded-xl placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 focus:bg-background transition-all duration-200"
                                 />
                                 <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
                                     <span className="text-[10px] font-medium text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded border border-border/50">⌘ K</span>
@@ -77,14 +77,14 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, busi
                     <div className="flex items-center gap-3">
                         <Link
                             href="/"
-                            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-full border border-border hover:bg-muted transition-colors"
+                            className="flex items-center gap-2 h-8 px-3 text-xs font-medium text-muted-foreground hover:text-foreground rounded-full border border-border hover:bg-muted transition-colors"
                         >
                             <Home className="w-4 h-4" />
                             <span className="hidden md:inline">Home</span>
                         </Link>
                         <Link
                             href="/help"
-                            className="hidden md:flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-full border border-border hover:bg-muted transition-colors"
+                            className="hidden md:flex items-center gap-2 h-8 px-3 text-xs font-medium text-muted-foreground hover:text-foreground rounded-full border border-border hover:bg-muted transition-colors"
                         >
                             <HelpCircle className="w-4 h-4" />
                             <span>Help</span>
@@ -98,8 +98,8 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, busi
                             </Link>
                         )}
                         {referrerToken && (
-                            <Link href={`/referrer/${referrerToken}`} className="md:hidden flex items-center justify-center p-2 text-violet-600 border border-violet-200 hover:bg-violet-50 rounded-lg transition-colors shadow-sm">
-                                <Gift className="w-5 h-5" />
+                            <Link href={`/referrer/${referrerToken}`} className="md:hidden flex items-center justify-center w-8 h-8 text-violet-600 border border-violet-200 hover:bg-violet-50 rounded-lg transition-colors shadow-sm">
+                                <Gift className="w-4 h-4" />
                             </Link>
                         )}
 
