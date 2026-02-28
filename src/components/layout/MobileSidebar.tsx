@@ -18,7 +18,6 @@ import {
     Package,
     Code2,
     CreditCard,
-    Home
 } from 'lucide-react';
 import { BusinessSwitcher } from './BusinessSwitcher';
 import { useClerk } from "@clerk/nextjs";
@@ -147,17 +146,6 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
                                 pathname === '/help' ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-primary'
                             )} />
                             <span className="relative z-10">Help</span>
-                        </Link>
-                        <Link
-                            href="/"
-                            className={cn(
-                                'flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-full border border-border group relative overflow-hidden',
-                                'transition-all duration-200',
-                                'text-muted-foreground hover:bg-accent/10 hover:text-foreground'
-                            )}
-                        >
-                            <Home className="w-[18px] h-[18px] transition-colors text-muted-foreground group-hover:text-primary" />
-                            <span className="relative z-10">Home</span>
                         </Link>
                     </nav>
 

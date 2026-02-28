@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, FileText, Settings, Users, Shield, Upload, Package, BarChart3, Bell, Clock } from 'lucide-react';
+import { BookOpen, FileText, Settings, Users, Shield, Upload, Package, BarChart3, Bell, Clock, Gift } from 'lucide-react';
 
 export interface HelpSection {
     id: string;
@@ -1043,6 +1043,147 @@ When you enable reminders for an invoice, the system creates:
                     'Regularly check for failed reminders and fix issues promptly',
                     'Update buyer contact info if reminders are bouncing',
                     'Use the dashboard to monitor reminder performance'
+                ]
+            }
+        ]
+    },
+    {
+        id: 'referral-program',
+        title: 'Referral Program',
+        description: 'Earn rewards by referring businesses to Rasid',
+        icon: <Gift className="w-5 h-5" />,
+        subsections: [
+            {
+                id: 'overview',
+                title: 'Referral Program Overview',
+                content: `**Earn rewards by sharing Rasid with others!**
+
+The Rasid Referral Program lets you earn commissions, account credits, or discounts by inviting friends, colleagues, and businesses to use Rasid. When someone signs up using your unique referral link, you earn rewards based on the plan they subscribe to.
+
+**How It Works:**
+1. **Apply** — Submit a referral application from the Referral Program page
+2. **Get Approved** — Our team reviews and approves your application
+3. **Share** — Use your unique referral link to invite people
+4. **Earn** — Get rewarded when they sign up and subscribe
+
+**Referral Link Format:**
+\`\`\`
+https://rasid.in/refer/YOUR-CODE
+\`\`\`
+
+**Tracking:**
+- Every click on your referral link is tracked
+- Sign-ups and conversions are recorded
+- View all stats in your Referrer Portal`,
+                tips: [
+                    'Share your referral link on social media, blogs, and communities',
+                    'Higher-tier plan referrals earn more rewards',
+                    'You can track all your referral performance in the Referrer Portal'
+                ]
+            },
+            {
+                id: 'becoming-referrer',
+                title: 'Becoming a Referrer',
+                content: `**Applying to Become a Referrer:**
+
+1. Visit the **Referral Program** page at rasid.in/referral
+2. If you're logged in, you'll see the application form directly
+3. Fill in the application:
+   - **Preferred Reward Type**: Choose between Commission (%), Credit (₹), or Discount (% off)
+   - **Reason**: Tell us why you'd like to be a referrer (optional)
+   - **Social/Website Links**: Share your online presence (optional)
+4. Click **Submit Application**
+
+**Application Statuses:**
+- **Pending** — Your application is under review by our team
+- **Approved** — You're a referrer! Your unique code and portal link are ready
+- **Rejected** — Application not approved; you can reapply with updated information
+
+**After Approval:**
+- You receive a unique referral code (e.g., RASID-ABCD12)
+- Access your Referrer Portal to view stats and manage payouts
+- Copy your referral link and start sharing
+
+**Note:** If your application is rejected, you can reapply. The rejection reason (if provided by admin) will be shown to help you improve your application.`,
+                tips: [
+                    'Include your social links for a higher chance of approval',
+                    'Explain how you plan to promote Rasid for a stronger application',
+                    'You can reapply if your first application is rejected'
+                ]
+            },
+            {
+                id: 'rewards-payouts',
+                title: 'Rewards & Payouts',
+                content: `**Plan-Based Reward Tiers:**
+
+Rewards vary based on the plan your referred user subscribes to:
+
+| Plan | Commission | Credit | Discount |
+|------|-----------|--------|----------|
+| Free | 5% | ₹100 | 5% off |
+| Basic | 10% | ₹500 | 10% off |
+| Pro | 15% | ₹1,000 | 15% off |
+| Premium | 20% | ₹2,000 | 20% off |
+| Lifetime | 25% | ₹5,000 | 25% off |
+
+**Reward Types Explained:**
+- **Commission**: A percentage of the referred user's subscription amount, paid to you
+- **Credit**: A fixed amount added to your account balance
+- **Discount**: A percentage discount on your own Rasid subscription
+
+**Payment Methods:**
+- **UPI**: For Indian referrers — add your UPI ID
+- **PayPal**: For international referrers — add your PayPal email
+
+**Payout Schedule:**
+- Payouts are processed monthly
+- You can view your payout day and history in the Referrer Portal
+- Minimum payout threshold applies`,
+                tips: [
+                    'Referring Lifetime plan users earns the highest rewards',
+                    'Add your preferred payment method in the Referrer Portal',
+                    'Set a default payment method for automatic payouts'
+                ]
+            },
+            {
+                id: 'managing-referrals',
+                title: 'Managing Your Referrals',
+                content: `**Referrer Portal:**
+
+After approval, you get access to your personal Referrer Portal where you can:
+
+1. **View Statistics:**
+   - Total clicks on your referral link
+   - Number of sign-ups
+   - Number of conversions (paid subscriptions)
+   - Total earned and total paid amounts
+
+2. **Manage Payment Methods:**
+   - Add UPI or PayPal payment details
+   - Set a default payment method
+   - Remove outdated payment methods
+
+3. **Track Payouts:**
+   - View payout history with amounts and dates
+   - See pending and completed payouts
+   - Check your next payout date
+
+**Accessing Your Portal:**
+- From the Referral Program page (if approved, your portal link appears)
+- From the direct portal URL provided after approval
+- Bookmark your portal link for easy access
+
+**Portal URL Format:**
+\`\`\`
+https://rasid.in/referrer/YOUR-ACCESS-TOKEN
+\`\`\`
+
+**Important:** Keep your portal URL private — it provides direct access to your referral dashboard and payment settings.`,
+                tips: [
+                    'Bookmark your Referrer Portal for quick access',
+                    'Keep your payment methods up to date',
+                    'Never share your portal access token with others',
+                    'Monitor your stats regularly to optimize your referral strategy'
                 ]
             }
         ]

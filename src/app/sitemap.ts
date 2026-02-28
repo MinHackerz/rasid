@@ -12,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         '/privacy',
         '/terms',
         '/help',
+        '/referral',
     ];
 
     const helpRoutes = helpContent.flatMap((section) =>

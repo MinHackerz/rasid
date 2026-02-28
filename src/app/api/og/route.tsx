@@ -64,6 +64,12 @@ const PAGES: Record<string, { title: string; subtitle: string; gradient: string;
         gradient: 'linear-gradient(135deg, #0f172a 0%, #4c1d95 50%, #6d28d9 100%)',
         emoji: '📈',
     },
+    referral: {
+        title: 'Referral Program',
+        subtitle: 'Earn rewards by referring businesses to Rasid — commissions, credits, or discounts',
+        gradient: 'linear-gradient(135deg, #0f172a 0%, #4c1d95 50%, #7c3aed 100%)',
+        emoji: '🎁',
+    },
 };
 
 export async function GET(request: NextRequest) {

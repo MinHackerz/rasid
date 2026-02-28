@@ -325,6 +325,88 @@ model SiteConfig {
   offerAnimation String?   @default("slide")
 }
 
+model Referral {
+  id              String                  @id @default(cuid())
+  code            String                  @unique
+  referrerName    String
+  referrerEmail   String
+  description     String?
+  rewardType      String                  @default("discount")   // discount | credit | commission
+  rewardValue     String?                                         // e.g. "10%" or "₹500"
+  isActive        Boolean                 @default(true)
+  clicks          Int                     @default(0)
+  signups         Int                     @default(0)
+  conversions     Int                     @default(0)
+  maxUses         Int?                                             // null = unlimited
+  expiresAt       DateTime?
+  accessToken     String?                 @unique                 // for referrer portal login
+  totalEarned     Decimal                 @default(0) @db.Decimal(12, 2)
+  totalPaid       Decimal                 @default(0) @db.Decimal(12, 2)
+  payoutDay       Int                     @default(15)            // day of month for payout
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  paymentMethods  ReferralPaymentMethod[]
+  payouts         ReferralPayout[]
+
+  @@index([code])
+  @@index([referrerEmail])
+  @@index([isActive])
+  @@index([accessToken])
+}
+
+model ReferralApplication {
+  id              String   @id @default(cuid())
+  userId          String                           // Clerk user ID
+  userName        String
+  userEmail       String
+  reason          String?                          // why they want to be a referrer
+  preferredReward String   @default("commission")  // discount | credit | commission
+  socialLinks     String?                          // optional social/website links
+  status          String   @default("pending")     // pending | approved | rejected
+  adminNote       String?                          // admin response note
+  referralId      String?                          // linked Referral once approved
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId])
+  @@index([status])
+  @@index([userEmail])
+}
+
+model ReferralPaymentMethod {
+  id          String   @id @default(cuid())
+  referralId  String
+  type        String                        // "upi" or "paypal"
+  label       String?                       // e.g. "My UPI" or "My PayPal"
+  upiId       String?                       // UPI VPA
+  paypalEmail String?                       // PayPal email
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  referral    Referral @relation(fields: [referralId], references: [id], onDelete: Cascade)
+
+  @@index([referralId])
+}
+
+model ReferralPayout {
+  id          String   @id @default(cuid())
+  referralId  String
+  amount      Decimal  @db.Decimal(12, 2)
+  status      String   @default("pending")  // pending | processing | completed | failed
+  method      String?                        // upi | paypal
+  reference   String?                        // transaction reference
+  note        String?
+  scheduledAt DateTime
+  paidAt      DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  referral    Referral @relation(fields: [referralId], references: [id], onDelete: Cascade)
+
+  @@index([referralId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
 enum PlanTier {
   FREE
   BASIC

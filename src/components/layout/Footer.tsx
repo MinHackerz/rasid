@@ -30,6 +30,7 @@ export function Footer() {
                             <li><Link href="/#pricing" className="hover:text-primary">Pricing</Link></li>
                             <li><Link href="/help" className="hover:text-primary">Help</Link></li>
                             <li><Link href="/api-docs" className="hover:text-primary">API Docs</Link></li>
+                            <li><Link href="/referral" className="hover:text-primary">Referral Program</Link></li>
                         </ul>
                     </div>
                     <div>

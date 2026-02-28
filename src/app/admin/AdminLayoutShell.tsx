@@ -14,6 +14,7 @@ import {
     Shield,
     Activity,
     Home,
+    Link2,
 } from 'lucide-react';
 
 const navItems = [
@@ -21,6 +22,7 @@ const navItems = [
     { href: '/admin/users', label: 'Users & Businesses', icon: Users, description: 'Manage all accounts' },
     { href: '/admin/invoices', label: 'Invoices', icon: FileText, description: 'All platform invoices' },
     { href: '/admin/activity', label: 'Activity Logs', icon: Activity, description: 'Audit trail & events' },
+    { href: '/admin/referrals', label: 'Referrals', icon: Link2, description: 'Manage referral program' },
     { href: '/admin/site', label: 'Site & Marketing', icon: Globe2, description: 'Offers & announcements' },
 ];
 
