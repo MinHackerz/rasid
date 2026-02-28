@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Bell, Plus, Search, Menu, Home, HelpCircle, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Bell, Plus, Search, Menu, Home, HelpCircle, PanelLeftClose, PanelLeftOpen, Shield } from 'lucide-react';
 import { Button } from '@/components/ui';
 import PlanAvatarRing from '@/components/layout/PlanAvatarRing';
 import { MobileSidebar } from './MobileSidebar';
@@ -17,9 +17,11 @@ interface HeaderProps {
     businesses?: { id: string; businessName: string | null }[];
     role?: 'OWNER' | 'ADMIN' | 'VIEWER';
     plan?: PlanType;
+    isAdmin?: boolean;
+    referrerToken?: string | null;
 }
 
-const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, businessName, businesses, role, plan }) => {
+const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, businessName, businesses, role, plan, isAdmin, referrerToken }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { collapsed, toggle } = useSidebar();
 
@@ -87,6 +89,24 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, busi
                             <HelpCircle className="w-4 h-4" />
                             <span>Help</span>
                         </Link>
+
+                        {referrerToken && (
+                            <Link href={`/referrer/${referrerToken}`}>
+                                <Button size="sm" variant="outline" className="hidden md:flex gap-2 shadow-sm font-semibold rounded-lg border-violet-200 text-violet-700 hover:bg-violet-50 hover:text-violet-800">
+                                    <span className="hidden sm:inline">Referral Dashboard</span>
+                                </Button>
+                            </Link>
+                        )}
+
+                        {isAdmin && (
+                            <Link href="/admin">
+                                <Button size="sm" variant="outline" className="flex px-2 md:px-3 gap-2 shadow-sm font-semibold rounded-lg border-neutral-200 text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900">
+                                    <Shield className="w-4 h-4" />
+                                    <span className="hidden md:inline">Admin</span>
+                                </Button>
+                            </Link>
+                        )}
+
                         {action || (
                             <Link href="/dashboard/invoices/new">
                                 <Button size="sm" className="gap-2 shadow-sm font-semibold rounded-lg">

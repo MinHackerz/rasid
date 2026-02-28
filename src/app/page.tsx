@@ -7,6 +7,7 @@ import {
   ArrowRight,
   CheckCircle2,
   ShieldCheck,
+  Shield,
   Zap,
   LayoutDashboard,
   Menu,
@@ -29,6 +30,7 @@ import { Footer } from '@/components/layout/Footer';
 import { PlanType } from '@/lib/constants/plans';
 import { getSubscriptionDetails } from '@/app/actions/subscription';
 import { getPublicSiteConfig, checkIsAdmin, type SiteConfigDTO } from '@/app/actions/admin';
+import { getUserApplicationStatus } from '@/app/actions/referrals';
 import FestiveTheme from '@/components/landing/FestiveTheme';
 
 /* ─────────── Animated Counter ─────────── */
@@ -47,7 +49,7 @@ function AnimatedNumber({ target, suffix = '' }: { target: number; suffix?: stri
 }
 
 export default function LandingPage() {
-  const { isSignedIn, isLoaded } = useUser();
+  const { isSignedIn, isLoaded, user } = useUser();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [subscriptionDetails, setSubscriptionDetails] = React.useState<{
     plan: PlanType;
@@ -57,6 +59,8 @@ export default function LandingPage() {
 
   const [siteConfig, setSiteConfig] = React.useState<SiteConfigDTO | null>(null);
   const [isAdminRole, setIsAdminRole] = React.useState(false);
+  const [referrerToken, setReferrerToken] = React.useState<string | null>(null);
+
   React.useEffect(() => {
     if (isSignedIn) {
       getSubscriptionDetails().then(details => {
@@ -65,8 +69,15 @@ export default function LandingPage() {
         }
       });
       checkIsAdmin().then(setIsAdminRole);
+      if (user?.id) {
+        getUserApplicationStatus(user.id).then(status => {
+          if (status.status === 'approved' && status.portalToken) {
+            setReferrerToken(status.portalToken);
+          }
+        });
+      }
     }
-  }, [isSignedIn]);
+  }, [isSignedIn, user?.id]);
 
   React.useEffect(() => {
     getPublicSiteConfig()
@@ -162,6 +173,10 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center gap-10 text-sm font-semibold text-slate-600">
             <Link href="#features" className="hover:text-primary transition-colors">Features</Link>
             <Link href="#pricing" className="hover:text-primary transition-colors">Pricing</Link>
+            <Link href="/referral" className="hover:text-primary transition-colors flex items-center gap-1.5">
+              Referral
+              <span className="animate-pulse bg-violet-100 text-violet-700 text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">New</span>
+            </Link>
             <Link href="#about" className="hover:text-primary transition-colors">About</Link>
             <Link href="/help" className="hover:text-primary transition-colors">Help</Link>
           </div>
@@ -173,8 +188,16 @@ export default function LandingPage() {
                 {isAdminRole && (
                   <Link href="/admin">
                     <Button size="sm" variant="outline" className="font-semibold gap-2 rounded-full border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition-colors">
-                      <Zap className="w-4 h-4" />
+                      <Shield className="w-4 h-4" />
                       Admin
+                    </Button>
+                  </Link>
+                )}
+                {referrerToken && (
+                  <Link href={`/referrer/${referrerToken}`}>
+                    <Button size="sm" variant="outline" className="font-semibold gap-2 rounded-full border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 transition-colors">
+                      <Sparkles className="w-4 h-4" />
+                      Referrals
                     </Button>
                   </Link>
                 )}
@@ -233,6 +256,13 @@ export default function LandingPage() {
                     Pricing
                     <ArrowRight className="w-4 h-4 text-neutral-300" />
                   </Link>
+                  <Link href="/referral" className="flex items-center justify-between p-4 rounded-2xl hover:bg-neutral-50 text-sm font-semibold text-neutral-600 hover:text-neutral-900 transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                    <div className="flex items-center gap-2">
+                      Referral
+                      <span className="animate-pulse bg-violet-100 text-violet-700 text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">New</span>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-neutral-300" />
+                  </Link>
                   <Link href="#about" className="flex items-center justify-between p-4 rounded-2xl hover:bg-neutral-50 text-sm font-semibold text-neutral-600 hover:text-neutral-900 transition-colors" onClick={() => setMobileMenuOpen(false)}>
                     About
                     <ArrowRight className="w-4 h-4 text-neutral-300" />
@@ -251,8 +281,16 @@ export default function LandingPage() {
                       {isAdminRole && (
                         <Link href="/admin" onClick={() => setMobileMenuOpen(false)}>
                           <Button className="w-full h-12 rounded-full font-bold text-base shadow-sm justify-center bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20">
-                            <Zap className="w-4 h-4 mr-2" />
+                            <Shield className="w-4 h-4 mr-2" />
                             Admin Panel
+                          </Button>
+                        </Link>
+                      )}
+                      {referrerToken && (
+                        <Link href={`/referrer/${referrerToken}`} onClick={() => setMobileMenuOpen(false)}>
+                          <Button className="w-full h-12 rounded-full font-bold text-base shadow-sm justify-center bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100">
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            Referral Dashboard
                           </Button>
                         </Link>
                       )}

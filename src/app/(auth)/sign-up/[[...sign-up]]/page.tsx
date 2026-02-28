@@ -2,7 +2,8 @@
 
 import { useSignUp } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Button, Input } from '@/components/ui';
 import { AlertCircle, ArrowRight, CheckCircle2, Sparkles, Star, Users, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -21,6 +22,14 @@ export default function SignUpPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const router = useRouter();
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        const ref = searchParams.get('ref');
+        if (ref) {
+            localStorage.setItem('referralCode', ref);
+        }
+    }, [searchParams]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

@@ -89,7 +89,8 @@ export async function POST(req: Request) {
                         subscriptionId: true,
                         plan: true,
                         cancelledAt: true,
-                        subscriptionEndsAt: true
+                        subscriptionEndsAt: true,
+                        referredByCode: true
                     }
                 });
 
@@ -162,6 +163,42 @@ export async function POST(req: Request) {
                     data: updateData
                 });
                 console.log(`[Webhook] DB Update Result:`, result);
+
+                // Handle referral conversions
+                if (seller?.referredByCode && (!seller.plan || seller.plan === 'FREE')) {
+                    try {
+                        const referral = await prisma.referral.findUnique({
+                            where: { code: seller.referredByCode }
+                        });
+
+                        if (referral) {
+                            let earned = 0;
+                            if (referral.rewardType === 'commission' && referral.rewardValue) {
+                                // Extract number from string like "$15" or "15" or "15%"
+                                const valStr = referral.rewardValue.replace(/[^0-9.]/g, '');
+                                if (valStr) {
+                                    earned = parseFloat(valStr);
+                                    if (referral.rewardValue.includes('%')) {
+                                        // Assume base price of the plan selected
+                                        const planPrice = matchedPlan === 'LIFETIME' ? 499 : 20; // fallback estimations
+                                        earned = (earned / 100) * planPrice;
+                                    }
+                                }
+                            }
+
+                            await prisma.referral.update({
+                                where: { code: seller.referredByCode },
+                                data: {
+                                    conversions: { increment: 1 },
+                                    totalEarned: { increment: earned }
+                                }
+                            });
+                            console.log(`[Webhook] Referral updated for ${seller.referredByCode}, earned: $${earned}`);
+                        }
+                    } catch (err) {
+                        console.error('[Webhook] Failed to update referral conversion:', err);
+                    }
+                }
             }
         }
     } else if (type === 'subscription.cancelled' || type === 'subscription.expired') {

@@ -146,8 +146,8 @@ export default function ReferrerPortalPage() {
                     </Link>
                     <div className="flex items-center gap-3">
                         <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border ${data.isActive
-                                ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
-                                : 'bg-gray-100 text-gray-500 border-gray-200'
+                            ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                            : 'bg-gray-100 text-gray-500 border-gray-200'
                             }`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${data.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
                             {data.isActive ? 'Active' : 'Inactive'}
@@ -184,8 +184,7 @@ export default function ReferrerPortalPage() {
                             <p className="text-violet-200 text-xs font-semibold uppercase tracking-wider mb-1">Your Referral Code</p>
                             <p className="text-3xl sm:text-4xl font-bold font-mono tracking-widest">{data.code}</p>
                             <p className="text-violet-200 text-sm mt-2">
-                                {data.rewardType === 'discount' ? 'Discount' : data.rewardType === 'credit' ? 'Credit' : 'Commission'}
-                                {data.rewardValue && ` — ${data.rewardValue}`}
+                                Eligible Share: {data.rewardValue || 'N/A'}
                             </p>
                         </div>
                         <div className="flex items-center gap-3">
@@ -194,7 +193,7 @@ export default function ReferrerPortalPage() {
                                 <p className="text-[10px] text-violet-200 uppercase tracking-wider">Days to Payout</p>
                             </div>
                             <div className="bg-white/15 backdrop-blur rounded-xl px-4 py-3 text-center">
-                                <p className="text-2xl font-bold">₹{data.pendingBalance.toLocaleString()}</p>
+                                <p className="text-2xl font-bold">${data.pendingBalance.toLocaleString()}</p>
                                 <p className="text-[10px] text-violet-200 uppercase tracking-wider">Pending</p>
                             </div>
                         </div>
@@ -204,9 +203,9 @@ export default function ReferrerPortalPage() {
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                     <StatCard label="Clicks" value={data.clicks} icon={<MousePointerClick className="w-4 h-4" />} color="blue" />
-                    <StatCard label="Signups" value={data.signups} icon={<UserPlus className="w-4 h-4" />} color="amber" />
-                    <StatCard label="Conversions" value={data.conversions} icon={<TrendingUp className="w-4 h-4" />} color="emerald" />
-                    <StatCard label="Total Earned" value={`₹${data.totalEarned.toLocaleString()}`} icon={<Wallet className="w-4 h-4" />} color="violet" isText />
+                    <StatCard label="Successful Referrals" value={data.signups} icon={<UserPlus className="w-4 h-4" />} color="amber" />
+                    <StatCard label="Plans Subscribed" value={data.conversions} icon={<TrendingUp className="w-4 h-4" />} color="emerald" />
+                    <StatCard label="Total Earned" value={`$${data.totalEarned.toLocaleString()}`} icon={<Wallet className="w-4 h-4" />} color="violet" isText />
                 </div>
 
                 {/* Two-column: Earnings Summary + Payment Methods */}
@@ -222,16 +221,16 @@ export default function ReferrerPortalPage() {
                         <div className="p-5 space-y-4">
                             <div className="flex items-center justify-between">
                                 <span className="text-sm text-muted-foreground">Total Earned</span>
-                                <span className="text-sm font-bold text-foreground">₹{data.totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                <span className="text-sm font-bold text-foreground">${data.totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-sm text-muted-foreground">Total Paid Out</span>
-                                <span className="text-sm font-bold text-emerald-600">₹{data.totalPaid.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                <span className="text-sm font-bold text-emerald-600">${data.totalPaid.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                             </div>
                             <hr className="border-border" />
                             <div className="flex items-center justify-between">
                                 <span className="text-sm font-semibold text-foreground">Pending Balance</span>
-                                <span className="text-lg font-bold text-violet-600">₹{data.pendingBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                <span className="text-lg font-bold text-violet-600">${data.pendingBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                             </div>
                             <div className="bg-violet-50/60 rounded-xl p-4 border border-violet-100/60">
                                 <div className="flex items-center gap-2 mb-2">
@@ -284,13 +283,13 @@ export default function ReferrerPortalPage() {
                                         <div
                                             key={pm.id}
                                             className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all ${pm.isDefault
-                                                    ? 'bg-violet-50/50 border-violet-200/60'
-                                                    : 'bg-muted/20 border-border hover:bg-muted/40'
+                                                ? 'bg-violet-50/50 border-violet-200/60'
+                                                : 'bg-muted/20 border-border hover:bg-muted/40'
                                                 }`}
                                         >
                                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${pm.type === 'upi'
-                                                    ? 'bg-emerald-100 text-emerald-600'
-                                                    : 'bg-blue-100 text-blue-600'
+                                                ? 'bg-emerald-100 text-emerald-600'
+                                                : 'bg-blue-100 text-blue-600'
                                                 }`}>
                                                 {pm.type === 'upi' ? (
                                                     <BadgeIndianRupee className="w-5 h-5" />
@@ -374,12 +373,12 @@ export default function ReferrerPortalPage() {
                                                 {format(new Date(p.scheduledAt), 'MMM d, yyyy')}
                                             </td>
                                             <td className="px-4 py-3 font-semibold text-foreground">
-                                                ₹{p.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                ${p.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                             </td>
                                             <td className="px-4 py-3">
                                                 <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${p.method === 'upi'
-                                                        ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
-                                                        : 'bg-blue-50 text-blue-600 border border-blue-200'
+                                                    ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                                                    : 'bg-blue-50 text-blue-600 border border-blue-200'
                                                     }`}>
                                                     {p.method || '—'}
                                                 </span>
@@ -547,8 +546,8 @@ function AddPaymentMethodModal({
                             type="button"
                             onClick={() => setType('upi')}
                             className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${type === 'upi'
-                                    ? 'border-emerald-500 bg-emerald-50'
-                                    : 'border-border hover:border-muted-foreground/30'
+                                ? 'border-emerald-500 bg-emerald-50'
+                                : 'border-border hover:border-muted-foreground/30'
                                 }`}
                         >
                             <BadgeIndianRupee className={`w-6 h-6 ${type === 'upi' ? 'text-emerald-600' : 'text-muted-foreground'}`} />
@@ -558,8 +557,8 @@ function AddPaymentMethodModal({
                             type="button"
                             onClick={() => setType('paypal')}
                             className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${type === 'paypal'
-                                    ? 'border-blue-500 bg-blue-50'
-                                    : 'border-border hover:border-muted-foreground/30'
+                                ? 'border-blue-500 bg-blue-50'
+                                : 'border-border hover:border-muted-foreground/30'
                                 }`}
                         >
                             <span className={`text-lg font-bold ${type === 'paypal' ? 'text-blue-600' : 'text-muted-foreground'}`}>PP</span>

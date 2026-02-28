@@ -63,6 +63,9 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Email required' }, { status: 400 });
         }
 
+        const referralCodeRaw = formData.get('referralCode') as string;
+        const referralCode = referralCodeRaw ? referralCodeRaw.toUpperCase() : null;
+
         const newSeller = await prisma.seller.create({
             data: {
                 clerkUserId: user.id,
@@ -72,11 +75,24 @@ export async function POST(req: Request) {
                 phone,
                 taxId,
                 logoData: logoDataBuffer,
-                logo: null, // Legacy field cleared
-                passwordHash: '', // No password for clerk-auth users
+                logo: null,
+                passwordHash: '',
                 emailVerified: true,
+                referredByCode: referralCode,
             } as any,
         });
+
+        if (referralCode) {
+            try {
+                await prisma.referral.update({
+                    where: { code: referralCode },
+                    data: { signups: { increment: 1 } }
+                });
+            } catch (error) {
+                console.error('Failed to increment referral signups:', error);
+            }
+        }
+
         return NextResponse.json({ success: true, data: newSeller });
     } catch (error) {
         console.error('Onboarding error:', error);

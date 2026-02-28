@@ -54,6 +54,11 @@ export default function OnboardingPage() {
                 data.append('logo', logoFile);
             }
 
+            const referralCode = localStorage.getItem('referralCode');
+            if (referralCode) {
+                data.append('referralCode', referralCode);
+            }
+
             const response = await fetch('/api/user/onboarding', {
                 method: 'POST',
                 body: data,

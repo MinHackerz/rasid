@@ -45,6 +45,7 @@ model Seller {
   members            TeamMember[]
   uploadedDocuments  UploadedDocument[]
   inventoryItems     InventoryItem[]
+  referredByCode     String? // Track referrers who referred this seller
 
   @@index([clerkUserId])
   @@index([email])

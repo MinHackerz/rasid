@@ -13,9 +13,11 @@ interface DashboardShellProps {
     role?: 'OWNER' | 'ADMIN' | 'VIEWER';
     plan: PlanType;
     hasSession: boolean;
+    isAdmin?: boolean;
+    referrerToken?: string | null;
 }
 
-function DashboardShellInner({ children, businessName, businesses, role, plan, hasSession }: DashboardShellProps) {
+function DashboardShellInner({ children, businessName, businesses, role, plan, hasSession, isAdmin, referrerToken }: DashboardShellProps) {
     const { collapsed } = useSidebar();
 
     return (
@@ -29,6 +31,8 @@ function DashboardShellInner({ children, businessName, businesses, role, plan, h
                     businesses={businesses}
                     role={role}
                     plan={plan}
+                    isAdmin={isAdmin}
+                    referrerToken={referrerToken}
                 />
                 <div className="flex-1 p-6 lg:p-10 max-w-[1600px] mx-auto w-full animate-enter">
                     {hasSession ? children : <NoBusinessAlert />}
