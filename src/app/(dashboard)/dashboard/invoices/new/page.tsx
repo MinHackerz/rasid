@@ -142,8 +142,8 @@ export default function NewInvoicePage() {
                     if (data.data) {
                         setProfileDetails(data.data);
                     }
-                    if (data.data?.invoiceDefaults?.currency) {
-                        const defaultCurrency = data.data.invoiceDefaults.currency;
+                    if (data.data) {
+                        const defaultCurrency = data.data.invoiceDefaults?.currency || data.data.detectedCurrency || 'INR';
                         setFormData(prev => ({ ...prev, currency: defaultCurrency }));
                     }
                     if (data.data?.invoiceDefaults?.taxRate) {

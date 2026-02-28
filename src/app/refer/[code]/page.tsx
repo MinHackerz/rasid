@@ -34,13 +34,6 @@ export default async function ReferralPage({ params }: { params: { code: string 
     // Track the click server-side
     await trackReferralClick(code);
 
-    const rewardLabel =
-        referral.rewardType === 'discount'
-            ? 'Discount'
-            : referral.rewardType === 'credit'
-                ? 'Account Credit'
-                : 'Commission';
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-indigo-50">
             {/* Decorative blurs */}
@@ -86,19 +79,6 @@ export default async function ReferralPage({ params }: { params: { code: string 
 
                     {/* Content */}
                     <div className="px-6 py-8 space-y-6">
-                        {/* Reward badge */}
-                        {referral.rewardValue && (
-                            <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200/60 rounded-2xl px-5 py-4 flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-                                    <Sparkles className="w-6 h-6 text-amber-600" />
-                                </div>
-                                <div>
-                                    <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider">{rewardLabel}</p>
-                                    <p className="text-2xl font-bold text-amber-900 font-display">{referral.rewardValue}</p>
-                                </div>
-                            </div>
-                        )}
-
                         {referral.description && (
                             <p className="text-sm text-muted-foreground leading-relaxed">{referral.description}</p>
                         )}

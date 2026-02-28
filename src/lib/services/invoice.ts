@@ -19,6 +19,8 @@ export async function createInvoice(
     sellerId: string,
     input: CreateInvoiceInput
 ): Promise<InvoiceWithRelations> {
+    let zeroStockItems: Array<{ sellerId: string, itemName: string }> = [];
+
     // Get or create buyer
     let buyerId = input.buyerId;
     let buyerState = input.buyerState; // Logic to determine state for tax calc
@@ -204,11 +206,12 @@ export async function createInvoice(
             .filter(item => item.inventoryItemId)
             .map(item => ({
                 id: item.inventoryItemId!,
+                description: item.description,
                 quantity: item.quantity
             }));
 
         for (const deduction of inventoryDeductions) {
-            await tx.inventoryItem.update({
+            const updated = await tx.inventoryItem.update({
                 where: { id: deduction.id },
                 data: {
                     quantity: {
@@ -216,6 +219,9 @@ export async function createInvoice(
                     }
                 }
             });
+            if (updated.quantity <= 0) {
+                zeroStockItems.push({ sellerId, itemName: deduction.description });
+            }
         }
 
         // Fetch buyer data for signature
@@ -329,16 +335,27 @@ export async function createInvoice(
         input.sourceDocumentId ? 'OCR' : 'MANUAL'
     );
 
-    // Generate PDF asynchronously
-    setImmediate(() => {
-        generateInvoicePDF(invoice.id).catch((err) => {
-            // Silently handle PDF generation errors in background
-            if (process.env.NODE_ENV === 'development') {
-                console.error('[PDF Generation Error]', err);
-            }
+    // Send stock warnings if any zero-stock items exist
+    if (zeroStockItems.length > 0) {
+        setImmediate(async () => {
+            try {
+                const { sendStockWarning } = await import('@/lib/delivery');
+                for (const item of zeroStockItems) {
+                    await sendStockWarning(item.sellerId, item.itemName);
+                }
+            } catch (e) { console.error('Silent delivery catch', e); }
         });
+    }
 
-        // Auto-send logic
+    // Await PDF generation securely
+    try {
+        await generateInvoicePDF(invoice.id);
+    } catch (err) {
+        console.error('[PDF Generation Error]', err);
+    }
+
+    // Auto-send logic in fully decoupled context
+    setImmediate(() => {
         (async () => {
             try {
                 const seller = await prisma.seller.findUnique({
@@ -348,35 +365,13 @@ export async function createInvoice(
 
                 const defaults = seller?.invoiceDefaults as any;
                 if (defaults?.autoSend) {
-                    // We don't specify preference, deliverInvoice determines best method (Email > WhatsApp)
-                    // Or ideally we check what details exist.
-                    // deliverInvoice handles this logic.
                     await deliverInvoice(
                         invoice.id,
                         invoice.buyer?.email || undefined,
                         invoice.buyer?.phone || undefined
                     );
-
-                    // Update status to SENT if auto-send was triggered (deliverInvoice handles logging but not status update directly on success? 
-                    // Wait, sendInvoice updates status. deliverInvoice does not update status?
-                    // Let's check sendInvoice logic. 
-                    // sendInvoice updates status. deliverInvoice does not.
-                    // We should probably check result of deliverInvoice and update status.
-                    // Actually, let's call sendInvoice instead if we want status update?
-                    // But sendInvoice refetches invoice.
-                    // Let's just update status manually here if successful to match behavior.
-
-                    // Re-checking deliverInvoice return type
-                    /* 
-                    return { method: 'EMAIL', success: true, messageId: ... }
-                    */
-
-                    // Actually, safer to just rely on deliverInvoice return and update status
-                    // But since this is running in background (setImmediate), we shouldn't block return.
-                    // The user will see status update on refresh or polling.
                 }
             } catch (err) {
-                // Log auto-send errors in development only
                 if (process.env.NODE_ENV === 'development') {
                     console.error('[Auto-Send] Failed:', err);
                 }

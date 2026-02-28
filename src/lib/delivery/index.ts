@@ -10,6 +10,64 @@ import { getInvoicePDFBuffer } from '@/lib/pdf';
 import type { DeliveryMethod, DeliveryStatus } from '@/types';
 
 // ============================================
+// Stock Warning Delivery
+// ============================================
+export async function sendStockWarning(sellerId: string, itemName: string): Promise<void> {
+    const seller = await prisma.seller.findUnique({
+        where: { id: sellerId },
+        select: { email: true, phone: true, businessName: true, integrations: true }
+    });
+
+    if (!seller) return;
+
+    const emailConfig = (seller.integrations as any)?.email;
+    const waConfig = (seller.integrations as any)?.whatsapp;
+
+    if (emailConfig?.smtpHost && emailConfig?.smtpUser && seller.email) {
+        try {
+            const transport = nodemailer.createTransport({
+                host: emailConfig.smtpHost,
+                port: parseInt(emailConfig.smtpPort || '587'),
+                auth: { user: emailConfig.smtpUser, pass: emailConfig.smtpPass },
+            });
+            const fromAddress = emailConfig.fromEmail || emailConfig.smtpUser;
+            await transport.sendMail({
+                from: `"${seller.businessName}" <${fromAddress}>`,
+                to: seller.email,
+                subject: `⚠️ Out of Stock Alert: ${itemName}`,
+                html: `<div style="font-family: sans-serif; max-width: 600px; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+                    <h2 style="color: #e11d48; margin-top: 0;">Stock Alert for ${seller.businessName}</h2>
+                    <p style="font-size: 16px; color: #333;">Action required: Your inventory item <strong>${itemName}</strong> is now completely out of stock (Quantity: 0).</p>
+                    <p style="font-size: 14px; color: #666; margin-top: 24px;">Please restock this item in your inventory dashboard to continue sales seamlessly.</p>
+                </div>`
+            });
+        } catch (e) {
+            console.error('Failed to send stock warning email:', e);
+        }
+    } else if (waConfig?.phoneNumberId && waConfig?.accessToken && seller.phone) {
+        try {
+            const payload = {
+                messaging_product: 'whatsapp',
+                recipient_type: 'individual',
+                to: seller.phone.replace(/\D/g, ''),
+                type: 'text',
+                text: { body: `⚠️ *Stock Alert: ${seller.businessName}*\n\nYour inventory item *${itemName}* is completely out of stock (Quantity: 0). Please restock it from your dashboard.` }
+            };
+            await fetch(`https://graph.facebook.com/v17.0/${waConfig.phoneNumberId}/messages`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${waConfig.accessToken}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+        } catch (e) {
+            console.error('Failed to send stock warning WA:', e);
+        }
+    }
+}
+
+// ============================================
 // Email Transport Configuration
 // ============================================
 // ============================================

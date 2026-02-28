@@ -115,7 +115,10 @@ export default function SettingsPage() {
                             whatsapp: { ...defaultIntegrations.whatsapp, ...data.data.integrations?.whatsapp },
                             email: { ...defaultIntegrations.email, ...data.data.integrations?.email }
                         },
-                        invoiceDefaults: data.data.invoiceDefaults || defaultInvoiceDefaults,
+                        invoiceDefaults: Object.keys(data.data.invoiceDefaults || {}).length > 0 ? data.data.invoiceDefaults : {
+                            ...defaultInvoiceDefaults,
+                            currency: data.data.detectedCurrency || 'INR'
+                        }
                     };
                     setProfile(mergedProfile);
                     setInitialProfile(mergedProfile);

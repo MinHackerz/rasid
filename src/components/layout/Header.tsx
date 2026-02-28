@@ -91,9 +91,9 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, busi
                         </Link>
 
                         {referrerToken && (
-                            <Link href={`/referrer/${referrerToken}`}>
-                                <Button size="sm" variant="outline" className="hidden md:flex gap-2 shadow-sm font-semibold rounded-lg border-violet-200 text-violet-700 hover:bg-violet-50 hover:text-violet-800">
-                                    <span className="hidden sm:inline">Referral Dashboard</span>
+                            <Link href={`/referrer/${referrerToken}`} className="hidden md:block">
+                                <Button size="sm" variant="outline" className="flex gap-2 shadow-sm font-semibold rounded-lg border-violet-200 text-violet-700 hover:bg-violet-50 hover:text-violet-800">
+                                    <span>Referral Dashboard</span>
                                 </Button>
                             </Link>
                         )}
