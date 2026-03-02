@@ -397,6 +397,7 @@ model ReferralPayout {
   method      String?                        // upi | paypal
   reference   String?                        // transaction reference
   note        String?
+  receiptUrl  String?                        // payment confirmation image
   scheduledAt DateTime
   paidAt      DateTime?
   createdAt   DateTime @default(now())

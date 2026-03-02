@@ -11,14 +11,13 @@ import {
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import {
     MousePointerClick,
     UserPlus,
     TrendingUp,
     Wallet,
     CalendarClock,
-    Gift,
     Copy,
     Check,
     Plus,
@@ -45,6 +44,7 @@ export default function ReferrerPortalPage() {
     const [error, setError] = useState(false);
     const [copiedLink, setCopiedLink] = useState(false);
     const [showAddMethod, setShowAddMethod] = useState(false);
+    const [selectedReceipt, setSelectedReceipt] = useState<string | null>(null);
 
     const loadData = useCallback(async () => {
         try {
@@ -374,6 +374,7 @@ export default function ReferrerPortalPage() {
                                         <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Method</th>
                                         <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Status</th>
                                         <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider hidden sm:table-cell">Reference</th>
+                                        <th className="text-center px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Receipt</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border">
@@ -401,6 +402,15 @@ export default function ReferrerPortalPage() {
                                                     {p.reference || '—'}
                                                 </span>
                                             </td>
+                                            <td className="px-4 py-3 text-center">
+                                                {p.receiptUrl ? (
+                                                    <button onClick={() => setSelectedReceipt(p.receiptUrl)} className="inline-flex p-1.5 bg-violet-50 text-violet-600 hover:bg-violet-100 rounded-lg transition-colors" title="View Receipt">
+                                                        <ExternalLink className="w-4 h-4" />
+                                                    </button>
+                                                ) : (
+                                                    <span className="text-xs text-muted-foreground/50">—</span>
+                                                )}
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -425,6 +435,30 @@ export default function ReferrerPortalPage() {
                         loadData();
                     }}
                 />
+            )}
+
+            {/* Receipt Modal */}
+            {selectedReceipt && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedReceipt(null)} />
+                    <div className="relative bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 border border-border">
+                        <div className="flex items-center justify-between p-4 border-b border-border bg-muted/20">
+                            <h3 className="font-bold text-foreground">Payment Receipt</h3>
+                            <button onClick={() => setSelectedReceipt(null)} className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="p-4 flex items-center justify-center bg-slate-50 min-h-[300px]">
+                            {selectedReceipt.startsWith('data:image') || selectedReceipt.startsWith('http') ? (
+                                <Image src={selectedReceipt} alt="Receipt" width={800} height={600} className="w-auto h-auto max-w-full max-h-[70vh] rounded-lg shadow-sm border border-border" />
+                            ) : (
+                                <a href={selectedReceipt} target="_blank" rel="noopener noreferrer" className="text-violet-600 hover:underline">
+                                    Download Document
+                                </a>
+                            )}
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

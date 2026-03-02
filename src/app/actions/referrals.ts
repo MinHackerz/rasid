@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use server';
 
 import { prisma } from '@/lib/prisma';
@@ -79,8 +80,8 @@ export async function getAdminReferrals(
     }
 
     const [total, referrals] = await Promise.all([
-        (prisma as any).referral.count({ where }),
-        (prisma as any).referral.findMany({
+        prisma.referral.count({ where }),
+        prisma.referral.findMany({
             where,
             orderBy: { createdAt: 'desc' },
             skip: (page - 1) * pageSize,
@@ -122,7 +123,7 @@ export async function getAdminReferrals(
 export async function createReferral(input: ReferralInput): Promise<{ success: boolean; error?: string }> {
     await requireAdminUser();
 
-    const existing = await (prisma as any).referral.findUnique({ where: { code: input.code.toUpperCase() } });
+    const existing = await prisma.referral.findUnique({ where: { code: input.code.toUpperCase() } });
     if (existing) {
         return { success: false, error: 'A referral with this code already exists.' };
     }
@@ -130,7 +131,7 @@ export async function createReferral(input: ReferralInput): Promise<{ success: b
     // Generate a unique access token for referrer portal
     const accessToken = crypto.randomBytes(32).toString('hex');
 
-    await (prisma as any).referral.create({
+    await prisma.referral.create({
         data: {
             code: input.code.toUpperCase().trim(),
             referrerName: input.referrerName.trim(),
@@ -168,7 +169,7 @@ export async function updateReferral(
     if (input.maxUses !== undefined) data.maxUses = input.maxUses || null;
     if (input.expiresAt !== undefined) data.expiresAt = input.expiresAt ? new Date(input.expiresAt) : null;
 
-    await (prisma as any).referral.update({ where: { id }, data });
+    await prisma.referral.update({ where: { id }, data });
 
     revalidatePath('/admin/referrals');
     return { success: true };
@@ -181,10 +182,10 @@ export async function updateReferral(
 export async function toggleReferralStatus(id: string): Promise<{ success: boolean; isActive: boolean }> {
     await requireAdminUser();
 
-    const referral = await (prisma as any).referral.findUnique({ where: { id } });
+    const referral = await prisma.referral.findUnique({ where: { id } });
     if (!referral) throw new Error('Referral not found');
 
-    const updated = await (prisma as any).referral.update({
+    const updated = await prisma.referral.update({
         where: { id },
         data: { isActive: !referral.isActive },
     });
@@ -200,7 +201,7 @@ export async function toggleReferralStatus(id: string): Promise<{ success: boole
 export async function deleteReferral(id: string): Promise<{ success: boolean }> {
     await requireAdminUser();
 
-    await (prisma as any).referral.delete({ where: { id } });
+    await prisma.referral.delete({ where: { id } });
 
     revalidatePath('/admin/referrals');
     return { success: true };
@@ -222,9 +223,9 @@ export async function getReferralStats(): Promise<ReferralStats> {
     await requireAdminUser();
 
     const [totalReferrals, activeReferrals, aggregate] = await Promise.all([
-        (prisma as any).referral.count(),
-        (prisma as any).referral.count({ where: { isActive: true } }),
-        (prisma as any).referral.aggregate({
+        prisma.referral.count(),
+        prisma.referral.count({ where: { isActive: true } }),
+        prisma.referral.aggregate({
             _sum: { clicks: true, signups: true, conversions: true },
         }),
     ]);
@@ -249,7 +250,7 @@ export async function getPublicReferral(code: string): Promise<{
     rewardValue: string | null;
     description: string | null;
 } | null> {
-    const referral = await (prisma as any).referral.findUnique({
+    const referral = await prisma.referral.findUnique({
         where: { code: code.toUpperCase() },
     });
 
@@ -272,7 +273,7 @@ export async function getPublicReferral(code: string): Promise<{
 
 export async function trackReferralClick(code: string): Promise<void> {
     try {
-        await (prisma as any).referral.update({
+        await prisma.referral.update({
             where: { code: code.toUpperCase() },
             data: { clicks: { increment: 1 } },
         });
@@ -316,6 +317,7 @@ export interface ReferrerPortalData {
         method: string | null;
         reference: string | null;
         note: string | null;
+        receiptUrl: string | null;
         scheduledAt: string;
         paidAt: string | null;
     }[];
@@ -324,7 +326,7 @@ export interface ReferrerPortalData {
 export async function getReferrerPortalData(token: string): Promise<ReferrerPortalData | null> {
     if (!token) return null;
 
-    const referral = await (prisma as any).referral.findUnique({
+    const referral = await prisma.referral.findUnique({
         where: { accessToken: token },
         include: {
             paymentMethods: { orderBy: { createdAt: 'desc' } },
@@ -375,6 +377,7 @@ export async function getReferrerPortalData(token: string): Promise<ReferrerPort
             method: p.method,
             reference: p.reference,
             note: p.note,
+            receiptUrl: p.receiptUrl,
             scheduledAt: p.scheduledAt.toISOString(),
             paidAt: p.paidAt ? p.paidAt.toISOString() : null,
         })),
@@ -389,7 +392,7 @@ export async function addReferralPaymentMethod(
     token: string,
     input: { type: 'upi' | 'paypal'; label?: string; upiId?: string; paypalEmail?: string }
 ): Promise<{ success: boolean; error?: string }> {
-    const referral = await (prisma as any).referral.findUnique({ where: { accessToken: token } });
+    const referral = await prisma.referral.findUnique({ where: { accessToken: token } });
     if (!referral) return { success: false, error: 'Invalid token' };
 
     if (input.type === 'upi' && !input.upiId) {
@@ -400,11 +403,11 @@ export async function addReferralPaymentMethod(
     }
 
     // Check if first payment method => make it default
-    const existingCount = await (prisma as any).referralPaymentMethod.count({
+    const existingCount = await prisma.referralPaymentMethod.count({
         where: { referralId: referral.id },
     });
 
-    await (prisma as any).referralPaymentMethod.create({
+    await prisma.referralPaymentMethod.create({
         data: {
             referralId: referral.id,
             type: input.type,
@@ -426,23 +429,23 @@ export async function removeReferralPaymentMethod(
     token: string,
     methodId: string
 ): Promise<{ success: boolean; error?: string }> {
-    const referral = await (prisma as any).referral.findUnique({ where: { accessToken: token } });
+    const referral = await prisma.referral.findUnique({ where: { accessToken: token } });
     if (!referral) return { success: false, error: 'Invalid token' };
 
-    const method = await (prisma as any).referralPaymentMethod.findFirst({
+    const method = await prisma.referralPaymentMethod.findFirst({
         where: { id: methodId, referralId: referral.id },
     });
     if (!method) return { success: false, error: 'Payment method not found' };
 
-    await (prisma as any).referralPaymentMethod.delete({ where: { id: methodId } });
+    await prisma.referralPaymentMethod.delete({ where: { id: methodId } });
 
     // If it was the default, make the next one default
     if (method.isDefault) {
-        const next = await (prisma as any).referralPaymentMethod.findFirst({
+        const next = await prisma.referralPaymentMethod.findFirst({
             where: { referralId: referral.id },
         });
         if (next) {
-            await (prisma as any).referralPaymentMethod.update({
+            await prisma.referralPaymentMethod.update({
                 where: { id: next.id },
                 data: { isDefault: true },
             });
@@ -460,17 +463,17 @@ export async function setDefaultReferralPaymentMethod(
     token: string,
     methodId: string
 ): Promise<{ success: boolean; error?: string }> {
-    const referral = await (prisma as any).referral.findUnique({ where: { accessToken: token } });
+    const referral = await prisma.referral.findUnique({ where: { accessToken: token } });
     if (!referral) return { success: false, error: 'Invalid token' };
 
     // Unset all defaults
-    await (prisma as any).referralPaymentMethod.updateMany({
+    await prisma.referralPaymentMethod.updateMany({
         where: { referralId: referral.id },
         data: { isDefault: false },
     });
 
     // Set new default
-    await (prisma as any).referralPaymentMethod.update({
+    await prisma.referralPaymentMethod.update({
         where: { id: methodId },
         data: { isDefault: true },
     });
@@ -499,7 +502,7 @@ export async function submitReferralApplication(
     }
 
     // Check if already applied
-    const existing = await (prisma as any).referralApplication.findUnique({
+    const existing = await prisma.referralApplication.findUnique({
         where: { userId },
     });
 
@@ -511,7 +514,7 @@ export async function submitReferralApplication(
             return { success: false, error: 'You already have a pending application.' };
         }
         // If rejected, allow reapplication by updating
-        await (prisma as any).referralApplication.update({
+        await prisma.referralApplication.update({
             where: { userId },
             data: {
                 reason: input.reason?.trim() || null,
@@ -526,7 +529,7 @@ export async function submitReferralApplication(
         return { success: true };
     }
 
-    await (prisma as any).referralApplication.create({
+    await prisma.referralApplication.create({
         data: {
             userId,
             userName: userName.trim(),
@@ -555,7 +558,7 @@ export interface UserApplicationStatus {
 export async function getUserApplicationStatus(userId: string): Promise<UserApplicationStatus> {
     if (!userId) return { status: 'none' };
 
-    const app = await (prisma as any).referralApplication.findUnique({
+    const app = await prisma.referralApplication.findUnique({
         where: { userId },
     });
 
@@ -565,7 +568,7 @@ export async function getUserApplicationStatus(userId: string): Promise<UserAppl
     let portalToken: string | null = null;
 
     if (app.status === 'approved' && app.referralId) {
-        const referral = await (prisma as any).referral.findUnique({
+        const referral = await prisma.referral.findUnique({
             where: { id: app.referralId },
             select: { code: true, accessToken: true },
         });
@@ -574,7 +577,7 @@ export async function getUserApplicationStatus(userId: string): Promise<UserAppl
     }
 
     return {
-        status: app.status,
+        status: app.status as any,
         adminNote: app.adminNote,
         referralCode,
         portalToken,
@@ -616,8 +619,8 @@ export async function getAdminReferralApplications(
     }
 
     const [total, applications] = await Promise.all([
-        (prisma as any).referralApplication.count({ where }),
-        (prisma as any).referralApplication.findMany({
+        prisma.referralApplication.count({ where }),
+        prisma.referralApplication.findMany({
             where,
             orderBy: { createdAt: 'desc' },
         }),
@@ -652,7 +655,7 @@ export async function approveReferralApplication(
 ): Promise<{ success: boolean; error?: string }> {
     await requireAdminUser();
 
-    const app = await (prisma as any).referralApplication.findUnique({
+    const app = await prisma.referralApplication.findUnique({
         where: { id: applicationId },
     });
     if (!app) return { success: false, error: 'Application not found.' };
@@ -664,7 +667,7 @@ export async function approveReferralApplication(
         : app.userName.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 8) + Math.random().toString(36).substring(2, 6).toUpperCase();
 
     // Check for existing code
-    const existingRef = await (prisma as any).referral.findUnique({ where: { code: baseCode } });
+    const existingRef = await prisma.referral.findUnique({ where: { code: baseCode } });
     if (existingRef) {
         return { success: false, error: `Referral code "${baseCode}" already exists. Provide a custom code.` };
     }
@@ -675,7 +678,7 @@ export async function approveReferralApplication(
     const rewardValue = PLAN_REFERRAL_REWARDS['PRO'][app.preferredReward as keyof typeof PLAN_REFERRAL_REWARDS['PRO']] || '10%';
 
     // Create the referral
-    const referral = await (prisma as any).referral.create({
+    const referral = await prisma.referral.create({
         data: {
             code: baseCode,
             referrerName: app.userName,
@@ -687,7 +690,7 @@ export async function approveReferralApplication(
     });
 
     // Update application
-    await (prisma as any).referralApplication.update({
+    await prisma.referralApplication.update({
         where: { id: applicationId },
         data: {
             status: 'approved',
@@ -710,7 +713,7 @@ export async function rejectReferralApplication(
 ): Promise<{ success: boolean; error?: string }> {
     await requireAdminUser();
 
-    await (prisma as any).referralApplication.update({
+    await prisma.referralApplication.update({
         where: { id: applicationId },
         data: {
             status: 'rejected',
@@ -720,6 +723,90 @@ export async function rejectReferralApplication(
 
     revalidatePath('/admin/referrals');
     return { success: true };
+}
+
+// ────────────────────────────────────────────────────────
+// ADMIN: Get Referrers for Payout Info
+// ────────────────────────────────────────────────────────
+export interface PayoutReferrerRow {
+    id: string;
+    code: string;
+    referrerName: string;
+    referrerEmail: string;
+    totalEarned: number;
+    totalPaid: number;
+    pendingBalance: number;
+    paymentMethods: any[];
+    payouts: any[];
+}
+
+export async function getAdminPayouts(): Promise<PayoutReferrerRow[]> {
+    await requireAdminUser();
+
+    const referrals = await prisma.referral.findMany({
+        orderBy: { createdAt: 'desc' },
+        include: {
+            paymentMethods: true,
+            payouts: { orderBy: { createdAt: 'desc' } }
+        }
+    });
+
+    return referrals.map((r: any) => ({
+        id: r.id,
+        code: r.code,
+        referrerName: r.referrerName,
+        referrerEmail: r.referrerEmail,
+        totalEarned: Number(r.totalEarned),
+        totalPaid: Number(r.totalPaid),
+        pendingBalance: Number(r.totalEarned) - Number(r.totalPaid),
+        paymentMethods: r.paymentMethods,
+        payouts: r.payouts.map((p: any) => ({
+            ...p,
+            amount: Number(p.amount)
+        }))
+    }));
+}
+
+// ────────────────────────────────────────────────────────
+// ADMIN: Record Referral Payout
+// ────────────────────────────────────────────────────────
+export async function recordReferralPayout(
+    referralId: string,
+    amount: number,
+    method: string,
+    reference: string,
+    note: string,
+    receiptUrl: string | null
+): Promise<{ success: boolean; error?: string }> {
+    await requireAdminUser();
+
+    try {
+        await prisma.$transaction(async (tx: any) => {
+            await tx.referralPayout.create({
+                data: {
+                    referralId,
+                    amount,
+                    status: 'completed',
+                    method,
+                    reference: reference || null,
+                    note: note || null,
+                    receiptUrl: receiptUrl || null,
+                    scheduledAt: new Date(),
+                    paidAt: new Date(),
+                }
+            });
+
+            await tx.referral.update({
+                where: { id: referralId },
+                data: { totalPaid: { increment: amount } }
+            });
+        });
+
+        revalidatePath('/admin/referrals');
+        return { success: true };
+    } catch (err: any) {
+        return { success: false, error: err.message || 'Failed to record payout' };
+    }
 }
 
 // ────────────────────────────────────────────────────────
@@ -736,7 +823,7 @@ export async function syncReferralToClerk(code: string): Promise<{ success: bool
     }
 
     try {
-        const referral = await (prisma as any).referral.findUnique({
+        const referral = await prisma.referral.findUnique({
             where: { code: code.toUpperCase() }
         });
 
@@ -751,13 +838,13 @@ export async function syncReferralToClerk(code: string): Promise<{ success: bool
         });
 
         // 2. Increment signup count
-        await (prisma as any).referral.update({
+        await prisma.referral.update({
             where: { id: referral.id },
             data: { signups: { increment: 1 } }
         });
 
         // 3. Update Seller if already created without the code
-        await (prisma as any).seller.updateMany({
+        await prisma.seller.updateMany({
             where: { clerkUserId: user.id },
             data: { referredByCode: code.toUpperCase() }
         });

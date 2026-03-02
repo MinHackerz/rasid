@@ -10,11 +10,15 @@ import {
     getAdminReferralApplications,
     approveReferralApplication,
     rejectReferralApplication,
+    getAdminPayouts,
+    recordReferralPayout,
     type ReferralRow,
     type ReferralStats,
     type ReferralInput,
     type ReferralApplicationRow,
+    type PayoutReferrerRow,
 } from '@/app/actions/referrals';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 import { format } from 'date-fns';
 import {
     Link2,
@@ -29,7 +33,6 @@ import {
     Copy,
     Check,
     X,
-    Users,
     Gift,
     ExternalLink,
     UserCog,
@@ -40,7 +43,7 @@ import {
     MessageSquare,
 } from 'lucide-react';
 
-type TabType = 'referrals' | 'applications';
+type TabType = 'referrals' | 'applications' | 'payouts';
 
 export default function AdminReferralsPage() {
     const [activeTab, setActiveTab] = useState<TabType>('referrals');
@@ -54,13 +57,13 @@ export default function AdminReferralsPage() {
                         Referral Program
                     </h1>
                     <p className="text-sm text-muted-foreground mt-1">
-                        Manage referral codes, applications, and track performance.
+                        Manage referral codes, applications, track performance, and process payouts.
                     </p>
                 </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl w-fit border border-border/60">
+            <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl w-fit border border-border/60 flex-wrap">
                 <button
                     onClick={() => setActiveTab('referrals')}
                     className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all ${activeTab === 'referrals'
@@ -81,9 +84,19 @@ export default function AdminReferralsPage() {
                     <FileText className="w-4 h-4" />
                     Applications
                 </button>
+                <button
+                    onClick={() => setActiveTab('payouts')}
+                    className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all ${activeTab === 'payouts'
+                        ? 'bg-white text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                >
+                    <Gift className="w-4 h-4" />
+                    Payouts
+                </button>
             </div>
 
-            {activeTab === 'referrals' ? <ReferralsTab /> : <ApplicationsTab />}
+            {activeTab === 'referrals' ? <ReferralsTab /> : activeTab === 'applications' ? <ApplicationsTab /> : <PayoutsTab />}
         </div>
     );
 }
@@ -732,6 +745,236 @@ function CreateReferralModal({
                         <button type="button" onClick={onClose} className="px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground rounded-xl border border-border hover:bg-muted transition-all">Cancel</button>
                         <button type="submit" disabled={saving} className="px-6 py-2.5 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-xl shadow-md shadow-violet-500/15 disabled:opacity-60 disabled:cursor-not-allowed transition-all">
                             {saving ? 'Creating...' : 'Create Referral'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAYOUTS TAB
+// ═══════════════════════════════════════════════════════════
+
+function PayoutsTab() {
+    const [referrers, setReferrers] = useState<PayoutReferrerRow[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
+    const [actionModal, setActionModal] = useState<PayoutReferrerRow | null>(null);
+
+    const loadData = useCallback(async () => {
+        setLoading(true);
+        try {
+            const data = await getAdminPayouts();
+            setReferrers(data);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
+
+    const filtered = referrers.filter(r =>
+        r.referrerName.toLowerCase().includes(search.toLowerCase()) ||
+        r.referrerEmail.toLowerCase().includes(search.toLowerCase()) ||
+        r.code.toLowerCase().includes(search.toLowerCase())
+    );
+
+    return (
+        <>
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <div className="relative flex-1 group">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-violet-500 transition-colors" />
+                    <input
+                        type="text"
+                        placeholder="Search by name, email or code..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-border rounded-xl placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50 transition-all"
+                    />
+                </div>
+            </div>
+
+            {/* Table */}
+            <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-xs">
+                {loading ? (
+                    <div className="p-12 text-center text-muted-foreground animate-pulse">Loading referrers...</div>
+                ) : filtered.length === 0 ? (
+                    <div className="p-12 text-center">
+                        <Gift className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                        <p className="text-muted-foreground">No referrers found.</p>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="border-b border-border bg-muted/30">
+                                    <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Referrer</th>
+                                    <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Details</th>
+                                    <th className="text-right px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Total Earned</th>
+                                    <th className="text-right px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Pending</th>
+                                    <th className="text-right px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border">
+                                {filtered.map((r) => {
+                                    const defaultId = r.paymentMethods.find(m => m.isDefault);
+                                    const paymentMethodDetails = defaultId ? (
+                                        <div className="text-xs">
+                                            <span className="font-semibold text-emerald-600">{defaultId.type.toUpperCase()}:</span> {defaultId.upiId || defaultId.paypalEmail}
+                                        </div>
+                                    ) : r.paymentMethods.length > 0 ? (
+                                        <div className="text-xs">
+                                            <span className="font-semibold text-gray-600">{r.paymentMethods[0].type.toUpperCase()}:</span> {r.paymentMethods[0].upiId || r.paymentMethods[0].paypalEmail}
+                                        </div>
+                                    ) : (
+                                        <span className="text-xs text-red-500">None Set</span>
+                                    );
+
+                                    return (
+                                        <tr key={r.id} className="hover:bg-muted/20 transition-colors">
+                                            <td className="px-4 py-3">
+                                                <p className="font-medium text-foreground">{r.referrerName}</p>
+                                                <p className="text-[11px] text-muted-foreground">{r.referrerEmail}</p>
+                                                <span className="font-mono font-bold text-violet-600 bg-violet-50 px-1 py-0.5 rounded text-[10px] mt-1 inline-block">{r.code}</span>
+                                            </td>
+                                            <td className="px-4 py-3">{paymentMethodDetails}</td>
+                                            <td className="px-4 py-3 text-right font-medium">${r.totalEarned.toFixed(2)}</td>
+                                            <td className="px-4 py-3 text-right">
+                                                <span className={`font-semibold ${r.pendingBalance > 0 ? 'text-rose-600' : 'text-gray-500'}`}>
+                                                    ${r.pendingBalance.toFixed(2)}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3 text-right">
+                                                <button
+                                                    onClick={() => setActionModal(r)}
+                                                    className="px-3 py-1.5 bg-violet-50 hover:bg-violet-100 text-violet-700 text-xs font-semibold rounded-lg transition-colors"
+                                                >
+                                                    Process Payout
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+
+            {actionModal && (
+                <RecordPayoutModal
+                    referrer={actionModal}
+                    onClose={() => setActionModal(null)}
+                    onDone={() => { setActionModal(null); loadData(); }}
+                />
+            )}
+        </>
+    );
+}
+
+function RecordPayoutModal({
+    referrer,
+    onClose,
+    onDone,
+}: {
+    referrer: PayoutReferrerRow;
+    onClose: () => void;
+    onDone: () => void;
+}) {
+    const defaultMethod = referrer.paymentMethods.find(m => m.isDefault) || referrer.paymentMethods[0];
+    const [amount, setAmount] = useState(referrer.pendingBalance > 0 ? referrer.pendingBalance.toString() : '0');
+    const [method, setMethod] = useState(defaultMethod?.type || 'upi');
+    const [reference, setReference] = useState('');
+    const [note, setNote] = useState('');
+    const [receiptUrl, setReceiptUrl] = useState('');
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const amt = parseFloat(amount);
+        if (isNaN(amt) || amt <= 0) {
+            setError('Please enter a valid amount greater than 0.');
+            return;
+        }
+        setSaving(true);
+        setError('');
+
+        const res = await recordReferralPayout(referrer.id, amt, method, reference, note, receiptUrl);
+        if (res.success) {
+            onDone();
+        } else {
+            setError(res.error || 'Failed to record payout.');
+        }
+        setSaving(false);
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+            <div className="relative bg-white rounded-2xl border border-border shadow-2xl w-full max-w-md p-6 space-y-5 animate-in fade-in zoom-in-95 duration-200" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-lg font-bold text-foreground font-display">Record Payout</h2>
+                        <p className="text-xs text-muted-foreground mt-0.5">Mark a payment to {referrer.referrerName}</p>
+                    </div>
+                    <button onClick={onClose} className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+
+                <div className="bg-muted/40 rounded-xl p-3 text-sm">
+                    <p><strong>Pending Balance:</strong> ${referrer.pendingBalance.toFixed(2)}</p>
+                    {defaultMethod && (
+                        <p className="mt-1">
+                            <strong>{defaultMethod.type.toUpperCase()}:</strong> {defaultMethod.upiId || defaultMethod.paypalEmail}
+                        </p>
+                    )}
+                </div>
+
+                {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-2.5">{error}</div>}
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Amount Paid <span className="text-red-400">*</span></label>
+                        <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full px-3 py-2.5 text-sm border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20" />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Method <span className="text-red-400">*</span></label>
+                        <select value={method} onChange={(e) => setMethod(e.target.value)} className="w-full px-3 py-2.5 text-sm border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20">
+                            <option value="upi">UPI</option>
+                            <option value="paypal">PayPal</option>
+                            <option value="bank">Bank Transfer</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Transaction ID / Reference</label>
+                        <input type="text" value={reference} onChange={(e) => setReference(e.target.value)} className="w-full px-3 py-2.5 text-sm border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20" />
+                    </div>
+                    <div>
+                        <ImageUpload
+                            value={receiptUrl}
+                            onChange={(url) => setReceiptUrl(url)}
+                            onRemove={() => setReceiptUrl('')}
+                            label="Payment Confirmation Image"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Internal Note</label>
+                        <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className="w-full px-3 py-2.5 text-sm border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 resize-none" />
+                    </div>
+                    <div className="flex items-center justify-end gap-3 pt-2">
+                        <button type="button" onClick={onClose} className="px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted rounded-xl transition-all">Cancel</button>
+                        <button type="submit" disabled={saving} className="px-6 py-2.5 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-xl shadow-md disabled:opacity-60 transition-all">
+                            {saving ? 'Saving...' : 'Confirm Payout'}
                         </button>
                     </div>
                 </form>
