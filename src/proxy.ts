@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
 
 // Define which routes are public
 const isPublicRoute = createRouteMatcher([
@@ -26,9 +27,31 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
+    // 1. Authenticate protected routes
     if (!isPublicRoute(request)) {
         await auth.protect()
     }
+
+    // 2. Handle Subdomain Rewrites
+    const url = request.nextUrl
+    const hostname = request.headers.get('host') || ''
+
+    // Prevent rewriting API requests and internal Next.js paths
+    if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/_next/')) {
+        return NextResponse.next()
+    }
+
+    if (hostname === 'dashboard.rasid.in') {
+        // Rewrite all dashboard subdomain requests to the /dashboard folder
+        return NextResponse.rewrite(new URL(`/dashboard${url.pathname === '/' ? '' : url.pathname}${url.search}`, request.url))
+    }
+
+    if (hostname === 'admin.rasid.in') {
+        // Rewrite all admin subdomain requests to the /admin folder
+        return NextResponse.rewrite(new URL(`/admin${url.pathname === '/' ? '' : url.pathname}${url.search}`, request.url))
+    }
+
+    return NextResponse.next()
 })
 
 export const config = {

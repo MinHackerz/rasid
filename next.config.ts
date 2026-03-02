@@ -67,50 +67,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  async rewrites() {
-    return [
-      {
-        source: '/',
-        has: [
-          {
-            type: 'host',
-            value: 'dashboard.rasid.in',
-          },
-        ],
-        destination: '/dashboard',
-      },
-      {
-        source: '/:path((?!api/).*)',
-        has: [
-          {
-            type: 'host',
-            value: 'dashboard.rasid.in',
-          },
-        ],
-        destination: '/dashboard/:path',
-      },
-      {
-        source: '/',
-        has: [
-          {
-            type: 'host',
-            value: 'admin.rasid.in',
-          },
-        ],
-        destination: '/admin',
-      },
-      {
-        source: '/:path((?!api/).*)',
-        has: [
-          {
-            type: 'host',
-            value: 'admin.rasid.in',
-          },
-        ],
-        destination: '/admin/:path',
-      },
-    ];
-  },
 };
 
 export default nextConfig;
