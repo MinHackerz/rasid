@@ -50,9 +50,6 @@ export default clerkMiddleware(async (auth, request) => {
         }
 
         // Handle special redirects on subdomains back to main domain
-        if (path === '/') {
-            return NextResponse.redirect(new URL('/', 'https://rasid.in'));
-        }
         if (path === '/help' || path.startsWith('/help/')) {
             return NextResponse.redirect(new URL(path, 'https://rasid.in/help'));
         }
@@ -73,9 +70,6 @@ export default clerkMiddleware(async (auth, request) => {
         }
 
         // Handle special redirects on subdomains back to main domain
-        if (path === '/') {
-            return NextResponse.redirect(new URL('/', 'https://rasid.in'));
-        }
         if (path === '/help' || path.startsWith('/help/')) {
             return NextResponse.redirect(new URL(path, 'https://rasid.in/help'));
         }

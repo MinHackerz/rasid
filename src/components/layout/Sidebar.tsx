@@ -54,7 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({ businessName = 'My Business', busines
         >
             {/* Logo */}
             <div className={cn('h-16 flex items-center border-b border-border/50', collapsed ? 'px-3 justify-center' : 'px-6')}>
-                <Link href="/" className="flex items-center gap-3 group">
+                <Link href="https://rasid.in/" className="flex items-center gap-3 group">
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg shadow-primary/25 group-hover:scale-105 transition-transform overflow-hidden flex-shrink-0">
                         <Image
                             src="/logos/Rasid_Logo.png"
