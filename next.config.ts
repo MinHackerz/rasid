@@ -43,33 +43,73 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: '/dashboard',
+        destination: 'https://dashboard.rasid.in',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/:path*',
+        destination: 'https://dashboard.rasid.in/:path*',
+        permanent: true,
+      },
+      {
+        source: '/admin',
+        destination: 'https://admin.rasid.in',
+        permanent: true,
+      },
+      {
+        source: '/admin/:path*',
+        destination: 'https://admin.rasid.in/:path*',
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: '/:path*',
-          has: [
-            {
-              type: 'host',
-              value: 'dashboard.rasid.in',
-            },
-          ],
-          destination: '/dashboard/:path*',
-        },
-        {
-          source: '/:path*',
-          has: [
-            {
-              type: 'host',
-              value: 'admin.rasid.in',
-            },
-          ],
-          destination: '/admin/:path*',
-        },
-      ],
-      afterFiles: [],
-      fallback: [],
-    };
+    return [
+      {
+        source: '/',
+        has: [
+          {
+            type: 'host',
+            value: 'dashboard.rasid.in',
+          },
+        ],
+        destination: '/dashboard',
+      },
+      {
+        source: '/:path((?!api/).*)',
+        has: [
+          {
+            type: 'host',
+            value: 'dashboard.rasid.in',
+          },
+        ],
+        destination: '/dashboard/:path',
+      },
+      {
+        source: '/',
+        has: [
+          {
+            type: 'host',
+            value: 'admin.rasid.in',
+          },
+        ],
+        destination: '/admin',
+      },
+      {
+        source: '/:path((?!api/).*)',
+        has: [
+          {
+            type: 'host',
+            value: 'admin.rasid.in',
+          },
+        ],
+        destination: '/admin/:path',
+      },
+    ];
   },
 };
 
