@@ -42,13 +42,36 @@ export default clerkMiddleware(async (auth, request) => {
     }
 
     if (hostname === 'dashboard.rasid.in') {
+        const path = url.pathname;
+
+        // Handle special redirects on subdomains back to main domain
+        if (path === '/') {
+            return NextResponse.redirect(new URL('/', 'https://rasid.in'));
+        }
+        if (path === '/help' || path.startsWith('/help/')) {
+            return NextResponse.redirect(new URL(path, 'https://rasid.in/help'));
+        }
+        if (path === '/admin') {
+            return NextResponse.redirect(new URL('/', 'https://admin.rasid.in'));
+        }
+
         // Rewrite all dashboard subdomain requests to the /dashboard folder
-        return NextResponse.rewrite(new URL(`/dashboard${url.pathname === '/' ? '' : url.pathname}${url.search}`, request.url))
+        return NextResponse.rewrite(new URL(`/dashboard${path === '/' ? '' : path}${url.search}`, request.url))
     }
 
     if (hostname === 'admin.rasid.in') {
+        const path = url.pathname;
+
+        // Handle special redirects on subdomains back to main domain
+        if (path === '/') {
+            return NextResponse.redirect(new URL('/', 'https://rasid.in'));
+        }
+        if (path === '/help' || path.startsWith('/help/')) {
+            return NextResponse.redirect(new URL(path, 'https://rasid.in/help'));
+        }
+
         // Rewrite all admin subdomain requests to the /admin folder
-        return NextResponse.rewrite(new URL(`/admin${url.pathname === '/' ? '' : url.pathname}${url.search}`, request.url))
+        return NextResponse.rewrite(new URL(`/admin${path === '/' ? '' : path}${url.search}`, request.url))
     }
 
     return NextResponse.next()
