@@ -156,7 +156,7 @@ export default function AdminLayoutShell({ children }: { children: ReactNode }) 
 
                     <div className="ml-auto flex items-center gap-3">
                         <Link
-                            href="/"
+                            href={`${process.env.NEXT_PUBLIC_APP_URL || 'https://rasid.in'}/`}
                             className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                         >
                             <Home className="w-4 h-4" />

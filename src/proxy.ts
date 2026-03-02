@@ -50,11 +50,13 @@ export default clerkMiddleware(async (auth, request) => {
         }
 
         // Handle special redirects on subdomains back to main domain
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://rasid.in';
         if (path === '/help' || path.startsWith('/help/')) {
-            return NextResponse.redirect(new URL(path, 'https://rasid.in/help'));
+            return NextResponse.redirect(new URL(path, appUrl));
         }
         if (path === '/admin') {
-            return NextResponse.redirect(new URL('/', 'https://admin.rasid.in'));
+            const adminUrl = appUrl.includes('localhost') ? `${appUrl}/admin` : 'https://admin.rasid.in';
+            return NextResponse.redirect(new URL('/', adminUrl));
         }
 
         // Rewrite all dashboard subdomain requests to the /dashboard folder
@@ -70,8 +72,9 @@ export default clerkMiddleware(async (auth, request) => {
         }
 
         // Handle special redirects on subdomains back to main domain
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://rasid.in';
         if (path === '/help' || path.startsWith('/help/')) {
-            return NextResponse.redirect(new URL(path, 'https://rasid.in/help'));
+            return NextResponse.redirect(new URL(path, appUrl));
         }
 
         // Rewrite all admin subdomain requests to the /admin folder

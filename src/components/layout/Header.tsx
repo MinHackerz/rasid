@@ -76,14 +76,14 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, busi
                     {/* Right */}
                     <div className="flex items-center gap-3">
                         <Link
-                            href="https://rasid.in/"
+                            href={`${process.env.NEXT_PUBLIC_APP_URL || 'https://rasid.in'}/`}
                             className="flex items-center gap-2 h-8 px-3 text-xs font-medium text-muted-foreground hover:text-foreground rounded-full border border-border hover:bg-muted transition-colors"
                         >
                             <Home className="w-4 h-4" />
                             <span className="hidden md:inline">Home</span>
                         </Link>
                         <Link
-                            href="https://rasid.in/help"
+                            href={`${process.env.NEXT_PUBLIC_APP_URL || 'https://rasid.in'}/help`}
                             className="hidden md:flex items-center gap-2 h-8 px-3 text-xs font-medium text-muted-foreground hover:text-foreground rounded-full border border-border hover:bg-muted transition-colors"
                         >
                             <HelpCircle className="w-4 h-4" />
@@ -91,20 +91,20 @@ const Header: React.FC<HeaderProps> = ({ title, showSearch = false, action, busi
                         </Link>
 
                         {referrerToken && (
-                            <Link href={`https://rasid.in/referrer/${referrerToken}`} className="hidden md:block">
+                            <Link href={`${process.env.NEXT_PUBLIC_APP_URL || 'https://rasid.in'}/referrer/${referrerToken}`} className="hidden md:block">
                                 <Button size="sm" variant="outline" className="flex gap-2 shadow-sm font-semibold rounded-lg border-violet-200 text-violet-700 hover:bg-violet-50 hover:text-violet-800">
                                     <span>Referral Dashboard</span>
                                 </Button>
                             </Link>
                         )}
                         {referrerToken && (
-                            <Link href={`https://rasid.in/referrer/${referrerToken}`} className="md:hidden flex items-center justify-center w-8 h-8 text-violet-600 border border-violet-200 hover:bg-violet-50 rounded-lg transition-colors shadow-sm">
+                            <Link href={`${process.env.NEXT_PUBLIC_APP_URL || 'https://rasid.in'}/referrer/${referrerToken}`} className="md:hidden flex items-center justify-center w-8 h-8 text-violet-600 border border-violet-200 hover:bg-violet-50 rounded-lg transition-colors shadow-sm">
                                 <Gift className="w-4 h-4" />
                             </Link>
                         )}
 
                         {isAdmin && (
-                            <Link href="https://admin.rasid.in">
+                            <Link href={process.env.NEXT_PUBLIC_APP_URL?.includes('localhost') ? `${process.env.NEXT_PUBLIC_APP_URL}/admin` : 'https://admin.rasid.in'}>
                                 <Button size="sm" variant="outline" className="flex px-2 md:px-3 gap-2 shadow-sm font-semibold rounded-lg border-neutral-200 text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900">
                                     <Shield className="w-4 h-4" />
                                     <span className="hidden md:inline">Admin</span>

@@ -132,7 +132,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
                             );
                         })}
                         <Link
-                            href="https://rasid.in/help"
+                            href={`${process.env.NEXT_PUBLIC_APP_URL || 'https://rasid.in'}/help`}
                             className={cn(
                                 'flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl group relative overflow-hidden',
                                 'transition-all duration-200',

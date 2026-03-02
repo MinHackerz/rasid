@@ -5,6 +5,7 @@ import { Users, Plus, Mail, Phone, MapPin, FileText, ArrowRight } from 'lucide-r
 import Link from 'next/link';
 import { BuyerCard } from '@/components/dashboard/BuyerCard';
 import { AddBuyerButton } from '@/components/dashboard/AddBuyerButton';
+import { BuyersClient } from '@/components/dashboard/BuyersClient';
 
 export default async function BuyersPage() {
     const session = await getSession();
@@ -31,7 +32,7 @@ export default async function BuyersPage() {
                 <AddBuyerButton />
             </div>
 
-            {/* Buyers Grid */}
+            {/* Buyers Grid / List */}
             {buyers.length === 0 ? (
                 <Card>
                     <CardBody>
@@ -55,11 +56,7 @@ export default async function BuyersPage() {
                     </CardBody>
                 </Card>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {buyers.map((buyer: any) => (
-                        <BuyerCard key={buyer.id} buyer={buyer} />
-                    ))}
-                </div>
+                <BuyersClient buyers={buyers} />
             )}
         </div>
     );

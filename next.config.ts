@@ -44,6 +44,11 @@ const nextConfig: NextConfig = {
     ];
   },
   async redirects() {
+    // Prevent redirecting local testing to production domains
+    if (process.env.NEXT_PUBLIC_APP_URL?.includes('localhost') || process.env.NODE_ENV !== 'production') {
+      return [];
+    }
+
     return [
       {
         source: '/dashboard',
