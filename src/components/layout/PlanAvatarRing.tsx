@@ -38,6 +38,7 @@ export default function PlanAvatarRing({ plan = 'FREE', size = 'md' }: PlanAvata
             <div className="plan-avatar-ring__border" />
             <div className={`plan-avatar-ring__inner ${innerSize}`}>
                 <UserButton
+                    afterSignOutUrl={`${process.env.NEXT_PUBLIC_APP_URL || 'https://rasid.in'}/`}
                     appearance={{
                         elements: {
                             avatarBox: "w-full h-full rounded-full"

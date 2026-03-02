@@ -151,7 +151,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({
 
                     <div className="p-4 border-t border-border/50 bg-muted/5 mt-auto">
                         <button
-                            onClick={() => signOut({ redirectUrl: '/' })}
+                            onClick={() => signOut({ redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://rasid.in'}/` })}
                             className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all duration-200 text-left"
                         >
                             <LogOut className="w-[18px] h-[18px]" />

@@ -34,11 +34,14 @@ import {
     ExternalLink,
     LayoutDashboard,
     Home,
+    LogOut,
 } from 'lucide-react';
+import { useClerk } from '@clerk/nextjs';
 
 export default function ReferrerPortalPage() {
     const params = useParams();
     const token = params.token as string;
+    const { signOut } = useClerk();
     const [data, setData] = useState<ReferrerPortalData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
@@ -155,6 +158,10 @@ export default function ReferrerPortalPage() {
                             <LayoutDashboard className="w-4 h-4 sm:mr-1.5" />
                             <span className="hidden sm:inline">Dashboard</span>
                         </Link>
+                        <button onClick={() => signOut({ redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://rasid.in'}/` })} className="flex items-center justify-center p-2 sm:px-3 sm:py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200/60 transition-colors shadow-sm">
+                            <LogOut className="w-4 h-4 sm:mr-1.5" />
+                            <span className="hidden sm:inline">Sign Out</span>
+                        </button>
                         <span className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border ${data.isActive
                             ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
                             : 'bg-gray-100 text-gray-500 border-gray-200'

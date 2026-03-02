@@ -15,7 +15,9 @@ import {
     Activity,
     Home,
     Link2,
+    LogOut,
 } from 'lucide-react';
+import { useClerk } from '@clerk/nextjs';
 
 const navItems = [
     { href: '/admin', label: 'Overview', icon: LayoutDashboard, description: 'Platform metrics & health' },
@@ -29,6 +31,7 @@ const navItems = [
 export default function AdminLayoutShell({ children }: { children: ReactNode }) {
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const { signOut } = useClerk();
 
     useEffect(() => {
         setSidebarOpen(false);
@@ -162,6 +165,13 @@ export default function AdminLayoutShell({ children }: { children: ReactNode }) 
                             <Home className="w-4 h-4" />
                             <span className="hidden sm:inline">Home</span>
                         </Link>
+                        <button
+                            onClick={() => signOut({ redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://rasid.in'}/` })}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border text-sm font-medium text-destructive hover:text-destructive-foreground hover:bg-destructive transition-colors"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            <span className="hidden sm:inline">Sign Out</span>
+                        </button>
                         <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500 border border-emerald-600">
                             <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                             <span className="text-[11px] font-medium text-white">System Online</span>

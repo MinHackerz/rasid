@@ -38,7 +38,7 @@ export function ApiDocsHeader() {
                                 Dashboard
                             </Link>
                             <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
-                                <UserButton afterSignOutUrl="/" />
+                                <UserButton afterSignOutUrl={`${process.env.NEXT_PUBLIC_APP_URL || 'https://rasid.in'}/`} />
                             </div>
                         </div>
                     ) : (
