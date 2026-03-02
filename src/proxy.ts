@@ -44,6 +44,11 @@ export default clerkMiddleware(async (auth, request) => {
     if (hostname === 'dashboard.rasid.in') {
         const path = url.pathname;
 
+        // Skip rewrite if the path is ALREADY naturally loading the actual source dashboard path (avoids circular rewrite or redirect conflicts)
+        if (path.startsWith('/dashboard')) {
+            return NextResponse.next()
+        }
+
         // Handle special redirects on subdomains back to main domain
         if (path === '/') {
             return NextResponse.redirect(new URL('/', 'https://rasid.in'));
@@ -61,6 +66,11 @@ export default clerkMiddleware(async (auth, request) => {
 
     if (hostname === 'admin.rasid.in') {
         const path = url.pathname;
+
+        // Skip rewrite if the path is ALREADY natively /admin
+        if (path.startsWith('/admin')) {
+            return NextResponse.next()
+        }
 
         // Handle special redirects on subdomains back to main domain
         if (path === '/') {
