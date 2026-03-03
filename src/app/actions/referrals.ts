@@ -334,7 +334,7 @@ export async function getReferrerPortalData(token: string): Promise<ReferrerPort
         },
     });
 
-    if (!referral) return null;
+    if (!referral || !referral.isActive) return null;
 
     const totalEarned = Number(referral.totalEarned);
     const totalPaid = Number(referral.totalPaid);

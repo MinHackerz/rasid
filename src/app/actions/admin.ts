@@ -581,7 +581,7 @@ export async function sendAdminEmail(input: AdminEmailInput): Promise<{ success:
                 </div>
                 <hr style="border: none; border-top: 1px solid #f3f4f6; margin: 24px 0;" />
                 <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
-                    Sent from Rasid Admin · <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://rasid.app'}" style="color: #6366f1;">rasid.app</a>
+                    Sent from Rasid Admin · <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://rasid.in'}" style="color: #6366f1;">rasid.in</a>
                 </p>
             </div>
         `;

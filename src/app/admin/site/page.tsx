@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition, useCallback } from 'react';
+import { useEffect, useState, useTransition, useCallback, useRef } from 'react';
 import {
     getAdminSiteConfig, updateSiteConfig, type SiteConfigDTO,
     getEmailableSellers, sendAdminEmail, sendBulkAdminEmail, type EmailableSeller,
@@ -9,7 +9,8 @@ import { toast } from 'sonner';
 import {
     Save, Megaphone, Link2, Tag, Sparkles, Palette, Calendar, Mail,
     Send, Search, Check, Crown, Users, X, ChevronDown, ChevronUp,
-    Eye, Zap, PartyPopper, Server, Info, CheckCircle2, ExternalLink, ArrowRight, Clock, AlertTriangle
+    Eye, Zap, PartyPopper, Server, Info, CheckCircle2, ExternalLink, ArrowRight, Clock, AlertTriangle,
+    Bold, Italic, Heading1, Heading2, List, Link as LinkIcon
 } from 'lucide-react';
 import FestiveTheme from '@/components/landing/FestiveTheme';
 
@@ -53,7 +54,7 @@ const EMAIL_TEMPLATES = [
         subject: 'Your Rasid subscription is expiring soon',
         body: `<p>Hi there,</p>
 <p>We noticed your Rasid subscription is expiring soon. To continue enjoying all the features without interruption, please renew your plan.</p>
-<p>Visit your <a href="{APP_URL}/dashboard/settings" style="color: #6366f1; text-decoration: underline;">Dashboard Settings</a> to manage your subscription.</p>
+<p>Visit your <a href="https://dashboard.rasid.in/settings" style="color: #6366f1; text-decoration: underline;">Dashboard Settings</a> to manage your subscription.</p>
 <p>Thank you for using Rasid!</p>`,
     },
     {
@@ -61,7 +62,7 @@ const EMAIL_TEMPLATES = [
         subject: 'Special upgrade offer just for you 🎉',
         body: `<p>Hi there,</p>
 <p>We have an exclusive upgrade offer for you! Upgrade your Rasid plan today and unlock premium features at a special discounted price.</p>
-<p>Check out our <a href="{APP_URL}/pricing" style="color: #6366f1; text-decoration: underline;">Pricing Page</a> for details.</p>
+<p>Check out our <a href="https://dashboard.rasid.in/pricing" style="color: #6366f1; text-decoration: underline;">Pricing Page</a> for details.</p>
 <p>Don't miss out — this offer is limited!</p>`,
     },
     {
@@ -74,14 +75,14 @@ const EMAIL_TEMPLATES = [
 <li>📊 Enhanced analytics dashboard</li>
 <li>🔔 Smart payment reminders</li>
 </ul>
-<p>Log in to your <a href="{APP_URL}/dashboard" style="color: #6366f1; text-decoration: underline;">Dashboard</a> to explore.</p>`,
+<p>Log in to your <a href="https://dashboard.rasid.in" style="color: #6366f1; text-decoration: underline;">Dashboard</a> to explore.</p>`,
     },
     {
         name: 'Welcome Back',
         subject: 'We miss you! Come back to Rasid',
         body: `<p>Hi there,</p>
 <p>We noticed you haven't logged into Rasid recently. Your business tools are waiting for you!</p>
-<p>Log in now and see what's new: <a href="{APP_URL}/dashboard" style="color: #6366f1; text-decoration: underline;">Go to Dashboard</a></p>`,
+<p>Log in now and see what's new: <a href="https://dashboard.rasid.in" style="color: #6366f1; text-decoration: underline;">Go to Dashboard</a></p>`,
     },
     {
         name: 'Custom Message',
@@ -104,6 +105,9 @@ export default function AdminSiteSettingsPage() {
     const [emailSubject, setEmailSubject] = useState('');
     const [emailBody, setEmailBody] = useState('<p>Hi there,</p>\n<p></p>');
     const [sendingEmail, setSendingEmail] = useState(false);
+    const [emailSentOk, setEmailSentOk] = useState(false);
+    const [configSavedOk, setConfigSavedOk] = useState(false);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     // Accordion state
     const [openSection, setOpenSection] = useState<'offer' | 'theme' | 'smtp' | 'email' | null>('offer');
@@ -163,6 +167,8 @@ export default function AdminSiteSettingsPage() {
                 const updated = await updateSiteConfig(config);
                 setConfig(updated);
                 toast.success('Site settings saved & homepage updated');
+                setConfigSavedOk(true);
+                setTimeout(() => setConfigSavedOk(false), 2000);
             } catch (error: any) {
                 toast.error(error?.message || 'Failed to update');
             }
@@ -196,9 +202,8 @@ export default function AdminSiteSettingsPage() {
     };
 
     const applyEmailTemplate = (template: typeof EMAIL_TEMPLATES[0]) => {
-        const appUrl = typeof window !== 'undefined' ? window.location.origin : '';
         setEmailSubject(template.subject);
-        setEmailBody(template.body.replace(/{APP_URL}/g, appUrl));
+        setEmailBody(template.body);
     };
 
     const handleSendEmail = async () => {
@@ -218,6 +223,8 @@ export default function AdminSiteSettingsPage() {
                 const res = await sendAdminEmail({ sellerId, subject: emailSubject, body: emailBody });
                 if (res.success) {
                     toast.success('Email sent successfully');
+                    setEmailSentOk(true);
+                    setTimeout(() => setEmailSentOk(false), 2000);
                 } else {
                     toast.error(res.error || 'Failed to send');
                 }
@@ -228,11 +235,30 @@ export default function AdminSiteSettingsPage() {
                     body: emailBody,
                 });
                 toast.success(`Sent to ${res.sent} sellers${res.failed > 0 ? `, ${res.failed} failed` : ''}`);
+                if (res.sent > 0) {
+                    setEmailSentOk(true);
+                    setTimeout(() => setEmailSentOk(false), 2000);
+                }
             }
         } catch {
             toast.error('Failed to send email');
         }
         setSendingEmail(false);
+    };
+
+    const insertTag = (startTag: string, endTag: string) => {
+        if (!textareaRef.current) return;
+        const textarea = textareaRef.current;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const text = textarea.value;
+        const selectedText = text.substring(start, end);
+        const newText = text.substring(0, start) + startTag + selectedText + endTag + text.substring(end);
+        setEmailBody(newText);
+        setTimeout(() => {
+            textarea.focus();
+            textarea.setSelectionRange(start + startTag.length, start + startTag.length + selectedText.length);
+        }, 0);
     };
 
     const SectionHeader = ({
@@ -519,11 +545,10 @@ export default function AdminSiteSettingsPage() {
                                 <button
                                     type="button"
                                     onClick={handleSaveConfig}
-                                    disabled={!isLoaded || isPending}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                                    disabled={!isLoaded || isPending || configSavedOk}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm ${configSavedOk ? 'bg-emerald-500 text-white hover:bg-emerald-600' : 'bg-primary text-primary-foreground hover:bg-primary-hover'}`}
                                 >
-                                    <Save className="w-3.5 h-3.5" />
-                                    {isPending ? 'Saving...' : 'Save Offer Bar'}
+                                    {isPending ? 'Saving...' : configSavedOk ? <><Check className="w-4 h-4" /> Saved!</> : <><Save className="w-3.5 h-3.5" /> Save Offer Bar</>}
                                 </button>
                             </div>
                         </div>
@@ -786,11 +811,10 @@ export default function AdminSiteSettingsPage() {
                                 <button
                                     type="button"
                                     onClick={handleSaveConfig}
-                                    disabled={!isLoaded || isPending}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                                    disabled={!isLoaded || isPending || configSavedOk}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm ${configSavedOk ? 'bg-emerald-500 text-white hover:bg-emerald-600' : 'bg-primary text-primary-foreground hover:bg-primary-hover'}`}
                                 >
-                                    <Save className="w-3.5 h-3.5" />
-                                    {isPending ? 'Saving...' : 'Save Theme'}
+                                    {isPending ? 'Saving...' : configSavedOk ? <><Check className="w-4 h-4" /> Saved!</> : <><Save className="w-3.5 h-3.5" /> Save Theme</>}
                                 </button>
                             </div>
                         </div>
@@ -968,7 +992,7 @@ export default function AdminSiteSettingsPage() {
                                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40" />
                                 <input
                                     type="email"
-                                    placeholder="admin@rasid.app"
+                                    placeholder="admin@rasid.in"
                                     value={config.fromEmail ?? ''}
                                     onChange={(e) => setConfig(prev => ({ ...prev, fromEmail: e.target.value }))}
                                     className="w-full bg-white border border-border rounded-xl pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all"
@@ -1012,11 +1036,10 @@ export default function AdminSiteSettingsPage() {
                             <button
                                 type="button"
                                 onClick={handleSaveConfig}
-                                disabled={!isLoaded || isPending}
-                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                                disabled={!isLoaded || isPending || configSavedOk}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm ${configSavedOk ? 'bg-emerald-500 text-white hover:bg-emerald-600' : 'bg-primary text-primary-foreground hover:bg-primary-hover'}`}
                             >
-                                <Save className="w-3.5 h-3.5" />
-                                {isPending ? 'Saving...' : 'Save Email Config'}
+                                {isPending ? 'Saving...' : configSavedOk ? <><Check className="w-4 h-4" /> Saved!</> : <><Save className="w-3.5 h-3.5" /> Save Email Config</>}
                             </button>
                         </div>
                     </div>
@@ -1066,13 +1089,28 @@ export default function AdminSiteSettingsPage() {
                             </div>
                         </div>
 
-                        {/* Body */}
                         <div>
-                            <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                                Message Body (HTML)
-                            </label>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <label className="block text-xs font-medium text-muted-foreground">
+                                    Message Body (HTML)
+                                </label>
+                                <div className="flex items-center gap-1 p-0.5 bg-muted/20 border border-border rounded-lg">
+                                    <button type="button" onClick={() => insertTag('<b>', '</b>')} className="p-1 hover:bg-white hover:shadow-sm rounded transition-all text-muted-foreground hover:text-foreground" title="Bold"><Bold className="w-3.5 h-3.5" /></button>
+                                    <button type="button" onClick={() => insertTag('<i>', '</i>')} className="p-1 hover:bg-white hover:shadow-sm rounded transition-all text-muted-foreground hover:text-foreground" title="Italic"><Italic className="w-3.5 h-3.5" /></button>
+                                    <div className="w-px h-3 bg-border mx-0.5" />
+                                    <button type="button" onClick={() => insertTag('<h1>', '</h1>')} className="p-1 hover:bg-white hover:shadow-sm rounded transition-all text-muted-foreground hover:text-foreground" title="Heading 1"><Heading1 className="w-3.5 h-3.5" /></button>
+                                    <button type="button" onClick={() => insertTag('<h2>', '</h2>')} className="p-1 hover:bg-white hover:shadow-sm rounded transition-all text-muted-foreground hover:text-foreground" title="Heading 2"><Heading2 className="w-3.5 h-3.5" /></button>
+                                    <div className="w-px h-3 bg-border mx-0.5" />
+                                    <button type="button" onClick={() => insertTag('<ul>\n<li>', '</li>\n</ul>')} className="p-1 hover:bg-white hover:shadow-sm rounded transition-all text-muted-foreground hover:text-foreground" title="Bullet List"><List className="w-3.5 h-3.5" /></button>
+                                    <button type="button" onClick={() => {
+                                        const url = prompt('Enter URL:');
+                                        if (url) insertTag(`<a href="${url}" style="color: #6366f1; text-decoration: underline;">`, '</a>');
+                                    }} className="p-1 hover:bg-white hover:shadow-sm rounded transition-all text-muted-foreground hover:text-foreground" title="Link"><LinkIcon className="w-3.5 h-3.5" /></button>
+                                </div>
+                            </div>
                             <textarea
-                                rows={6}
+                                ref={textareaRef}
+                                rows={8}
                                 value={emailBody}
                                 onChange={(e) => setEmailBody(e.target.value)}
                                 placeholder="<p>Hi there,</p><p>Your message...</p>"
@@ -1235,15 +1273,14 @@ export default function AdminSiteSettingsPage() {
                             <button
                                 type="button"
                                 onClick={handleSendEmail}
-                                disabled={sendingEmail || selectedSellers.size === 0 || !emailSubject.trim()}
-                                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                                disabled={sendingEmail || selectedSellers.size === 0 || !emailSubject.trim() || emailSentOk}
+                                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm ${emailSentOk ? 'bg-emerald-500 text-white hover:bg-emerald-600' : 'bg-primary text-primary-foreground hover:bg-primary-hover'}`}
                             >
-                                <Send className="w-4 h-4" />
                                 {sendingEmail
                                     ? 'Sending...'
-                                    : selectedSellers.size > 1
-                                        ? `Send to ${selectedSellers.size} sellers`
-                                        : 'Send Email'}
+                                    : emailSentOk
+                                        ? <><Check className="w-4 h-4" /> Sent successfully!</>
+                                        : <><Send className="w-4 h-4" /> {selectedSellers.size > 1 ? `Send to ${selectedSellers.size} sellers` : 'Send Email'}</>}
                             </button>
                         </div>
                     </div>
