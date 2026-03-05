@@ -27,7 +27,7 @@ export function NoBusinessAlert() {
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
-                <Link href="/onboarding">
+                <Link href={`${process.env.NEXT_PUBLIC_APP_URL || 'https://rasid.in'}/onboarding`}>
                     <Button size="lg" className="h-14 px-8 text-base font-bold shadow-xl shadow-primary/25 gap-3 group">
                         <Plus className="w-5 h-5 transition-transform group-hover:rotate-90" />
                         Add Your Business

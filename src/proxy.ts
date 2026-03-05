@@ -54,6 +54,9 @@ export default clerkMiddleware(async (auth, request) => {
         if (path === '/help' || path.startsWith('/help/')) {
             return NextResponse.redirect(new URL(path, appUrl));
         }
+        if (path === '/onboarding') {
+            return NextResponse.redirect(new URL('/onboarding', appUrl));
+        }
         if (path === '/admin') {
             const adminUrl = appUrl.includes('localhost') ? `${appUrl}/admin` : 'https://admin.rasid.in';
             return NextResponse.redirect(new URL('/', adminUrl));

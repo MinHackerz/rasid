@@ -29,7 +29,8 @@ export async function createSubscriptionCheckout(planKey: PlanType, billingInter
     });
 
     if (!seller) {
-        return { url: '/onboarding' };
+        const onboardingUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://rasid.in'}/onboarding`;
+        return { url: onboardingUrl };
     }
 
     if (planKey === 'FREE') {

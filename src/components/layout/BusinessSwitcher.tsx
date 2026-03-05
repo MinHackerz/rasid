@@ -60,7 +60,8 @@ export function BusinessSwitcher({ currentBusinessName, businesses, className, p
             // Redirect to pricing page
             router.push('/pricing');
         } else {
-            router.push('/onboarding');
+            const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://rasid.in';
+            window.location.href = `${appUrl}/onboarding`;
         }
         setIsOpen(false);
     };
