@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     ShieldCheck, QrCode, Check, Send, Package, Search,
     TrendingUp, FileText, Camera, Sparkles, ArrowDown,
-    MessageCircle, Mail, ChevronRight, AlertTriangle
+    MessageCircle, Mail, ChevronRight, AlertTriangle, ScanBarcode
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -87,14 +87,27 @@ export function FeaturesSection() {
                         </FeatureCard>
                     </div>
 
+                    {/* Feature 6: Barcode Scanning */}
+                    <div className="md:col-span-3 min-h-[400px]">
+                        <FeatureCard
+                            title="Instant Barcode Scanning"
+                            description="Scan product barcodes with your phone or desktop camera — Rasid identifies items, adds them to invoices, and updates pricing instantly."
+                            className="h-full flex flex-col"
+                        >
+                            <div className="flex-1 overflow-hidden flex items-center justify-center px-5 pb-5">
+                                <BarcodeScanAnimation />
+                            </div>
+                        </FeatureCard>
+                    </div>
+
                     {/* Feature 5: Dashboard + Inventory */}
-                    <div className="md:col-span-6 min-h-[370px]">
+                    <div className="md:col-span-3 min-h-[400px]">
                         <FeatureCard
                             title="Full Business Control & Smart Inventory"
                             description="Track live revenue, auto-sync stock as invoices generate, and get low-stock alerts — all from one dashboard."
                             dark
-                            className="h-full flex flex-col md:flex-row"
-                            headerClassName="md:w-[33%] shrink-0"
+                            className="h-full flex flex-col"
+                            headerClassName="shrink-0"
                         >
                             <div className="flex-1 overflow-hidden p-5 md:p-6 flex items-center justify-center">
                                 <DashboardAnimation />
@@ -863,3 +876,174 @@ function DashboardAnimation() {
         </div>
     );
 }
+
+/* ──────────────────────────────────────────────
+   6. Barcode Scanning Animation
+   ────────────────────────────────────────────── */
+function BarcodeScanAnimation() {
+    const [phase, setPhase] = useState(0);
+    // 0 = scanning, 1 = found badge on scanner, 2 = results replace scanner
+
+    useEffect(() => {
+        const durations = [2200, 1200, 3500];
+        const total = durations.reduce((a, b) => a + b, 0) + 500;
+
+        const runCycle = () => {
+            setPhase(0);
+            const t1 = setTimeout(() => setPhase(1), durations[0]);
+            const t2 = setTimeout(() => setPhase(2), durations[0] + durations[1]);
+            const t3 = setTimeout(runCycle, total);
+            return [t1, t2, t3];
+        };
+
+        const timers = runCycle();
+        return () => timers.forEach(clearTimeout);
+    }, []);
+
+    const barcodeLines = [3, 1, 2, 1, 3, 2, 1, 3, 1, 2, 3, 1, 2, 1, 3, 1, 2, 3, 1, 2, 1, 3, 2, 1, 3, 1, 2];
+
+    return (
+        <div className="w-full max-w-xs">
+            {/* Fixed-height container — scanner and results swap in-place */}
+            <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '4/3' }}>
+                <AnimatePresence mode="wait">
+                    {phase < 2 ? (
+                        /* ── Scanner View ── */
+                        <motion.div
+                            key="scanner"
+                            className="absolute inset-0 bg-neutral-900 rounded-xl"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            {/* Barcode lines */}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="flex items-end gap-[1.5px] h-16">
+                                    {barcodeLines.map((w, i) => (
+                                        <motion.div
+                                            key={i}
+                                            className="bg-white rounded-[0.5px]"
+                                            style={{ width: w, height: `${50 + Math.random() * 50}%` }}
+                                            initial={{ opacity: 0 }}
+                                            whileInView={{ opacity: 1 }}
+                                            viewport={{ once: true }}
+                                            transition={{ delay: i * 0.02 }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Corner brackets */}
+                            <div className="absolute top-3 left-3 w-5 h-5 border-t-2 border-l-2 border-emerald-400 rounded-tl" />
+                            <div className="absolute top-3 right-3 w-5 h-5 border-t-2 border-r-2 border-emerald-400 rounded-tr" />
+                            <div className="absolute bottom-3 left-3 w-5 h-5 border-b-2 border-l-2 border-emerald-400 rounded-bl" />
+                            <div className="absolute bottom-3 right-3 w-5 h-5 border-b-2 border-r-2 border-emerald-400 rounded-br" />
+
+                            {/* Scanning laser */}
+                            {phase === 0 && (
+                                <motion.div
+                                    className="absolute left-3 right-3 h-0.5 bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]"
+                                    initial={{ top: '20%' }}
+                                    animate={{ top: ['20%', '80%', '20%'] }}
+                                    transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                                />
+                            )}
+
+                            {/* "Product Found!" badge */}
+                            {phase === 1 && (
+                                <motion.div
+                                    className="absolute inset-0 flex items-center justify-center bg-black/20"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                >
+                                    <motion.div
+                                        className="bg-emerald-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg"
+                                        initial={{ scale: 0.5 }}
+                                        animate={{ scale: 1 }}
+                                        transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                                    >
+                                        <Check className="w-3 h-3" />
+                                        Product Found!
+                                    </motion.div>
+                                </motion.div>
+                            )}
+
+                            {/* Bottom label */}
+                            <div className="absolute bottom-1.5 left-0 right-0 text-center">
+                                <span className="text-[8px] text-white/50 bg-black/30 px-2 py-0.5 rounded-full">
+                                    {phase === 0 ? 'Scanning...' : 'Detected'}
+                                </span>
+                            </div>
+                        </motion.div>
+                    ) : (
+                        /* ── Result View (replaces scanner in same space) ── */
+                        <motion.div
+                            key="result"
+                            className="absolute inset-0 bg-white border border-neutral-200 rounded-xl p-4 flex flex-col justify-between"
+                            initial={{ opacity: 0, scale: 1.02 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.35 }}
+                        >
+                            {/* Header */}
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
+                                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                </div>
+                                <div>
+                                    <div className="text-[11px] font-bold text-neutral-900">Product Identified</div>
+                                    <div className="text-[8px] text-neutral-400">via barcode 890103079345</div>
+                                </div>
+                            </div>
+
+                            {/* Product details */}
+                            <div className="space-y-2 flex-1">
+                                {[
+                                    { label: 'Product', value: 'Organic Olive Oil' },
+                                    { label: 'Category', value: 'Grocery' },
+                                    { label: 'Price', value: '$12.99' },
+                                    { label: 'Stock', value: '24 units' },
+                                ].map((row, i) => (
+                                    <motion.div
+                                        key={i}
+                                        className="flex items-center justify-between"
+                                        initial={{ opacity: 0, x: 8 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: 0.1 + i * 0.08 }}
+                                    >
+                                        <span className="text-[9px] text-neutral-400 font-medium">{row.label}</span>
+                                        <span className="text-[10px] font-semibold text-neutral-800">{row.value}</span>
+                                    </motion.div>
+                                ))}
+                            </div>
+
+                            {/* Action button */}
+                            <motion.div
+                                className="mt-2 pt-2 border-t border-neutral-100"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.5 }}
+                            >
+                                <div className="bg-emerald-500 text-white text-[9px] font-bold py-2 rounded-lg text-center flex items-center justify-center gap-1.5">
+                                    <Check className="w-3 h-3" />
+                                    Added to Invoice
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+
+            {/* Supported formats */}
+            <div className="flex items-center justify-center gap-1.5 mt-2.5">
+                {['EAN-13', 'UPC-A', 'Code 128', 'QR'].map(fmt => (
+                    <span key={fmt} className="text-[7px] font-medium text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded">
+                        {fmt}
+                    </span>
+                ))}
+            </div>
+        </div>
+    );
+}
+

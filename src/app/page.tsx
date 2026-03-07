@@ -19,6 +19,7 @@ import {
   Lock,
   Package,
   Sparkles,
+  ScanBarcode,
 } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui';
@@ -327,13 +328,14 @@ export default function LandingPage() {
           ═══════════════════════════════════════════ */}
       <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-white">
         <div className="absolute inset-0 z-0">
-          {/* Premium Background Orbs */}
-          <div className="absolute top-[-10%] left-[10%] w-[600px] h-[600px] bg-gradient-to-br from-blue-100/60 to-violet-100/40 blur-[120px] rounded-full" />
-          <div className="absolute bottom-[-20%] right-[5%] w-[700px] h-[700px] bg-gradient-to-tl from-indigo-100/50 to-sky-100/30 blur-[140px] rounded-full" />
-          <div className="absolute top-[30%] right-[30%] w-[400px] h-[400px] bg-emerald-50/40 blur-[100px] rounded-full" />
+          {/* Premium Background Orbs — vivid to match demo visuals */}
+          <div className="absolute rounded-full" style={{ top: '-10%', left: '5%', width: 550, height: 550, background: 'radial-gradient(circle, rgba(147,130,255,0.25) 0%, rgba(96,165,250,0.15) 60%, transparent 100%)', filter: 'blur(80px)' }} />
+          <div className="absolute rounded-full" style={{ bottom: '-15%', right: '0%', width: 650, height: 650, background: 'radial-gradient(circle, rgba(99,102,241,0.2) 0%, rgba(56,189,248,0.1) 60%, transparent 100%)', filter: 'blur(100px)' }} />
+          <div className="absolute rounded-full" style={{ top: '25%', right: '25%', width: 350, height: 350, background: 'radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)', filter: 'blur(70px)' }} />
+          <div className="absolute rounded-full" style={{ top: '60%', left: '40%', width: 300, height: 300, background: 'radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%)', filter: 'blur(60px)' }} />
 
           {/* Subtle Grid Pattern */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000003_1px,transparent_1px),linear-gradient(to_bottom,#00000003_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+          <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.012) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.012) 1px, transparent 1px)', backgroundSize: '40px 40px', maskImage: 'radial-gradient(ellipse 60% 50% at 50% 0%, #000 70%, transparent 100%)' }} />
         </div>
 
         <div className="container-app relative z-10 text-center max-w-5xl mx-auto">
@@ -391,12 +393,14 @@ export default function LandingPage() {
               <span className="relative inline-block">
                 <span className="relative z-10">verified</span>
                 <motion.span
-                  className="absolute bottom-1 left-0 right-0 h-3 md:h-4 bg-gradient-to-r from-emerald-200/70 to-teal-200/70 -z-0 rounded-sm"
+                  className="absolute bottom-1 left-0 right-0 h-4 md:h-5 -z-0 rounded-sm overflow-hidden"
+                  style={{ background: 'linear-gradient(to right, rgba(167,243,208,0.85), rgba(153,246,228,0.85))', originX: 0 } as React.CSSProperties}
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
                   transition={{ delay: 0.5, duration: 0.6, ease: 'easeOut' }}
-                  style={{ originX: 0 }}
-                />
+                >
+                  <span className="absolute inset-0" style={{ background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.7), transparent)', animation: 'shimmer 2.5s ease-in-out infinite' }} />
+                </motion.span>
               </span>{' '}with <br className="hidden sm:block" />
               <span
                 style={{
@@ -444,45 +448,22 @@ export default function LandingPage() {
             </p>
           </motion.div>
 
-          {/* Hero Video */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-            className="mt-20 relative mx-auto max-w-5xl"
-            id="demo"
-          >
-            <div className="relative rounded-2xl border border-neutral-200 bg-white shadow-2xl shadow-neutral-200/50 overflow-hidden">
-              {/* 16:9 aspect ratio container */}
-              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                <iframe
-                  src="https://www.loom.com/embed/11b161ef8f3b4502ae2c02d2c917509c?hide_owner=true&hide_share=true&hide_title=true&hideEmbedTopBar=true"
-                  frameBorder="0"
-                  allowFullScreen
-                  allow="autoplay; fullscreen"
-                  className="absolute inset-0 w-full h-full"
-                  style={{ border: 'none' }}
-                  loading="lazy"
-                />
-              </div>
-            </div>
-            {/* Glow */}
-            <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/10 via-violet-500/10 to-purple-500/10 blur-3xl -z-10 opacity-60" />
-          </motion.div>
+
+
         </div>
       </section>
 
       {/* ═══════════════════════════════════════════
           SOCIAL PROOF STRIP
           ═══════════════════════════════════════════ */}
-      <section className="py-14 bg-slate-50 border-y border-slate-100">
+      <section className="py-16 bg-slate-50/80 border-y border-slate-100">
         <div className="container-app">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 max-w-4xl mx-auto text-center"
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto text-center"
           >
             {[
               { value: 100, suffix: '%', label: 'Tamper-Proof Guarantee' },
@@ -496,11 +477,12 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.4 }}
+                className="stat-card"
               >
                 <p className="text-3xl md:text-4xl font-bold font-display text-slate-900 tracking-tight">
                   <AnimatedNumber target={stat.value} suffix={stat.suffix} />
                 </p>
-                <p className="text-sm text-slate-500 mt-1 font-medium">{stat.label}</p>
+                <p className="text-sm text-slate-500 mt-1.5 font-medium">{stat.label}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -535,7 +517,9 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto relative">
             {/* Connecting line (desktop only) */}
-            <div className="hidden md:block absolute top-24 left-[16.5%] right-[16.5%] h-px bg-gradient-to-r from-blue-200 via-emerald-200 to-teal-200" />
+            <div className="hidden md:block absolute top-24 left-[16.5%] right-[16.5%] h-px bg-gradient-to-r from-blue-200 via-emerald-200 to-teal-200 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/80 to-transparent animate-[shimmer_4s_ease-in-out_infinite]" />
+            </div>
 
             {[
               {
@@ -687,6 +671,13 @@ export default function LandingPage() {
                 desc: 'Stock counts update instantly as each verified invoice is generated. Receive low-stock alerts and never unexpectedly run out of products again.',
               },
               {
+                icon: ScanBarcode,
+                iconColor: 'text-rose-600',
+                iconBg: 'bg-rose-50',
+                title: 'Instant Barcode Scanning',
+                desc: 'Use your phone or desktop camera to scan product barcodes — Rasid identifies items, adds them to invoices, and updates pricing automatically.',
+              },
+              {
                 icon: Camera,
                 iconColor: 'text-amber-600',
                 iconBg: 'bg-amber-50',
@@ -702,7 +693,7 @@ export default function LandingPage() {
                 transition={{ delay: i * 0.08, duration: 0.5 }}
                 className="group"
               >
-                <div className="relative h-full rounded-2xl border border-neutral-100 bg-white p-7 transition-all duration-300 hover:shadow-lg hover:border-neutral-200 hover:-translate-y-1">
+                <div className="benefit-card relative h-full rounded-2xl border border-neutral-100 bg-white p-7 transition-all duration-300 hover:shadow-lg hover:border-neutral-200 hover:-translate-y-1" style={{ '--accent-color': benefit.iconColor.includes('emerald') ? '#10b981' : benefit.iconColor.includes('teal') ? '#14b8a6' : benefit.iconColor.includes('violet') ? '#8b5cf6' : benefit.iconColor.includes('blue') ? '#3b82f6' : benefit.iconColor.includes('sky') ? '#0ea5e9' : '#f59e0b' } as React.CSSProperties}>
                   <div className={`w-12 h-12 rounded-xl ${benefit.iconBg} flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110`}>
                     <benefit.icon className={`w-6 h-6 ${benefit.iconColor}`} />
                   </div>
@@ -798,6 +789,13 @@ export default function LandingPage() {
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 Free plan available — no credit card needed
               </p>
+
+              <div className="mt-10 flex flex-col items-center gap-2">
+                <div className="h-px w-16 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                <p className="text-3xl font-bold font-display tracking-tight" style={{ background: 'linear-gradient(to right, #e2e8f0, #ffffff, #e2e8f0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  rasid.in
+                </p>
+              </div>
             </motion.div>
           </div>
         </div>

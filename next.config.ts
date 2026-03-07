@@ -44,8 +44,11 @@ const nextConfig: NextConfig = {
     ];
   },
   async redirects() {
-    // Prevent redirecting local testing to production domains
-    if (process.env.NEXT_PUBLIC_APP_URL?.includes('localhost') || process.env.NODE_ENV !== 'production') {
+    // Never redirect to production subdomains in development
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || '';
+    const isDev = process.env.NODE_ENV !== 'production' || appUrl.includes('localhost') || appUrl.includes('127.0.0.1');
+
+    if (isDev) {
       return [];
     }
 
@@ -53,22 +56,22 @@ const nextConfig: NextConfig = {
       {
         source: '/dashboard',
         destination: 'https://dashboard.rasid.in',
-        permanent: true,
+        permanent: false,
       },
       {
         source: '/dashboard/:path*',
         destination: 'https://dashboard.rasid.in/:path*',
-        permanent: true,
+        permanent: false,
       },
       {
         source: '/admin',
         destination: 'https://admin.rasid.in',
-        permanent: true,
+        permanent: false,
       },
       {
         source: '/admin/:path*',
         destination: 'https://admin.rasid.in/:path*',
-        permanent: true,
+        permanent: false,
       },
     ];
   },
