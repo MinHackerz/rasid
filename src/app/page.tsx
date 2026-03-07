@@ -327,16 +327,7 @@ export default function LandingPage() {
           HERO SECTION
           ═══════════════════════════════════════════ */}
       <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-white">
-        <div className="absolute inset-0 z-0">
-          {/* Premium Background Orbs — vivid to match demo visuals */}
-          <div className="absolute rounded-full" style={{ top: '-10%', left: '5%', width: 550, height: 550, background: 'radial-gradient(circle, rgba(147,130,255,0.25) 0%, rgba(96,165,250,0.15) 60%, transparent 100%)', filter: 'blur(80px)' }} />
-          <div className="absolute rounded-full" style={{ bottom: '-15%', right: '0%', width: 650, height: 650, background: 'radial-gradient(circle, rgba(99,102,241,0.2) 0%, rgba(56,189,248,0.1) 60%, transparent 100%)', filter: 'blur(100px)' }} />
-          <div className="absolute rounded-full" style={{ top: '25%', right: '25%', width: 350, height: 350, background: 'radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)', filter: 'blur(70px)' }} />
-          <div className="absolute rounded-full" style={{ top: '60%', left: '40%', width: 300, height: 300, background: 'radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%)', filter: 'blur(60px)' }} />
 
-          {/* Subtle Grid Pattern */}
-          <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.012) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.012) 1px, transparent 1px)', backgroundSize: '40px 40px', maskImage: 'radial-gradient(ellipse 60% 50% at 50% 0%, #000 70%, transparent 100%)' }} />
-        </div>
 
         <div className="container-app relative z-10 text-center max-w-5xl mx-auto">
           <motion.div
