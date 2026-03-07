@@ -434,11 +434,6 @@ export default function LandingPage() {
                 </Link>
               )}
 
-              <Link href="#demo">
-                <Button variant="outline" size="lg" className="h-14 px-8 text-base rounded-full border-slate-200 hover:bg-slate-50 text-slate-700 bg-white/50 backdrop-blur-sm">
-                  See How Verification Works
-                </Button>
-              </Link>
             </div>
 
             {/* Quick credibility line */}
